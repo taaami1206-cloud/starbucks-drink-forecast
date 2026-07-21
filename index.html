@@ -1,0 +1,2071 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ドリンク需要予測ツール</title>
+<style>
+  :root{
+    --green:#00704A;
+    --green-dark:#00543A;
+    --green-light:#E7F3EE;
+    --bg:#F7F8F7;
+    --card:#FFFFFF;
+    --text:#1E1E1E;
+    --sub:#6B7280;
+    --border:#E2E5E3;
+    --danger:#C0392B;
+    --warn:#B7791F;
+    --radius:10px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#15181A;
+      --card:#1F2326;
+      --text:#EDEFEE;
+      --sub:#9AA3A0;
+      --border:#33383B;
+      --green-light:#12302A;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+  }
+  header{
+    background:var(--green);
+    color:#fff;
+    padding:18px 20px;
+  }
+  header h1{
+    margin:0;
+    font-size:18px;
+    font-weight:600;
+  }
+  header p{
+    margin:4px 0 0;
+    font-size:12px;
+    opacity:0.85;
+  }
+  .promo-bar{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+    padding:10px 14px;
+    background:var(--card);
+    border-bottom:1px solid var(--border);
+    font-size:12px;
+  }
+  .promo-bar .btn{
+    padding:6px 10px;
+    font-size:12px;
+  }
+  .promo-bar #promo-current-label{
+    font-weight:700;
+    color:var(--green-dark);
+  }
+  #promoTable td, #promoTable th{
+    text-align:left;
+  }
+  #ingredientTable th, #drinkTable th{
+    text-align:left;
+  }
+  #drinkTable input[data-role=drink-upt-first],
+  #drinkTable input[data-role=drink-upt-avg]{
+    width:56px;
+  }
+  #promoTable .btn{
+    padding:9px 16px;
+    font-size:13px;
+    width:100%;
+  }
+  nav.tabs{
+    display:flex;
+    gap:4px;
+    padding:10px 12px 0;
+    background:var(--bg);
+    overflow-x:auto;
+    border-bottom:1px solid var(--border);
+  }
+  nav.tabs button{
+    border:none;
+    background:transparent;
+    padding:10px 14px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--sub);
+    cursor:pointer;
+    border-radius:8px 8px 0 0;
+    white-space:nowrap;
+  }
+  nav.tabs button.active{
+    color:var(--green);
+    background:var(--card);
+    border:1px solid var(--border);
+    border-bottom:1px solid var(--card);
+    margin-bottom:-1px;
+  }
+  main{
+    max-width:980px;
+    margin:0 auto;
+    padding:18px 14px 60px;
+  }
+  section.tab{display:none;}
+  section.tab.active{display:block;}
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:16px;
+    margin-bottom:16px;
+  }
+  .card h2{
+    font-size:15px;
+    margin:0 0 4px;
+  }
+  .card .desc{
+    font-size:12px;
+    color:var(--sub);
+    margin:0 0 14px;
+  }
+  .row{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:10px;
+  }
+  .field{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    min-width:140px;
+  }
+  .field label{
+    font-size:12px;
+    color:var(--sub);
+  }
+  input[type=text], input[type=number], input[type=date], select{
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:8px 10px;
+    font-size:14px;
+    background:var(--card);
+    color:var(--text);
+    width:100%;
+  }
+  input:focus, select:focus{outline:2px solid var(--green); outline-offset:-1px;}
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+  }
+  table th, table td{
+    border:1px solid var(--border);
+    padding:6px 8px;
+    text-align:right;
+  }
+  table th{
+    background:var(--green-light);
+    font-weight:600;
+    color:var(--text);
+  }
+  table td.left, table th.left{text-align:left;}
+  table td input{
+    text-align:right;
+    padding:4px 6px;
+    font-size:13px;
+  }
+  table td input.name-input{text-align:left;}
+  .table-wrap{overflow-x:auto;}
+  .btn{
+    border:1px solid var(--green);
+    background:var(--green);
+    color:#fff;
+    padding:9px 16px;
+    border-radius:6px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .btn.secondary{
+    background:transparent;
+    color:var(--green);
+  }
+  .btn.danger{
+    background:transparent;
+    color:var(--danger);
+    border-color:var(--danger);
+    padding:4px 8px;
+    font-size:12px;
+  }
+  .actions{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+  }
+  .result-box{
+    background:var(--green-light);
+    border-radius:8px;
+    padding:14px 16px;
+    margin-top:12px;
+  }
+  .result-box .big{
+    font-size:26px;
+    font-weight:700;
+    color:var(--green-dark);
+  }
+  .result-box .label{
+    font-size:12px;
+    color:var(--sub);
+  }
+  .bottleneck{
+    background:#FDF3E7;
+    border:1px solid var(--warn);
+    color:#7A5210;
+    border-radius:8px;
+    padding:10px 12px;
+    font-size:13px;
+    margin-top:10px;
+  }
+  @media (prefers-color-scheme: dark){
+    .bottleneck{background:#3A2E14; color:#F0D9A8;}
+  }
+  .ratio-warn{
+    color:var(--warn);
+    font-size:12px;
+    margin-top:6px;
+  }
+  .hint{
+    font-size:12px;
+    color:var(--sub);
+    margin-top:8px;
+  }
+  .formula{
+    font-size:11px;
+    color:var(--sub);
+    background:var(--bg);
+    border-radius:6px;
+    padding:6px 10px;
+    display:inline-block;
+    margin-top:6px;
+  }
+  .badge{
+    font-size:9px;
+    color:var(--green-dark);
+    font-weight:700;
+    margin-left:4px;
+  }
+  #fc-tables, #dv-tables{
+    overflow-x:auto;
+  }
+  .week-table{
+    width:100%;
+    min-width:640px;
+    border-collapse:collapse;
+    margin-bottom:20px;
+    font-size:12px;
+  }
+  .week-table.forecast-table{
+    table-layout:fixed;
+  }
+  .week-table.forecast-table col.label-col{
+    width:64px;
+  }
+  .week-table th, .week-table td{
+    border:1px solid var(--border);
+    padding:6px 4px;
+    text-align:center;
+  }
+  .week-table th.left, .week-table td.left{
+    text-align:left;
+  }
+  .week-table thead th{
+    background:var(--green-light);
+  }
+  .week-table .range-label{
+    font-size:11px;
+    font-weight:700;
+    color:var(--green-dark);
+  }
+  .week-table .week-del-btn{
+    display:block;
+    margin-top:4px;
+    padding:1px 6px;
+    font-size:9px;
+  }
+  .week-table .weekday-name{
+    font-weight:700;
+  }
+  .week-table .weekday-date{
+    display:block;
+    font-size:10px;
+    font-weight:400;
+    color:var(--sub);
+  }
+  .week-table td.left{
+    font-weight:600;
+    white-space:nowrap;
+  }
+  .week-table.forecast-table td.left{
+    white-space:normal;
+    word-break:break-word;
+  }
+  .week-table td.left .unit-tag{
+    font-weight:400;
+    font-size:10px;
+    color:var(--sub);
+    margin-left:4px;
+  }
+  .week-table td.na{
+    color:var(--border);
+  }
+  .week-table td.store-order-col{
+    background:#FDF3E7;
+  }
+  @media (prefers-color-scheme: dark){
+    .week-table td.store-order-col{background:#3A2E14;}
+  }
+  .week-table input.qty{
+    width:44px;
+    padding:3px 2px;
+    font-size:12px;
+    text-align:center;
+  }
+  .week-table .first-delivery-col{
+    background:var(--green-light);
+  }
+  .week-table thead th.first-delivery-col{
+    background:var(--green);
+    color:#fff;
+  }
+  .week-table thead th.first-delivery-col .weekday-date{
+    color:#fff;
+    opacity:0.85;
+  }
+  .week-table thead th.first-week-col{
+    background:#CFE8DC;
+  }
+  @media (prefers-color-scheme: dark){
+    .week-table thead th.first-week-col{background:#1E4436;}
+  }
+  .week-table .holiday-btn{
+    display:block;
+    margin:3px auto 0;
+    padding:1px 6px;
+    font-size:9px;
+  }
+  .week-table .holiday-btn.active{
+    background:var(--green);
+    color:#fff;
+  }
+  .week-table td.group-label{
+    font-weight:700;
+    background:var(--green-light);
+    white-space:nowrap;
+  }
+  .week-table tr.group-start td{
+    border-top:2px solid var(--green);
+  }
+  .week-table td.avg-summary-cell{
+    text-align:left;
+  }
+  .week-table td.avg-summary-cell .avg-drink-item{
+    display:inline-block;
+    margin-right:14px;
+    font-weight:600;
+  }
+  .print-title{
+    font-size:15px;
+    font-weight:700;
+    color:var(--green-dark);
+    margin:24px 0 8px;
+  }
+  #print-sheet .print-title:first-child{
+    margin-top:0;
+  }
+  .week-table td.blank-cell{
+    height:32px;
+  }
+  @media print{
+    .promo-bar, nav.tabs, .no-print{
+      display:none !important;
+    }
+    header p{
+      display:none;
+    }
+    section.tab{
+      display:none !important;
+    }
+    #tab-print{
+      display:block !important;
+    }
+    body{
+      background:#fff;
+    }
+    main{
+      max-width:none;
+      padding:0;
+    }
+    .card{
+      border:none;
+      padding:0;
+      margin-bottom:0;
+    }
+    .week-table{
+      page-break-inside:avoid;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="promo-screen">
+  <header>
+    <h1>ドリンク需要予測ツール</h1>
+    <p>プロモーションを選択、または新規作成して開始してください</p>
+  </header>
+  <main style="max-width:820px;">
+    <div class="card">
+      <h2>プロモーション一覧</h2>
+      <p class="desc">プロモーションごとに原材料・ドリンク構成・UPT・予測実績・納品データを完全に独立して管理します。期間を入力しておくと一覧で把握しやすくなります。</p>
+      <div class="table-wrap">
+        <table id="promoTable">
+          <thead><tr><th class="left">プロモーション名</th><th class="left">期間</th><th></th><th></th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="actions">
+        <button class="btn secondary" id="promo-add">+ 新規プロモーション</button>
+      </div>
+
+      <div id="promo-new-form" style="display:none; margin-top:14px; border-top:1px solid var(--border); padding-top:14px;">
+        <h2 id="promo-form-title" style="font-size:13px;">新規プロモーション作成</h2>
+        <div class="row">
+          <div class="field">
+            <label>プロモーション名</label>
+            <input type="text" id="promo-new-name">
+          </div>
+          <div class="field" style="max-width:160px;">
+            <label>開始日</label>
+            <input type="date" id="promo-new-start">
+          </div>
+          <div class="field" style="max-width:160px;">
+            <label>終了日</label>
+            <input type="date" id="promo-new-end">
+          </div>
+          <div class="field" style="justify-content:flex-end;">
+            <label>&nbsp;</label>
+            <div class="actions" style="margin-top:0;">
+              <button class="btn" id="promo-new-create">作成</button>
+              <button class="btn secondary" id="promo-new-cancel">キャンセル</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="app-screen" style="display:none;">
+
+<header>
+  <h1>ドリンク需要予測ツール</h1>
+  <p>取引件数・UPTから杯数を予測し、原材料の必要量を計算します(データはこの端末内にのみ保存されます)</p>
+</header>
+
+<div class="promo-bar">
+  <button class="btn secondary" id="promo-back">← プロモーション一覧</button>
+  <span id="promo-current-label"></span>
+</div>
+
+<nav class="tabs">
+  <button data-tab="settings" class="active">設定(原材料・レシピ)</button>
+  <button data-tab="forecast">杯数予測・実績</button>
+  <button data-tab="delivery">納品・発注</button>
+  <button data-tab="print">印刷用シート</button>
+
+</nav>
+
+<main>
+
+  <!-- 設定タブ -->
+  <section class="tab active" id="tab-settings">
+    <div class="card">
+      <h2>原材料マスタ</h2>
+      <p class="desc">原材料ごとに「1個あたり作成可能杯数」を入力します(例: 濃縮オレンジマンゴーベース 14杯/個)。ケース単位でも納品・発注する原材料は「ケースごとの入数」も入力してください(任意。1ケースあたりの杯数はここから自動計算されます)。納品単位(個数/ケース)と区分(ドライ品/日配品)は、納品カレンダーの表示に使われます。店舗発注に切り替わった場合、ドライ品は発注の2日後に納品(月曜発注→水曜納品、水曜発注→金曜納品、金曜発注→日曜納品)、日配品は毎日発注可能で発注の2日後に納品されます。店舗納品開始日を設定すると、その日以降のセルが店舗発注による納品として色分け表示されます(任意・原材料ごとに異なるタイミングを設定できます)。</p>
+      <div class="table-wrap">
+        <table id="ingredientTable">
+          <thead><tr><th class="left">原材料名</th><th>作成可能杯数/個</th><th>ケースごとの入数(任意)</th><th>納品単位</th><th>区分</th><th>店舗納品開始日(任意)</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="actions">
+        <button class="btn secondary" id="addIngredientBtn">+ 原材料を追加</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>ドリンク別 UPT・使用原材料</h2>
+      <p class="desc">ドリンクごとにUPT(初週・平均)と、そのドリンクで使う原材料にチェックを入れます(1杯あたりの消費量は原材料マスタの作成可能杯数から共通で計算されます)。販売開始日は杯数予測タブで共通設定します。ドリンク間の販売比率はUPTの大小から自動算出されます。</p>
+      <div class="table-wrap">
+        <table id="drinkTable">
+          <thead><tr></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="actions">
+        <button class="btn secondary" id="addDrinkBtn">+ ドリンクを追加</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 杯数予測タブ -->
+  <section class="tab" id="tab-forecast">
+    <div class="card">
+      <h2>杯数予測</h2>
+      <p class="desc">ドリンクごとに設定したUPT(初週・平均、設定タブ)を使って、取引件数から日付ごとの予測杯数を算出します。販売開始日〜その週の日曜日までは初週UPT、それ以降は平均UPTが自動で適用されます(週は月曜始まり・日曜締め)。</p>
+      <div class="row">
+        <div class="field" style="max-width:160px;">
+          <label>販売開始日</label>
+          <input type="date" id="fc-launchDate">
+        </div>
+      </div>
+      <span class="formula">ドリンク別予測杯数 = 取引件数 × そのドリンクのUPT ÷ 1000 × 1.5</span>
+
+      <div id="fc-tables"></div>
+      <div class="actions">
+        <button class="btn secondary" id="fc-addWeek">+ 次の週を追加</button>
+      </div>
+      <p class="hint">取引件数を入力すると、各ドリンクの予測杯数(自動計算)が表示されます。実績杯数はレジ締め後などに直接入力してください(予測より多ければ緑、少なければ赤で表示)。緑色の曜日ヘッダーは初週UPTが適用される期間、濃い緑は販売開始日です。「祝」ボタンで祝日を指定すると休日として平均に計算されます。</p>
+    </div>
+  </section>
+
+  <!-- 納品・発注タブ -->
+  <section class="tab" id="tab-delivery">
+    <div class="card">
+      <h2>自動納品数の記録</h2>
+      <p class="desc">週ごとの表に、その日届いた各原材料の納品量を記録します。原材料ごとに設定した納品単位(個数/ケース)と区分(ドライ品は水・金・日、日配品は毎日)に合わせて、納品のない日は「-」になり入力できません。設定タブで店舗納品開始日を設定した原材料は、その日以降のセルがオレンジ色になり、店舗発注による納品であることを示します(引き続き入力できます)。</p>
+
+      <div id="dv-stock-alert"></div>
+
+      <div class="row">
+        <div class="field" style="max-width:160px;">
+          <label>初回納品日</label>
+          <input type="date" id="dv-firstDeliveryDate">
+        </div>
+      </div>
+
+      <div id="dv-tables"></div>
+      <div class="actions">
+        <button class="btn secondary" id="dv-addWeek">+ 次の週を追加</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>原材料使用数(実績平均)</h2>
+      <p class="desc">各原材料の作成可能杯数と、杯数予測タブに入力済みの販売実績から、1日あたりの想定使用数を平日/休日別に平均して算出します。</p>
+      <div class="table-wrap">
+        <table id="usageTable">
+          <thead><tr><th class="left"></th><th>平日平均</th><th>休日平均</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>発注推奨数</h2>
+      <p class="desc">設定タブで店舗納品開始日を過ぎた原材料のみ対象です。現在庫(納品累計−消費実績、実績が無い日は予測で補完)と、次の納品が届いてから次々回の納品が届くまでに必要な想定消費量(実績優先・不足分は予測で補完)を比較し、不足分だけを発注数として算出します(発注単位で切り上げ)。ドライ品は発注→2日後納品(月→水・水→金・金→日)、日配品は毎日発注→2日後納品のサイクルで計算しています。</p>
+      <div class="table-wrap">
+        <table id="orderRecTable">
+          <thead><tr><th class="left">原材料名</th><th>現在庫(杯換算)</th><th>対象納品日</th><th>発注推奨数</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="hint" id="orderRecHint" style="display:none;">店舗納品開始日が設定・到来している原材料はまだありません。</p>
+    </div>
+  </section>
+
+  <!-- 印刷用シートタブ -->
+  <section class="tab" id="tab-print">
+    <div class="card no-print">
+      <h2>印刷用シート</h2>
+      <p class="desc">原材料マスタ・自動納品数カレンダー・予測杯数・実績記入欄をまとめて印刷し、紙で共有できます。</p>
+      <div class="actions">
+        <button class="btn" id="print-btn">🖨 印刷する</button>
+      </div>
+    </div>
+
+    <div id="print-sheet">
+      <h2 class="print-title">原材料マスタ</h2>
+      <div class="table-wrap">
+        <table id="print-ingredientTable">
+          <thead><tr><th class="left">原材料名</th><th>作成可能杯数/個</th><th>ケース入数</th><th>納品単位</th><th>区分</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <h2 class="print-title">自動納品数カレンダー</h2>
+      <div id="print-delivery-tables"></div>
+
+      <h2 class="print-title">予測杯数</h2>
+      <div id="print-forecast-tables"></div>
+
+      <h2 class="print-title">実績記入欄</h2>
+      <div id="print-actual-tables"></div>
+    </div>
+  </section>
+
+
+</main>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const STORAGE_PREFIX = "sbux_drink_forecast_v1";
+  const META_KEY = "sbux_promotions_meta";
+
+  function uid(prefix){
+    return prefix + "_" + Math.random().toString(36).slice(2,10);
+  }
+
+  function promoDataKey(id){
+    return STORAGE_PREFIX + "__" + id;
+  }
+
+  // truly blank slate for a newly created promotion (no demo/sample data)
+  function emptyState(){
+    return {
+      ingredients: [],
+      drinks: [],
+      settings: {launchDate:"", firstDeliveryDate:""},
+      forecastDays: [],
+      holidays: {},
+      deliveryDays: [],
+      forecastWeeks: [],
+      deliveryWeeks: [],
+      inputs: {}
+    };
+  }
+
+  function defaultState(){
+    const ing1 = uid("ing"), ing2 = uid("ing"), ing3 = uid("ing");
+    const drink1 = uid("drink"), drink2 = uid("drink"), drink3 = uid("drink");
+    return {
+      ingredients: [
+        {id: ing1, name: "濃縮オレンジマンゴーベース", cupsPerUnit: 14, unitsPerCase: 6, deliveryUnit: "case", category: "dry", storeDeliveryStartDate: ""},
+        {id: ing2, name: "ハニーブラッドオレンジソース", cupsPerUnit: 25, unitsPerCase: "", deliveryUnit: "unit", category: "dry", storeDeliveryStartDate: ""},
+        {id: ing3, name: "オレンジマンゴー果肉", cupsPerUnit: 17, unitsPerCase: 12, deliveryUnit: "unit", category: "daily", storeDeliveryStartDate: ""}
+      ],
+      drinks: [
+        {id: drink1, name: "フラペチーノ", uptFirstWeek: 0.15, uptAverage: 0.08, uses: {[ing1]: true, [ing2]: true, [ing3]: true}},
+        {id: drink2, name: "ソーダ", uptFirstWeek: 0.05, uptAverage: 0.03, uses: {[ing1]: false, [ing2]: false, [ing3]: true}},
+        {id: drink3, name: "ティー", uptFirstWeek: 0.03, uptAverage: 0.02, uses: {[ing1]: false, [ing2]: false, [ing3]: true}}
+      ],
+      settings: {
+        launchDate: "",
+        firstDeliveryDate: ""
+      },
+      forecastDays: [],
+      holidays: {},
+      deliveryDays: [],
+      forecastWeeks: [],
+      deliveryWeeks: [],
+      inputs: {}
+    };
+  }
+
+  // multiple named "promotions" can be saved and switched between, each with its own fully independent
+  // ingredients/drinks/forecast/delivery data, since both change completely from one promotion to the next
+  function loadMeta(){
+    try{
+      const raw = localStorage.getItem(META_KEY);
+      if(raw){
+        const m = JSON.parse(raw);
+        if(m && Array.isArray(m.promotions) && m.promotions.length && m.currentId){
+          m.promotions.forEach(p=>{
+            if(p.startDate === undefined) p.startDate = "";
+            if(p.endDate === undefined) p.endDate = "";
+          });
+          return m;
+        }
+      }
+    }catch(e){}
+    // first run: migrate any pre-existing single-promotion data (legacy key) into promotion "1"
+    const legacyRaw = localStorage.getItem(STORAGE_PREFIX);
+    const id = uid("promo");
+    if(legacyRaw) localStorage.setItem(promoDataKey(id), legacyRaw);
+    const meta = {promotions: [{id, name: "プロモーション1", startDate:"", endDate:""}], currentId: id};
+    localStorage.setItem(META_KEY, JSON.stringify(meta));
+    return meta;
+  }
+
+  function saveMeta(){
+    localStorage.setItem(META_KEY, JSON.stringify(meta));
+  }
+
+  let meta = loadMeta();
+  let state = loadPromotionState(meta.currentId);
+
+  function loadPromotionState(id){
+    try{
+      const raw = localStorage.getItem(promoDataKey(id));
+      if(!raw) return defaultState();
+      const parsed = JSON.parse(raw);
+      if(!parsed.ingredients || !parsed.drinks) return defaultState();
+      if(!parsed.inputs) parsed.inputs = {};
+      if(!parsed.settings) parsed.settings = {launchDate:"", firstDeliveryDate:""};
+      if(parsed.settings.firstDeliveryDate === undefined) parsed.settings.firstDeliveryDate = "";
+      if(!parsed.forecastDays) parsed.forecastDays = [];
+      if(!parsed.holidays) parsed.holidays = {};
+      if(!parsed.deliveryDays) parsed.deliveryDays = [];
+      if(!parsed.forecastWeeks) parsed.forecastWeeks = [];
+      if(!parsed.deliveryWeeks) parsed.deliveryWeeks = [];
+
+      // migrate old single-value forecast input (fc) to the new day-based model
+      if(parsed.inputs.fc){
+        if(parsed.inputs.fc.transactions){
+          parsed.forecastDays.push({
+            id: uid("day"),
+            date: new Date().toISOString().slice(0,10),
+            transactions: parsed.inputs.fc.transactions
+          });
+        }
+        delete parsed.inputs.fc;
+      }
+      // 発注切替時の必要量 tab was removed; drop its now-unused stored input
+      delete parsed.inputs.od;
+      // migrate old single global first-week/average UPT to per-drink UPT
+      if(parsed.settings.uptFirstWeek !== undefined || parsed.settings.uptAverage !== undefined){
+        const oldFirst = parsed.settings.uptFirstWeek || "";
+        const oldAvg = parsed.settings.uptAverage || "";
+        parsed.drinks.forEach(d=>{
+          if(d.uptFirstWeek === undefined) d.uptFirstWeek = oldFirst;
+          if(d.uptAverage === undefined) d.uptAverage = oldAvg;
+        });
+        delete parsed.settings.uptFirstWeek;
+        delete parsed.settings.uptAverage;
+      }
+      // migrate old single fixed UPT (settings.upt) - treat as average UPT for all drinks
+      if(parsed.settings.upt !== undefined){
+        parsed.drinks.forEach(d=>{
+          if(d.uptAverage === undefined) d.uptAverage = parsed.settings.upt || "";
+          if(d.uptFirstWeek === undefined) d.uptFirstWeek = "";
+        });
+        delete parsed.settings.upt;
+      }
+      // drop the old ratio-based mix in favor of UPT-derived mix
+      parsed.drinks.forEach(d=>{
+        if(d.ratio !== undefined) delete d.ratio;
+        if(d.uptFirstWeek === undefined) d.uptFirstWeek = "";
+        if(d.uptAverage === undefined) d.uptAverage = "";
+      });
+      // migrate ml/g-based ingredient unit + numeric recipe to the cups-yield + used/not-used model
+      parsed.ingredients.forEach(ing=>{
+        if(ing.unit !== undefined) delete ing.unit;
+        if(ing.cupsPerUnit === undefined) ing.cupsPerUnit = "";
+        if(ing.deliveryUnit === undefined) ing.deliveryUnit = "unit";
+        if(ing.category === undefined) ing.category = "daily";
+      });
+      // rename 発注切替日(order-switch date) to 店舗納品開始日(store-delivery start date) - same field, clearer meaning
+      parsed.ingredients.forEach(ing=>{
+        if(ing.switchDate !== undefined){
+          if(ing.storeDeliveryStartDate === undefined) ing.storeDeliveryStartDate = ing.switchDate;
+          delete ing.switchDate;
+        }
+        if(ing.storeDeliveryStartDate === undefined) ing.storeDeliveryStartDate = "";
+      });
+      // replace the independently-entered "cups per case" with "units per case" (cups/case is now derived: units/case × cups/unit)
+      parsed.ingredients.forEach(ing=>{
+        if(ing.unitsPerCase === undefined){
+          const cpu = Number(ing.cupsPerUnit);
+          const cpc = Number(ing.cupsPerCase);
+          ing.unitsPerCase = (cpu > 0 && cpc > 0) ? Math.round(cpc / cpu) : "";
+        }
+        delete ing.cupsPerCase;
+      });
+      parsed.drinks.forEach(d=>{
+        if(d.recipe !== undefined){
+          d.uses = {};
+          parsed.ingredients.forEach(ing=>{
+            d.uses[ing.id] = !!(Number(d.recipe[ing.id]) > 0);
+          });
+          delete d.recipe;
+        }
+        if(!d.uses) d.uses = {};
+        parsed.ingredients.forEach(ing=>{
+          if(d.uses[ing.id] === undefined) d.uses[ing.id] = false;
+        });
+      });
+      // migrate the old single-snapshot delivery input into a dated deliveryDays entry
+      if(parsed.inputs.delivery){
+        const deliveries = {};
+        let hasAny = false;
+        Object.keys(parsed.inputs.delivery).forEach(ingId=>{
+          const v = parsed.inputs.delivery[ingId];
+          const units = (v && typeof v === "object") ? v.units : v;
+          const cases = (v && typeof v === "object") ? v.cases : "";
+          if((units !== undefined && units !== "") || (cases !== undefined && cases !== "")){
+            hasAny = true;
+          }
+          deliveries[ingId] = {units: units || "", cases: cases || ""};
+        });
+        if(hasAny){
+          parsed.deliveryDays.push({
+            id: uid("dv"),
+            date: new Date().toISOString().slice(0,10),
+            deliveries
+          });
+        }
+        delete parsed.inputs.delivery;
+      }
+      // delivery quantities move from a {units, cases} pair to a single value matching the ingredient's own delivery unit
+      parsed.deliveryDays.forEach(entry=>{
+        if(!entry.deliveries) entry.deliveries = {};
+        parsed.ingredients.forEach(ing=>{
+          const v = entry.deliveries[ing.id];
+          if(v && typeof v === "object"){
+            const preferred = ing.deliveryUnit === "case" ? v.cases : v.units;
+            const fallback = ing.deliveryUnit === "case" ? v.units : v.cases;
+            entry.deliveries[ing.id] = (preferred !== undefined && preferred !== "") ? preferred : (fallback || "");
+          } else if(v === undefined){
+            entry.deliveries[ing.id] = "";
+          }
+        });
+      });
+      // each forecast day also holds actual (real) cups sold per drink
+      parsed.forecastDays.forEach(entry=>{
+        if(!entry.actuals) entry.actuals = {};
+      });
+      return parsed;
+    }catch(e){
+      return defaultState();
+    }
+  }
+
+  function save(){
+    localStorage.setItem(promoDataKey(meta.currentId), JSON.stringify(state));
+  }
+
+  function fmt(n, digits){
+    if(n === Infinity) return "∞";
+    if(n === null || n === undefined || isNaN(n)) return "-";
+    const d = digits === undefined ? 1 : digits;
+    return Number(n.toFixed(d)).toLocaleString("ja-JP", {minimumFractionDigits:0, maximumFractionDigits:d});
+  }
+
+  function calcTotalCups(transactions, upt){
+    const t = Number(transactions) || 0;
+    const u = Number(upt) || 0;
+    return t * u / 1000 * 1.5;
+  }
+
+  // week runs Monday-Sunday; "first week" = launch date through that week's Sunday
+  function isFirstWeek(dateStr, launchDateStr){
+    if(!launchDateStr || !dateStr) return false;
+    const d = new Date(dateStr+"T00:00:00");
+    const l = new Date(launchDateStr+"T00:00:00");
+    if(isNaN(d) || isNaN(l) || d < l) return false;
+    const dow = l.getDay(); // 0=Sun..6=Sat
+    const daysUntilSunday = dow === 0 ? 0 : (7 - dow);
+    const weekEnd = new Date(l);
+    weekEnd.setDate(l.getDate() + daysUntilSunday);
+    return d <= weekEnd;
+  }
+
+  function drinkUptForPhase(drink, phase){
+    return phase === "first" ? (Number(drink.uptFirstWeek)||0) : (Number(drink.uptAverage)||0);
+  }
+
+  // ---------- Tabs ----------
+  document.querySelectorAll("nav.tabs button").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.remove("active"));
+      document.querySelectorAll("section.tab").forEach(s=>s.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("tab-"+btn.dataset.tab).classList.add("active");
+      if(btn.dataset.tab === "forecast") renderForecastTab();
+      if(btn.dataset.tab === "delivery") renderDeliveryTab();
+      if(btn.dataset.tab === "print") renderPrintTab();
+    });
+  });
+
+  // ---------- Settings: Ingredients ----------
+  function renderIngredientTable(){
+    const tbody = document.querySelector("#ingredientTable tbody");
+    tbody.innerHTML = "";
+    state.ingredients.forEach(ing=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="left"><input type="text" class="name-input" data-role="ing-name" data-id="${ing.id}" value="${escapeHtml(ing.name)}"></td>
+        <td><input type="number" step="0.1" min="0" data-role="ing-cups-unit" data-id="${ing.id}" value="${ing.cupsPerUnit}"></td>
+        <td><input type="number" step="1" min="0" data-role="ing-units-case" data-id="${ing.id}" value="${ing.unitsPerCase}"></td>
+        <td>
+          <select data-role="ing-delivery-unit" data-id="${ing.id}">
+            <option value="unit" ${ing.deliveryUnit==="unit"?"selected":""}>個数</option>
+            <option value="case" ${ing.deliveryUnit==="case"?"selected":""}>ケース</option>
+          </select>
+        </td>
+        <td>
+          <select data-role="ing-category" data-id="${ing.id}">
+            <option value="daily" ${ing.category==="daily"?"selected":""}>日配品(毎日)</option>
+            <option value="dry" ${ing.category==="dry"?"selected":""}>ドライ品(水・金・日)</option>
+          </select>
+        </td>
+        <td><input type="date" data-role="ing-store-delivery-start" data-id="${ing.id}" value="${ing.storeDeliveryStartDate}"></td>
+        <td><button class="btn danger" data-role="ing-del" data-id="${ing.id}">削除</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll("[data-role=ing-name]").forEach(el=>{
+      el.addEventListener("input", e=>{
+        const ing = state.ingredients.find(i=>i.id===e.target.dataset.id);
+        ing.name = e.target.value;
+        save();
+        renderDrinkTable(); // headers show ingredient names
+      });
+    });
+    tbody.querySelectorAll("[data-role=ing-cups-unit]").forEach(el=>{
+      el.addEventListener("input", e=>{
+        const ing = state.ingredients.find(i=>i.id===e.target.dataset.id);
+        ing.cupsPerUnit = e.target.value;
+        save();
+      });
+    });
+    tbody.querySelectorAll("[data-role=ing-units-case]").forEach(el=>{
+      el.addEventListener("input", e=>{
+        const ing = state.ingredients.find(i=>i.id===e.target.dataset.id);
+        ing.unitsPerCase = e.target.value;
+        save();
+      });
+    });
+    tbody.querySelectorAll("[data-role=ing-delivery-unit]").forEach(el=>{
+      el.addEventListener("change", e=>{
+        const ing = state.ingredients.find(i=>i.id===e.target.dataset.id);
+        ing.deliveryUnit = e.target.value;
+        save();
+      });
+    });
+    tbody.querySelectorAll("[data-role=ing-category]").forEach(el=>{
+      el.addEventListener("change", e=>{
+        const ing = state.ingredients.find(i=>i.id===e.target.dataset.id);
+        ing.category = e.target.value;
+        save();
+      });
+    });
+    tbody.querySelectorAll("[data-role=ing-store-delivery-start]").forEach(el=>{
+      el.addEventListener("change", e=>{
+        const ing = state.ingredients.find(i=>i.id===e.target.dataset.id);
+        ing.storeDeliveryStartDate = e.target.value;
+        save();
+        renderDeliveryTab();
+      });
+    });
+    tbody.querySelectorAll("[data-role=ing-del]").forEach(el=>{
+      el.addEventListener("click", e=>{
+        const id = e.target.dataset.id;
+        if(!confirm("この原材料を削除しますか?各ドリンクの使用設定からも削除されます。")) return;
+        state.ingredients = state.ingredients.filter(i=>i.id!==id);
+        state.drinks.forEach(d=>{ delete d.uses[id]; });
+        state.deliveryDays.forEach(dv=>{ delete dv.deliveries[id]; });
+        save();
+        renderIngredientTable();
+        renderDrinkTable();
+      });
+    });
+  }
+
+  document.getElementById("addIngredientBtn").addEventListener("click", ()=>{
+    const id = uid("ing");
+    state.ingredients.push({id, name:"新しい原材料", cupsPerUnit:0, unitsPerCase:"", deliveryUnit:"unit", category:"daily", storeDeliveryStartDate:""});
+    state.drinks.forEach(d=>{ d.uses[id] = false; });
+    save();
+    renderIngredientTable();
+    renderDrinkTable();
+  });
+
+  // ---------- Settings: Drinks & UPT / usage matrix ----------
+  function renderDrinkTable(){
+    const thead = document.querySelector("#drinkTable thead tr");
+    const tbody = document.querySelector("#drinkTable tbody");
+
+    let headerHtml = `<th class="left">ドリンク名</th><th>初週UPT</th><th>平均UPT</th>`;
+    state.ingredients.forEach(ing=>{
+      headerHtml += `<th>${escapeHtml(ing.name)}<br><span style="font-weight:400;color:var(--sub);">使用する</span></th>`;
+    });
+    headerHtml += `<th></th>`;
+    thead.innerHTML = headerHtml;
+
+    tbody.innerHTML = "";
+    state.drinks.forEach(drink=>{
+      const tr = document.createElement("tr");
+      let rowHtml = `
+        <td class="left"><input type="text" class="name-input" data-role="drink-name" data-id="${drink.id}" value="${escapeHtml(drink.name)}"></td>
+        <td><input type="number" step="0.01" min="0" data-role="drink-upt-first" data-id="${drink.id}" value="${drink.uptFirstWeek}"></td>
+        <td><input type="number" step="0.01" min="0" data-role="drink-upt-avg" data-id="${drink.id}" value="${drink.uptAverage}"></td>
+      `;
+      state.ingredients.forEach(ing=>{
+        const checked = drink.uses[ing.id] ? "checked" : "";
+        rowHtml += `<td style="text-align:center;"><input type="checkbox" data-role="drink-uses" data-id="${drink.id}" data-ing="${ing.id}" ${checked}></td>`;
+      });
+      rowHtml += `<td><button class="btn danger" data-role="drink-del" data-id="${drink.id}">削除</button></td>`;
+      tr.innerHTML = rowHtml;
+      tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll("[data-role=drink-name]").forEach(el=>{
+      el.addEventListener("input", e=>{
+        const d = state.drinks.find(x=>x.id===e.target.dataset.id);
+        d.name = e.target.value;
+        save();
+      });
+    });
+    tbody.querySelectorAll("[data-role=drink-upt-first]").forEach(el=>{
+      el.addEventListener("input", e=>{
+        const d = state.drinks.find(x=>x.id===e.target.dataset.id);
+        d.uptFirstWeek = e.target.value;
+        save();
+      });
+    });
+    tbody.querySelectorAll("[data-role=drink-upt-avg]").forEach(el=>{
+      el.addEventListener("input", e=>{
+        const d = state.drinks.find(x=>x.id===e.target.dataset.id);
+        d.uptAverage = e.target.value;
+        save();
+      });
+    });
+    tbody.querySelectorAll("[data-role=drink-uses]").forEach(el=>{
+      el.addEventListener("change", e=>{
+        const d = state.drinks.find(x=>x.id===e.target.dataset.id);
+        d.uses[e.target.dataset.ing] = e.target.checked;
+        save();
+      });
+    });
+    tbody.querySelectorAll("[data-role=drink-del]").forEach(el=>{
+      el.addEventListener("click", e=>{
+        const id = e.target.dataset.id;
+        if(!confirm("このドリンクを削除しますか?")) return;
+        state.drinks = state.drinks.filter(x=>x.id!==id);
+        save();
+        renderDrinkTable();
+      });
+    });
+  }
+
+  document.getElementById("addDrinkBtn").addEventListener("click", ()=>{
+    const id = uid("drink");
+    const uses = {};
+    state.ingredients.forEach(ing=>{ uses[ing.id] = false; });
+    state.drinks.push({id, name:"新しいドリンク", uptFirstWeek:0, uptAverage:0, uses});
+    save();
+    renderDrinkTable();
+  });
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
+  }
+
+  // ---------- Forecast Tab (weekly spreadsheet) ----------
+  const fcLaunchDate = document.getElementById("fc-launchDate");
+  fcLaunchDate.value = state.settings.launchDate;
+
+  fcLaunchDate.addEventListener("change", ()=>{
+    state.settings.launchDate = fcLaunchDate.value;
+    save();
+    renderForecastTab();
+  });
+
+  document.getElementById("fc-addWeek").addEventListener("click", ()=>{
+    addNextForecastWeek();
+    renderForecastTab();
+  });
+
+  // appends the next Monday-start week to the running list (seeds with the launch week's Monday if empty)
+  function addNextForecastWeek(){
+    if(state.forecastWeeks.length === 0){
+      const seed = state.settings.launchDate || new Date().toISOString().slice(0,10);
+      state.forecastWeeks.push(mondayOfWeek(seed));
+    } else {
+      const last = state.forecastWeeks[state.forecastWeeks.length-1];
+      const d = new Date(last+"T00:00:00");
+      d.setDate(d.getDate()+7);
+      state.forecastWeeks.push(dateStr(d.getFullYear(), d.getMonth(), d.getDate()));
+    }
+    save();
+  }
+
+  function phaseForDate(dateStr){
+    return isFirstWeek(dateStr, fcLaunchDate.value) ? "first" : "average";
+  }
+
+  function dateStr(y,m,d){
+    return `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+  }
+
+  function isHoliday(ds){
+    return !!state.holidays[ds];
+  }
+
+  function isWeekendType(ds){
+    const dow = new Date(ds+"T00:00:00").getDay(); // 0=Sun, 6=Sat
+    return dow === 0 || dow === 6 || isHoliday(ds);
+  }
+
+  function cupsForDate(ds, transactions){
+    const phase = phaseForDate(ds);
+    let total = 0;
+    const perDrink = state.drinks.map(d=>{
+      const upt = drinkUptForPhase(d, phase);
+      const cups = calcTotalCups(transactions, upt);
+      total += cups;
+      return {drink: d, upt, cups};
+    });
+    return {phase, total, perDrink};
+  }
+
+  function getOrCreateDayEntry(ds){
+    let entry = state.forecastDays.find(x=>x.date===ds);
+    if(!entry){
+      entry = {id: uid("day"), date: ds, transactions: "", actuals: {}};
+      state.forecastDays.push(entry);
+    }
+    if(!entry.actuals) entry.actuals = {};
+    return entry;
+  }
+
+  // color-codes an actual-vs-predicted input: green = above forecast, red = below, neutral = on target/empty
+  function actualDiffColor(actualVal, predictedCups){
+    if(actualVal === "" || actualVal === undefined || actualVal === null) return "";
+    const diff = Number(actualVal) - predictedCups;
+    if(Math.abs(diff) < 0.5) return "var(--text)";
+    return diff > 0 ? "var(--green-dark)" : "var(--danger)";
+  }
+
+  function mondayOfWeek(ds){
+    const d = new Date(ds+"T00:00:00");
+    const offset = (d.getDay() + 6) % 7;
+    d.setDate(d.getDate() - offset);
+    return dateStr(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+
+  function avg(arr){
+    return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null;
+  }
+
+  // per-drink weekday/weekend averages (predicted and actual) for one week
+  function computeWeekAverages(weekDates){
+    const weekdayPredicted = {};
+    const weekendPredicted = {};
+    const weekdayActual = {};
+    const weekendActual = {};
+    state.drinks.forEach(d=>{
+      weekdayPredicted[d.id] = []; weekendPredicted[d.id] = [];
+      weekdayActual[d.id] = []; weekendActual[d.id] = [];
+    });
+
+    weekDates.forEach(ds=>{
+      const entry = state.forecastDays.find(e=>e.date===ds);
+      if(!entry) return;
+      const weekend = isWeekendType(ds);
+      if(entry.transactions !== ""){
+        const { perDrink } = cupsForDate(ds, entry.transactions);
+        const predictedBucket = weekend ? weekendPredicted : weekdayPredicted;
+        perDrink.forEach(({drink, cups})=>{ predictedBucket[drink.id].push(cups); });
+      }
+      if(entry.actuals){
+        const actualBucket = weekend ? weekendActual : weekdayActual;
+        state.drinks.forEach(d=>{
+          const v = entry.actuals[d.id];
+          if(v !== undefined && v !== "" && !isNaN(Number(v))) actualBucket[d.id].push(Number(v));
+        });
+      }
+    });
+
+    const result = {};
+    state.drinks.forEach(d=>{
+      result[d.id] = {
+        weekdayPredicted: avg(weekdayPredicted[d.id]),
+        weekendPredicted: avg(weekendPredicted[d.id]),
+        weekdayActual: avg(weekdayActual[d.id]),
+        weekendActual: avg(weekendActual[d.id])
+      };
+    });
+    return result;
+  }
+
+  // combined "F 132杯　CRO 41杯　MT 61杯" markup for one averages cell
+  function avgSummaryCellHtml(averages, daytype, kind){
+    const key = daytype + (kind === "pred" ? "Predicted" : "Actual");
+    return state.drinks.map(d=>{
+      const v = averages[d.id][key];
+      return `<span class="avg-drink-item">${escapeHtml(d.name)} ${v===null?"-":fmt(v,0)}杯</span>`;
+    }).join("");
+  }
+
+  // updates just the average-summary cells (if currently rendered) for the week containing ds
+  function refreshWeekAveragesForDate(ds){
+    const mondayStr = mondayOfWeek(ds);
+    const table = document.querySelector(`#fc-tables table[data-week-start="${mondayStr}"]`);
+    if(!table) return;
+    const base = new Date(mondayStr+"T00:00:00");
+    const weekDates = [];
+    for(let day=0; day<7; day++){
+      const d = new Date(base);
+      d.setDate(base.getDate() + day);
+      weekDates.push(dateStr(d.getFullYear(), d.getMonth(), d.getDate()));
+    }
+    const averages = computeWeekAverages(weekDates);
+    ["weekday","weekend"].forEach(daytype=>{
+      const predCell = table.querySelector(`[data-role="fc-avg-pred"][data-daytype="${daytype}"]`);
+      if(predCell) predCell.innerHTML = avgSummaryCellHtml(averages, daytype, "pred");
+      const actCell = table.querySelector(`[data-role="fc-avg-act"][data-daytype="${daytype}"]`);
+      if(actCell) actCell.innerHTML = avgSummaryCellHtml(averages, daytype, "act");
+    });
+  }
+
+  function renderForecastTab(){
+    // seed the running week list with the launch week the first time it's available
+    if(state.forecastWeeks.length === 0 && state.settings.launchDate){
+      addNextForecastWeek();
+    }
+
+    const container = document.getElementById("fc-tables");
+    container.innerHTML = "";
+
+    state.forecastWeeks.forEach(weekStart=>{
+      const base = new Date(weekStart+"T00:00:00");
+      const weekDates = [];
+      for(let day=0; day<7; day++){
+        const cellDate = new Date(base);
+        cellDate.setDate(base.getDate() + day);
+        weekDates.push(dateStr(cellDate.getFullYear(), cellDate.getMonth(), cellDate.getDate()));
+      }
+      container.appendChild(buildForecastWeekTable(weekDates));
+    });
+
+    container.querySelectorAll("[data-role=fc-trans]").forEach(el=>{
+      el.addEventListener("input", e=>{
+        const ds2 = e.target.dataset.date;
+        const entry = getOrCreateDayEntry(ds2);
+        entry.transactions = e.target.value;
+        save();
+        const { perDrink } = cupsForDate(ds2, entry.transactions);
+        const hasTrans = entry.transactions !== "" && entry.transactions !== undefined && entry.transactions !== null;
+        perDrink.forEach(({drink, cups})=>{
+          const predictedEl = container.querySelector(`[data-role="fc-predicted"][data-date="${ds2}"][data-drink="${drink.id}"]`);
+          if(predictedEl) predictedEl.textContent = hasTrans ? fmt(cups,0) : "";
+          const actualEl = container.querySelector(`[data-role="fc-actual"][data-date="${ds2}"][data-drink="${drink.id}"]`);
+          if(actualEl){
+            const actualVal = entry.actuals[drink.id] !== undefined ? entry.actuals[drink.id] : "";
+            actualEl.style.color = actualDiffColor(actualVal, cups);
+          }
+        });
+        refreshWeekAveragesForDate(ds2);
+      });
+    });
+
+    container.querySelectorAll("[data-role=fc-actual]").forEach(el=>{
+      el.addEventListener("input", e=>{
+        const ds2 = e.target.dataset.date;
+        const drinkId = e.target.dataset.drink;
+        const entry = getOrCreateDayEntry(ds2);
+        entry.actuals[drinkId] = e.target.value;
+        save();
+        const { perDrink } = cupsForDate(ds2, entry.transactions);
+        const predicted = perDrink.find(p=>p.drink.id===drinkId);
+        e.target.style.color = actualDiffColor(e.target.value, predicted ? predicted.cups : 0);
+        refreshWeekAveragesForDate(ds2);
+      });
+    });
+
+    container.querySelectorAll("[data-role=fc-holiday]").forEach(el=>{
+      el.addEventListener("click", e=>{
+        const ds2 = e.target.dataset.date;
+        state.holidays[ds2] = !state.holidays[ds2];
+        save();
+        renderForecastTab();
+      });
+    });
+
+    container.querySelectorAll("[data-role=fc-week-del]").forEach(el=>{
+      el.addEventListener("click", e=>{
+        const weekStart = e.target.dataset.week;
+        if(!confirm("この週を表から削除しますか?(入力済みのデータは残ります)")) return;
+        state.forecastWeeks = state.forecastWeeks.filter(w=>w!==weekStart);
+        save();
+        renderForecastTab();
+      });
+    });
+  }
+
+  function buildForecastWeekTable(weekDates){
+    const table = document.createElement("table");
+    table.className = "week-table forecast-table";
+    table.dataset.weekStart = weekDates[0];
+
+    const weekdayNames = ["月","火","水","木","金","土","日"];
+    const rangeLabel = `${weekDates[0].slice(5).replace("-","/")}〜${weekDates[6].slice(5).replace("-","/")}`;
+
+    const colgroupHtml = `<colgroup><col class="label-col"><col class="label-col">${weekDates.map(()=>"<col>").join("")}</colgroup>`;
+
+    let headHtml = `<tr><th class="left" colspan="2"><span class="range-label">${rangeLabel}</span><button type="button" class="btn danger week-del-btn" data-role="fc-week-del" data-week="${weekDates[0]}">削除</button></th>`;
+    weekDates.forEach((ds, i)=>{
+      const isLaunch = ds === state.settings.launchDate;
+      const phase = phaseForDate(ds);
+      const holiday = isHoliday(ds);
+      const colClass = phase === "first" ? "first-week-col" : "";
+      headHtml += `
+        <th class="${colClass}">
+          <span class="weekday-name">${weekdayNames[i]}</span>
+          <span class="weekday-date">${ds.slice(5).replace("-","/")}</span>
+          ${isLaunch ? '<span class="badge">開始日</span>' : ""}
+          <button type="button" class="btn secondary holiday-btn ${holiday ? "active" : ""}" data-role="fc-holiday" data-date="${ds}">祝</button>
+        </th>`;
+    });
+    headHtml += `</tr>`;
+
+    let bodyHtml = `<tr><td class="left" colspan="2">取引件数</td>`;
+    weekDates.forEach(ds=>{
+      const entry = state.forecastDays.find(e=>e.date===ds);
+      bodyHtml += `<td><input type="number" class="qty" min="0" step="1" data-role="fc-trans" data-date="${ds}" value="${entry ? entry.transactions : ""}"></td>`;
+    });
+    bodyHtml += `</tr>`;
+
+    const perDateCups = {};
+    const hasTrans = {};
+    weekDates.forEach(ds=>{
+      const entry = state.forecastDays.find(e=>e.date===ds);
+      const t = entry ? entry.transactions : "";
+      hasTrans[ds] = t !== "" && t !== undefined && t !== null;
+      perDateCups[ds] = cupsForDate(ds, t).perDrink;
+    });
+
+    // 予測 group: one row per drink, sharing a rowspan label cell
+    state.drinks.forEach((d, i)=>{
+      bodyHtml += `<tr class="${i===0 ? "group-start" : ""}">`;
+      if(i===0) bodyHtml += `<td class="left group-label" rowspan="${state.drinks.length}">予測</td>`;
+      bodyHtml += `<td class="left">${escapeHtml(d.name)}</td>`;
+      weekDates.forEach(ds=>{
+        const { cups } = perDateCups[ds].find(p=>p.drink.id===d.id);
+        bodyHtml += `<td data-role="fc-predicted" data-date="${ds}" data-drink="${d.id}">${hasTrans[ds] ? fmt(cups,0) : ""}</td>`;
+      });
+      bodyHtml += `</tr>`;
+    });
+
+    // 実績 group: one row per drink, sharing a rowspan label cell
+    state.drinks.forEach((d, i)=>{
+      bodyHtml += `<tr class="${i===0 ? "group-start" : ""}">`;
+      if(i===0) bodyHtml += `<td class="left group-label" rowspan="${state.drinks.length}">実績</td>`;
+      bodyHtml += `<td class="left">${escapeHtml(d.name)}</td>`;
+      weekDates.forEach(ds=>{
+        const entry = state.forecastDays.find(e=>e.date===ds);
+        const actualVal = entry && entry.actuals && entry.actuals[d.id] !== undefined ? entry.actuals[d.id] : "";
+        const { cups } = perDateCups[ds].find(p=>p.drink.id===d.id);
+        const color = actualDiffColor(actualVal, cups);
+        bodyHtml += `<td><input type="number" class="qty" min="0" step="1" data-role="fc-actual" data-date="${ds}" data-drink="${d.id}" value="${actualVal}" style="color:${color};"></td>`;
+      });
+      bodyHtml += `</tr>`;
+    });
+
+    // 平均 group: merged summary row spanning 平日(月-金)/休日(土日) columns, all drinks combined into one cell
+    const averages = computeWeekAverages(weekDates);
+    bodyHtml += `<tr class="group-start">`;
+    bodyHtml += `<td class="left group-label" rowspan="2">平均</td>`;
+    bodyHtml += `<td class="left">予測</td>`;
+    bodyHtml += `<td colspan="5" class="avg-summary-cell" data-role="fc-avg-pred" data-daytype="weekday">${avgSummaryCellHtml(averages,"weekday","pred")}</td>`;
+    bodyHtml += `<td colspan="2" class="avg-summary-cell" data-role="fc-avg-pred" data-daytype="weekend">${avgSummaryCellHtml(averages,"weekend","pred")}</td>`;
+    bodyHtml += `</tr>`;
+    bodyHtml += `<tr>`;
+    bodyHtml += `<td class="left">実績</td>`;
+    bodyHtml += `<td colspan="5" class="avg-summary-cell" data-role="fc-avg-act" data-daytype="weekday">${avgSummaryCellHtml(averages,"weekday","act")}</td>`;
+    bodyHtml += `<td colspan="2" class="avg-summary-cell" data-role="fc-avg-act" data-daytype="weekend">${avgSummaryCellHtml(averages,"weekend","act")}</td>`;
+    bodyHtml += `</tr>`;
+
+    table.innerHTML = `${colgroupHtml}<thead>${headHtml}</thead><tbody>${bodyHtml}</tbody>`;
+    return table;
+  }
+
+  // ---------- Delivery Tab (weekly spreadsheet) ----------
+  const dvFirstDeliveryDate = document.getElementById("dv-firstDeliveryDate");
+  dvFirstDeliveryDate.value = state.settings.firstDeliveryDate;
+  dvFirstDeliveryDate.addEventListener("change", ()=>{
+    state.settings.firstDeliveryDate = dvFirstDeliveryDate.value;
+    save();
+    renderDeliveryTab();
+  });
+
+  document.getElementById("dv-addWeek").addEventListener("click", ()=>{
+    addNextDeliveryWeek();
+    renderDeliveryTab();
+  });
+
+  // appends the next Monday-start week to the running list (seeds with the first-delivery week's Monday if empty)
+  function addNextDeliveryWeek(){
+    if(state.deliveryWeeks.length === 0){
+      const seed = state.settings.firstDeliveryDate || new Date().toISOString().slice(0,10);
+      state.deliveryWeeks.push(mondayOfWeek(seed));
+    } else {
+      const last = state.deliveryWeeks[state.deliveryWeeks.length-1];
+      const d = new Date(last+"T00:00:00");
+      d.setDate(d.getDate()+7);
+      state.deliveryWeeks.push(dateStr(d.getFullYear(), d.getMonth(), d.getDate()));
+    }
+    save();
+  }
+
+  function getOrCreateDeliveryEntry(ds){
+    let entry = state.deliveryDays.find(x=>x.date===ds);
+    if(!entry){
+      entry = {id: uid("dv"), date: ds, deliveries: {}};
+      state.deliveryDays.push(entry);
+    }
+    if(!entry.deliveries) entry.deliveries = {};
+    return entry;
+  }
+
+  // dry goods arrive Wed/Fri/Sun only (2-day lead time from order: Mon→Wed, Wed→Fri, Fri→Sun);
+  // daily goods (日配品) can be ordered any day and arrive every day, also on a 2-day lead time.
+  // this delivery-day pattern is the same whether it's auto-delivered or store-ordered.
+  function ingredientDeliversOn(ingredient, ds){
+    if(ingredient.category !== "dry") return true;
+    const dow = new Date(ds+"T00:00:00").getDay(); // 0=Sun,3=Wed,5=Fri
+    return dow === 0 || dow === 3 || dow === 5;
+  }
+
+  // from the ingredient's own 店舗納品開始日 onward, deliveries on the schedule above are store-ordered rather than automatic
+  function isStoreOrderedDelivery(ingredient, ds){
+    return !!ingredient.storeDeliveryStartDate && ds >= ingredient.storeDeliveryStartDate;
+  }
+
+  function unitLabel(ingredient){
+    return ingredient.deliveryUnit === "case" ? "ケース" : "個";
+  }
+
+  // cups added to stock by one delivery entry, given the ingredient's own delivery unit
+  function deliveryQtyToCups(ingredient, qty){
+    const cupsPerUnit = Number(ingredient.cupsPerUnit) || 0;
+    const q = Number(qty) || 0;
+    if(ingredient.deliveryUnit === "case"){
+      return q * (Number(ingredient.unitsPerCase) || 0) * cupsPerUnit;
+    }
+    return q * cupsPerUnit;
+  }
+
+  // cups of an ingredient consumed on one date: actual sales if entered, otherwise the forecast
+  function ingredientCupsConsumedOnDate(ingredient, forecastEntry, ds){
+    if(!forecastEntry) return 0;
+    const phase = phaseForDate(ds);
+    return state.drinks.reduce((sum, d)=>{
+      if(!d.uses[ingredient.id]) return sum;
+      const actualVal = forecastEntry.actuals ? forecastEntry.actuals[d.id] : undefined;
+      if(actualVal !== undefined && actualVal !== "" && !isNaN(Number(actualVal))){
+        return sum + Number(actualVal);
+      }
+      return sum + calcTotalCups(forecastEntry.transactions, drinkUptForPhase(d, phase));
+    }, 0);
+  }
+
+  // walks every recorded date in order and flags the first date each ingredient's running stock would go negative
+  function computeStockShortageWarnings(){
+    const allDates = new Set();
+    state.deliveryDays.forEach(e=>allDates.add(e.date));
+    state.forecastDays.forEach(e=>allDates.add(e.date));
+    const sortedDates = Array.from(allDates).sort();
+    if(sortedDates.length === 0) return [];
+
+    const warnings = [];
+    state.ingredients.forEach(ing=>{
+      if((Number(ing.cupsPerUnit) || 0) <= 0) return;
+      let balance = 0;
+      let shortageDate = null;
+      let deficit = 0;
+      sortedDates.forEach(ds=>{
+        if(shortageDate) return;
+        const dvEntry = state.deliveryDays.find(e=>e.date===ds);
+        if(dvEntry && dvEntry.deliveries && dvEntry.deliveries[ing.id] !== undefined && dvEntry.deliveries[ing.id] !== ""){
+          balance += deliveryQtyToCups(ing, dvEntry.deliveries[ing.id]);
+        }
+        const fcEntry = state.forecastDays.find(e=>e.date===ds);
+        balance -= ingredientCupsConsumedOnDate(ing, fcEntry, ds);
+        if(balance < -0.01){
+          shortageDate = ds;
+          deficit = -balance;
+        }
+      });
+      if(shortageDate) warnings.push({ingredient: ing, date: shortageDate, deficit});
+    });
+    return warnings;
+  }
+
+  function addDays(ds, n){
+    const d = new Date(ds+"T00:00:00");
+    d.setDate(d.getDate()+n);
+    return dateStr(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+
+  // running stock balance (in cups) for one ingredient, counting only dates up to and including cutoffDs
+  function computeIngredientBalanceAsOf(ingredient, cutoffDs){
+    const allDates = new Set();
+    state.deliveryDays.forEach(e=>{ if(e.date <= cutoffDs) allDates.add(e.date); });
+    state.forecastDays.forEach(e=>{ if(e.date <= cutoffDs) allDates.add(e.date); });
+    const sortedDates = Array.from(allDates).sort();
+    let balance = 0;
+    sortedDates.forEach(ds=>{
+      const dvEntry = state.deliveryDays.find(e=>e.date===ds);
+      if(dvEntry && dvEntry.deliveries && dvEntry.deliveries[ingredient.id] !== undefined && dvEntry.deliveries[ingredient.id] !== ""){
+        balance += deliveryQtyToCups(ingredient, dvEntry.deliveries[ingredient.id]);
+      }
+      const fcEntry = state.forecastDays.find(e=>e.date===ds);
+      balance -= ingredientCupsConsumedOnDate(ingredient, fcEntry, ds);
+    });
+    return balance;
+  }
+
+  // next dry-goods order day (Mon/Wed/Fri) on or after ds
+  function nextDryOrderDay(ds){
+    let d = ds;
+    for(let i=0;i<7;i++){
+      const dow = new Date(d+"T00:00:00").getDay();
+      if(dow===1 || dow===3 || dow===5) return d;
+      d = addDays(d,1);
+    }
+    return ds;
+  }
+
+  // per-ingredient average daily demand in cups (actual sales if entered, otherwise the forecast), split weekday/weekend
+  function computeIngredientDemandAverages(){
+    const weekdayVals = {}, weekendVals = {};
+    state.ingredients.forEach(ing=>{ weekdayVals[ing.id] = []; weekendVals[ing.id] = []; });
+
+    state.forecastDays.forEach(entry=>{
+      const hasTransactions = entry.transactions !== "" && entry.transactions !== undefined && entry.transactions !== null;
+      const hasAnyActual = entry.actuals && Object.values(entry.actuals).some(v=>v!==undefined && v!=="" && !isNaN(Number(v)));
+      if(!hasTransactions && !hasAnyActual) return; // no usable data for this day at all
+      const weekend = isWeekendType(entry.date);
+      state.ingredients.forEach(ing=>{
+        if((Number(ing.cupsPerUnit) || 0) <= 0) return;
+        const cups = ingredientCupsConsumedOnDate(ing, entry, entry.date);
+        (weekend ? weekendVals : weekdayVals)[ing.id].push(cups);
+      });
+    });
+
+    const result = {};
+    state.ingredients.forEach(ing=>{
+      result[ing.id] = {weekday: avg(weekdayVals[ing.id]), weekend: avg(weekendVals[ing.id])};
+    });
+    return result;
+  }
+
+  // for each ingredient past its 店舗納品開始日, how much to order now to cover until the delivery after next arrives
+  function computeOrderRecommendations(){
+    const today = dateStr(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+    const demand = computeIngredientDemandAverages();
+    const recs = [];
+
+    state.ingredients.forEach(ing=>{
+      const cupsPerUnit = Number(ing.cupsPerUnit) || 0;
+      if(cupsPerUnit <= 0) return;
+      if(!ing.storeDeliveryStartDate || today < ing.storeDeliveryStartDate) return;
+
+      let coverageStart, coverageEnd;
+      if(ing.category === "dry"){
+        const order1 = nextDryOrderDay(today);
+        const order2 = nextDryOrderDay(addDays(order1,1));
+        coverageStart = addDays(order1,2);
+        coverageEnd = addDays(addDays(order2,2), -1);
+      } else {
+        // daily goods: ordering today arrives in 2 days and covers just that single day (tomorrow's order covers the day after)
+        coverageStart = addDays(today,2);
+        coverageEnd = coverageStart;
+      }
+
+      let neededCups = 0;
+      for(let d=coverageStart; d<=coverageEnd; d=addDays(d,1)){
+        const a = demand[ing.id];
+        const val = isWeekendType(d) ? a.weekend : a.weekday;
+        neededCups += (val===null ? 0 : val);
+      }
+
+      const balanceCups = computeIngredientBalanceAsOf(ing, today);
+      const shortfallCups = neededCups - balanceCups;
+      const shortfallUnits = shortfallCups > 0 ? shortfallCups / cupsPerUnit : 0;
+      const orderQty = ing.deliveryUnit === "case"
+        ? Math.ceil(shortfallUnits / (Number(ing.unitsPerCase) || 1))
+        : Math.ceil(shortfallUnits);
+
+      recs.push({ingredient: ing, balanceCups, coverageStart, coverageEnd, orderQty});
+    });
+
+    return recs;
+  }
+
+  function renderOrderRecommendations(){
+    const tbody = document.querySelector("#orderRecTable tbody");
+    const hint = document.getElementById("orderRecHint");
+    const recs = computeOrderRecommendations();
+    tbody.innerHTML = "";
+    if(recs.length === 0){
+      hint.style.display = "";
+      return;
+    }
+    hint.style.display = "none";
+    recs.forEach(r=>{
+      const rangeLabel = r.coverageStart === r.coverageEnd
+        ? r.coverageStart.slice(5).replace("-","/")
+        : `${r.coverageStart.slice(5).replace("-","/")}〜${r.coverageEnd.slice(5).replace("-","/")}`;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="left">${escapeHtml(r.ingredient.name)}</td>
+        <td>${fmt(r.balanceCups,0)}杯</td>
+        <td>${rangeLabel}</td>
+        <td>${r.orderQty}${unitLabel(r.ingredient)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderStockAlerts(){
+    const box = document.getElementById("dv-stock-alert");
+    const warnings = computeStockShortageWarnings();
+    if(warnings.length === 0){
+      box.innerHTML = `<p class="hint">現時点の納品・予測(実績があれば優先)から見て、不足が見込まれる原材料はありません。</p>`;
+      return;
+    }
+    box.innerHTML = warnings.map(w=>{
+      const label = w.date.slice(5).replace("-","/");
+      return `<div class="bottleneck">⚠ ${escapeHtml(w.ingredient.name)}: ${label} 頃に在庫が不足する見込みです(不足量 約${fmt(w.deficit,0)}杯)</div>`;
+    }).join("");
+  }
+
+  // per-ingredient average daily usage (in 個, converted via 作成可能杯数), split weekday/weekend, from actual sales only
+  function computeIngredientUsageAverages(){
+    const weekdayVals = {}, weekendVals = {};
+    state.ingredients.forEach(ing=>{ weekdayVals[ing.id] = []; weekendVals[ing.id] = []; });
+
+    state.forecastDays.forEach(entry=>{
+      if(!entry.actuals) return;
+      const weekend = isWeekendType(entry.date);
+      state.ingredients.forEach(ing=>{
+        const cupsPerUnit = Number(ing.cupsPerUnit) || 0;
+        if(cupsPerUnit <= 0) return;
+        let totalCups = 0;
+        let hasAny = false;
+        state.drinks.forEach(d=>{
+          if(!d.uses[ing.id]) return;
+          const v = entry.actuals[d.id];
+          if(v !== undefined && v !== "" && !isNaN(Number(v))){
+            totalCups += Number(v);
+            hasAny = true;
+          }
+        });
+        if(!hasAny) return;
+        (weekend ? weekendVals : weekdayVals)[ing.id].push(totalCups / cupsPerUnit);
+      });
+    });
+
+    const result = {};
+    state.ingredients.forEach(ing=>{
+      result[ing.id] = {weekday: avg(weekdayVals[ing.id]), weekend: avg(weekendVals[ing.id])};
+    });
+    return result;
+  }
+
+  function renderUsageTable(){
+    const tbody = document.querySelector("#usageTable tbody");
+    const averages = computeIngredientUsageAverages();
+    tbody.innerHTML = "";
+    state.ingredients.forEach(ing=>{
+      const a = averages[ing.id];
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="left">${escapeHtml(ing.name)}</td>
+        <td>${a.weekday===null ? "-" : fmt(a.weekday,1)+"個"}</td>
+        <td>${a.weekend===null ? "-" : fmt(a.weekend,1)+"個"}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderDeliveryTab(){
+    // seed the running week list with the first-delivery week the first time it's available
+    if(state.deliveryWeeks.length === 0 && state.settings.firstDeliveryDate){
+      addNextDeliveryWeek();
+    }
+
+    const container = document.getElementById("dv-tables");
+    container.innerHTML = "";
+
+    state.deliveryWeeks.forEach(weekStart=>{
+      const base = new Date(weekStart+"T00:00:00");
+      const weekDates = [];
+      for(let day=0; day<7; day++){
+        const cellDate = new Date(base);
+        cellDate.setDate(base.getDate() + day);
+        weekDates.push(dateStr(cellDate.getFullYear(), cellDate.getMonth(), cellDate.getDate()));
+      }
+      container.appendChild(buildDeliveryWeekTable(weekDates));
+    });
+
+    renderStockAlerts();
+    renderUsageTable();
+    renderOrderRecommendations();
+
+    container.querySelectorAll("[data-role=dv-qty]").forEach(el=>{
+      el.addEventListener("input", e=>{
+        const ds2 = e.target.dataset.date;
+        const ingId = e.target.dataset.ing;
+        const entry = getOrCreateDeliveryEntry(ds2);
+        entry.deliveries[ingId] = e.target.value;
+        save();
+        renderStockAlerts();
+        renderOrderRecommendations();
+      });
+    });
+
+    container.querySelectorAll("[data-role=dv-week-del]").forEach(el=>{
+      el.addEventListener("click", e=>{
+        const weekStart = e.target.dataset.week;
+        if(!confirm("この週を表から削除しますか?(入力済みのデータは残ります)")) return;
+        state.deliveryWeeks = state.deliveryWeeks.filter(w=>w!==weekStart);
+        save();
+        renderDeliveryTab();
+      });
+    });
+  }
+
+  function buildDeliveryWeekTable(weekDates){
+    const table = document.createElement("table");
+    table.className = "week-table";
+
+    const weekdayNames = ["月","火","水","木","金","土","日"];
+    const rangeLabel = `${weekDates[0].slice(5).replace("-","/")}〜${weekDates[6].slice(5).replace("-","/")}`;
+
+    let headHtml = `<tr><th class="left"><span class="range-label">${rangeLabel}</span><button type="button" class="btn danger week-del-btn" data-role="dv-week-del" data-week="${weekDates[0]}">削除</button></th>`;
+    weekDates.forEach((ds, i)=>{
+      const isFirstDelivery = ds === state.settings.firstDeliveryDate;
+      headHtml += `<th class="${isFirstDelivery ? "first-delivery-col" : ""}"><span class="weekday-name">${weekdayNames[i]}</span><span class="weekday-date">${ds.slice(5).replace("-","/")}</span></th>`;
+    });
+    headHtml += `</tr>`;
+
+    let bodyHtml = "";
+    state.ingredients.forEach(ing=>{
+      bodyHtml += `<tr><td class="left">${escapeHtml(ing.name)}<span class="unit-tag">(${unitLabel(ing)})</span></td>`;
+      weekDates.forEach(ds=>{
+        const isFirstDelivery = ds === state.settings.firstDeliveryDate;
+        const storeOrdered = isStoreOrderedDelivery(ing, ds);
+        const colClass = `${isFirstDelivery ? "first-delivery-col" : ""} ${storeOrdered ? "store-order-col" : ""}`.trim();
+        if(ingredientDeliversOn(ing, ds)){
+          const entry = state.deliveryDays.find(e=>e.date===ds);
+          const qty = entry && entry.deliveries[ing.id] !== undefined ? entry.deliveries[ing.id] : "";
+          bodyHtml += `<td class="${colClass}"><input type="number" class="qty" min="0" step="1" data-role="dv-qty" data-date="${ds}" data-ing="${ing.id}" value="${qty}"></td>`;
+        } else {
+          bodyHtml += `<td class="na ${colClass}">-</td>`;
+        }
+      });
+      bodyHtml += `</tr>`;
+    });
+
+    table.innerHTML = `<thead>${headHtml}</thead><tbody>${bodyHtml}</tbody>`;
+    return table;
+  }
+
+  // ---------- 印刷用シート (read-only paper handout: master data + calendars + a blank actuals template) ----------
+  function weekDatesFrom(weekStart){
+    const base = new Date(weekStart+"T00:00:00");
+    const dates = [];
+    for(let day=0; day<7; day++){
+      const d = new Date(base);
+      d.setDate(base.getDate()+day);
+      dates.push(dateStr(d.getFullYear(), d.getMonth(), d.getDate()));
+    }
+    return dates;
+  }
+
+  function buildPrintDeliveryWeekTable(weekDates){
+    const table = document.createElement("table");
+    table.className = "week-table";
+    const weekdayNames = ["月","火","水","木","金","土","日"];
+    const rangeLabel = `${weekDates[0].slice(5).replace("-","/")}〜${weekDates[6].slice(5).replace("-","/")}`;
+
+    let headHtml = `<tr><th class="left"><span class="range-label">${rangeLabel}</span></th>`;
+    weekDates.forEach((ds,i)=>{
+      headHtml += `<th><span class="weekday-name">${weekdayNames[i]}</span><span class="weekday-date">${ds.slice(5).replace("-","/")}</span></th>`;
+    });
+    headHtml += `</tr>`;
+
+    let bodyHtml = "";
+    state.ingredients.forEach(ing=>{
+      bodyHtml += `<tr><td class="left">${escapeHtml(ing.name)}<span class="unit-tag">(${unitLabel(ing)})</span></td>`;
+      weekDates.forEach(ds=>{
+        if(ingredientDeliversOn(ing, ds)){
+          const entry = state.deliveryDays.find(e=>e.date===ds);
+          const qty = entry && entry.deliveries[ing.id] !== undefined && entry.deliveries[ing.id] !== "" ? entry.deliveries[ing.id] : "";
+          bodyHtml += `<td>${qty}</td>`;
+        } else {
+          bodyHtml += `<td class="na">-</td>`;
+        }
+      });
+      bodyHtml += `</tr>`;
+    });
+
+    table.innerHTML = `<thead>${headHtml}</thead><tbody>${bodyHtml}</tbody>`;
+    return table;
+  }
+
+  function buildPrintForecastWeekTable(weekDates){
+    const table = document.createElement("table");
+    table.className = "week-table";
+    const weekdayNames = ["月","火","水","木","金","土","日"];
+    const rangeLabel = `${weekDates[0].slice(5).replace("-","/")}〜${weekDates[6].slice(5).replace("-","/")}`;
+
+    let headHtml = `<tr><th class="left" colspan="2"><span class="range-label">${rangeLabel}</span></th>`;
+    weekDates.forEach((ds,i)=>{
+      headHtml += `<th><span class="weekday-name">${weekdayNames[i]}</span><span class="weekday-date">${ds.slice(5).replace("-","/")}</span></th>`;
+    });
+    headHtml += `</tr>`;
+
+    let bodyHtml = `<tr><td class="left" colspan="2">取引件数</td>`;
+    const perDateInfo = {};
+    weekDates.forEach(ds=>{
+      const entry = state.forecastDays.find(e=>e.date===ds);
+      const hasTrans = entry && entry.transactions !== "" && entry.transactions !== undefined && entry.transactions !== null;
+      perDateInfo[ds] = {hasTrans, perDrink: cupsForDate(ds, entry ? entry.transactions : "").perDrink};
+      bodyHtml += `<td>${hasTrans ? entry.transactions : ""}</td>`;
+    });
+    bodyHtml += `</tr>`;
+
+    state.drinks.forEach((d,i)=>{
+      bodyHtml += `<tr class="${i===0 ? "group-start" : ""}">`;
+      if(i===0) bodyHtml += `<td class="left group-label" rowspan="${state.drinks.length}">予測</td>`;
+      bodyHtml += `<td class="left">${escapeHtml(d.name)}</td>`;
+      weekDates.forEach(ds=>{
+        const { hasTrans, perDrink } = perDateInfo[ds];
+        const { cups } = perDrink.find(p=>p.drink.id===d.id);
+        bodyHtml += `<td>${hasTrans ? fmt(cups,0) : ""}</td>`;
+      });
+      bodyHtml += `</tr>`;
+    });
+
+    table.innerHTML = `<thead>${headHtml}</thead><tbody>${bodyHtml}</tbody>`;
+    return table;
+  }
+
+  function buildPrintActualBlankWeekTable(weekDates){
+    const table = document.createElement("table");
+    table.className = "week-table";
+    const weekdayNames = ["月","火","水","木","金","土","日"];
+    const rangeLabel = `${weekDates[0].slice(5).replace("-","/")}〜${weekDates[6].slice(5).replace("-","/")}`;
+
+    let headHtml = `<tr><th class="left"><span class="range-label">${rangeLabel}</span></th>`;
+    weekDates.forEach((ds,i)=>{
+      headHtml += `<th><span class="weekday-name">${weekdayNames[i]}</span><span class="weekday-date">${ds.slice(5).replace("-","/")}</span></th>`;
+    });
+    headHtml += `</tr>`;
+
+    let bodyHtml = "";
+    state.drinks.forEach(d=>{
+      bodyHtml += `<tr><td class="left">${escapeHtml(d.name)}</td>`;
+      weekDates.forEach(()=>{ bodyHtml += `<td class="blank-cell"></td>`; });
+      bodyHtml += `</tr>`;
+    });
+
+    table.innerHTML = `<thead>${headHtml}</thead><tbody>${bodyHtml}</tbody>`;
+    return table;
+  }
+
+  function renderPrintTab(){
+    const ingBody = document.querySelector("#print-ingredientTable tbody");
+    ingBody.innerHTML = "";
+    state.ingredients.forEach(ing=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="left">${escapeHtml(ing.name)}</td>
+        <td>${fmt(Number(ing.cupsPerUnit)||0,1)}</td>
+        <td>${ing.unitsPerCase || "-"}</td>
+        <td>${unitLabel(ing)}</td>
+        <td>${ing.category==="dry" ? "ドライ品" : "日配品"}</td>
+      `;
+      ingBody.appendChild(tr);
+    });
+
+    const dvContainer = document.getElementById("print-delivery-tables");
+    dvContainer.innerHTML = "";
+    state.deliveryWeeks.forEach(weekStart=>{
+      dvContainer.appendChild(buildPrintDeliveryWeekTable(weekDatesFrom(weekStart)));
+    });
+
+    const fcContainer = document.getElementById("print-forecast-tables");
+    fcContainer.innerHTML = "";
+    state.forecastWeeks.forEach(weekStart=>{
+      fcContainer.appendChild(buildPrintForecastWeekTable(weekDatesFrom(weekStart)));
+    });
+
+    const actContainer = document.getElementById("print-actual-tables");
+    actContainer.innerHTML = "";
+    state.forecastWeeks.forEach(weekStart=>{
+      actContainer.appendChild(buildPrintActualBlankWeekTable(weekDatesFrom(weekStart)));
+    });
+  }
+
+  document.getElementById("print-btn").addEventListener("click", ()=>window.print());
+
+  // ---------- Promotions (a dedicated selection page manages fully independent ingredient/drink/data sets) ----------
+  const promoScreen = document.getElementById("promo-screen");
+  const appScreen = document.getElementById("app-screen");
+  const promoCurrentLabel = document.getElementById("promo-current-label");
+
+  function showPromoScreen(){
+    appScreen.style.display = "none";
+    promoScreen.style.display = "";
+    renderPromoTable();
+  }
+
+  function showAppScreen(){
+    promoScreen.style.display = "none";
+    appScreen.style.display = "";
+    const current = meta.promotions.find(p=>p.id===meta.currentId);
+    promoCurrentLabel.textContent = current ? current.name : "";
+    renderAll();
+  }
+
+  function openPromotion(id){
+    meta.currentId = id;
+    saveMeta();
+    state = loadPromotionState(id);
+    showAppScreen();
+  }
+
+  function formatPromoPeriod(p){
+    if(!p.startDate && !p.endDate) return "未設定";
+    const s = p.startDate ? p.startDate.slice(5).replace("-","/") : "";
+    const e = p.endDate ? p.endDate.slice(5).replace("-","/") : "";
+    return `${s}〜${e}`;
+  }
+
+  function renderPromoTable(){
+    const tbody = document.querySelector("#promoTable tbody");
+    tbody.innerHTML = "";
+    meta.promotions.forEach(p=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="left">${escapeHtml(p.name)}</td>
+        <td class="left">${formatPromoPeriod(p)}</td>
+        <td><button class="btn secondary" data-role="promo-open" data-id="${p.id}">開く</button></td>
+        <td><button class="btn secondary" data-role="promo-edit" data-id="${p.id}">編集</button></td>
+        <td><button class="btn danger" data-role="promo-del" data-id="${p.id}">削除</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll("[data-role=promo-open]").forEach(el=>{
+      el.addEventListener("click", e=>{
+        openPromotion(e.target.dataset.id);
+      });
+    });
+    tbody.querySelectorAll("[data-role=promo-edit]").forEach(el=>{
+      el.addEventListener("click", e=>{
+        const p = meta.promotions.find(x=>x.id===e.target.dataset.id);
+        openEditPromoForm(p);
+      });
+    });
+    tbody.querySelectorAll("[data-role=promo-del]").forEach(el=>{
+      el.addEventListener("click", e=>{
+        if(meta.promotions.length <= 1){
+          alert("最後の1件は削除できません。");
+          return;
+        }
+        const id = e.target.dataset.id;
+        const p = meta.promotions.find(x=>x.id===id);
+        if(!confirm(`「${p.name}」を削除しますか?このプロモーションのデータは復元できません。`)) return;
+        localStorage.removeItem(promoDataKey(id));
+        meta.promotions = meta.promotions.filter(x=>x.id!==id);
+        if(meta.currentId === id) meta.currentId = meta.promotions[0].id;
+        saveMeta();
+        renderPromoTable();
+      });
+    });
+  }
+
+  // re-syncs every on-screen view to the currently loaded promotion's state
+  function renderAll(){
+    fcLaunchDate.value = state.settings.launchDate;
+    dvFirstDeliveryDate.value = state.settings.firstDeliveryDate;
+    renderIngredientTable();
+    renderDrinkTable();
+    renderForecastTab();
+    renderDeliveryTab();
+    renderPrintTab();
+  }
+
+  const promoNewForm = document.getElementById("promo-new-form");
+  const promoFormTitle = document.getElementById("promo-form-title");
+  const promoNewName = document.getElementById("promo-new-name");
+  const promoNewStart = document.getElementById("promo-new-start");
+  const promoNewEnd = document.getElementById("promo-new-end");
+  const promoNewCreateBtn = document.getElementById("promo-new-create");
+  let editingPromoId = null;
+
+  document.getElementById("promo-add").addEventListener("click", ()=>{
+    editingPromoId = null;
+    promoFormTitle.textContent = "新規プロモーション作成";
+    promoNewCreateBtn.textContent = "作成";
+    promoNewName.value = "";
+    promoNewStart.value = "";
+    promoNewEnd.value = "";
+    promoNewForm.style.display = "";
+    promoNewName.focus();
+  });
+
+  function openEditPromoForm(p){
+    editingPromoId = p.id;
+    promoFormTitle.textContent = "プロモーションを編集";
+    promoNewCreateBtn.textContent = "更新";
+    promoNewName.value = p.name;
+    promoNewStart.value = p.startDate || "";
+    promoNewEnd.value = p.endDate || "";
+    promoNewForm.style.display = "";
+    promoNewName.focus();
+  }
+
+  document.getElementById("promo-new-cancel").addEventListener("click", ()=>{
+    promoNewForm.style.display = "none";
+  });
+
+  document.getElementById("promo-new-create").addEventListener("click", ()=>{
+    const name = promoNewName.value.trim();
+    if(!name){
+      alert("プロモーション名を入力してください。");
+      return;
+    }
+    if(editingPromoId){
+      const p = meta.promotions.find(x=>x.id===editingPromoId);
+      p.name = name;
+      p.startDate = promoNewStart.value;
+      p.endDate = promoNewEnd.value;
+      if(p.id === meta.currentId) promoCurrentLabel.textContent = name;
+    } else {
+      const id = uid("promo");
+      meta.promotions.push({id, name, startDate: promoNewStart.value, endDate: promoNewEnd.value});
+      localStorage.setItem(promoDataKey(id), JSON.stringify(emptyState()));
+    }
+    saveMeta();
+    promoNewForm.style.display = "none";
+    renderPromoTable();
+  });
+
+  document.getElementById("promo-back").addEventListener("click", showPromoScreen);
+
+  // ---------- Init ----------
+  showPromoScreen();
+})();
+</script>
+
+</body>
+</html>

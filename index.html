@@ -391,7 +391,31 @@
   .week-table td.blank-cell{
     height:32px;
   }
+  #print-ingredient-row{
+    display:flex;
+    gap:20px;
+    flex-wrap:wrap;
+  }
+  #print-ingredient-col{
+    flex:1 1 380px;
+  }
+  #print-usage-col{
+    flex:1 1 260px;
+  }
+  #print-forecast-actual-row{
+    display:flex;
+    gap:16px;
+    align-items:flex-start;
+  }
+  #print-forecast-col, #print-actual-col{
+    flex:1 1 50%;
+    min-width:0;
+  }
   @media print{
+    @page{
+      size: A4 landscape;
+      margin: 8mm;
+    }
     .promo-bar, nav.tabs, .no-print{
       display:none !important;
     }
@@ -419,6 +443,51 @@
     .week-table{
       page-break-inside:avoid;
     }
+    #print-sheet .print-title{
+      font-size:10px;
+      margin:6px 0 3px;
+    }
+    #print-sheet #print-ingredientTable,
+    #print-sheet #print-usageTable{
+      font-size:7px;
+    }
+    #print-sheet #print-ingredientTable th,
+    #print-sheet #print-ingredientTable td,
+    #print-sheet #print-usageTable th,
+    #print-sheet #print-usageTable td{
+      padding:1px 3px;
+    }
+    #print-delivery-tables{
+      display:flex;
+      flex-wrap:wrap;
+      gap:0 8px;
+    }
+    #print-delivery-tables .week-table{
+      flex:1 1 48%;
+      max-width:calc(50% - 4px);
+    }
+    #print-sheet .week-table{
+      min-width:0;
+      width:100%;
+      margin-bottom:4px;
+      font-size:7px;
+    }
+    #print-sheet .week-table th,
+    #print-sheet .week-table td{
+      padding:1px 2px;
+    }
+    #print-sheet .week-table .range-label{
+      font-size:7px;
+    }
+    #print-sheet .week-table .weekday-date{
+      font-size:6px;
+    }
+    #print-sheet .week-table.forecast-table col.label-col{
+      width:30px;
+    }
+    #print-sheet .week-table td.blank-cell{
+      height:11px;
+    }
   }
 </style>
 </head>
@@ -435,13 +504,16 @@
       <p class="desc">プロモーションごとに原材料・ドリンク構成・UPT・予測実績・納品データを完全に独立して管理します。期間を入力しておくと一覧で把握しやすくなります。</p>
       <div class="table-wrap">
         <table id="promoTable">
-          <thead><tr><th class="left">プロモーション名</th><th class="left">期間</th><th></th><th></th><th></th></tr></thead>
+          <thead><tr><th class="left">プロモーション名</th><th class="left">期間</th><th></th><th></th><th></th><th></th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
       <div class="actions">
         <button class="btn secondary" id="promo-add">+ 新規プロモーション</button>
+        <button class="btn secondary" id="promo-import-btn">⇧ 読み込み(インポート)</button>
+        <input type="file" id="promo-import-file" accept="application/json" style="display:none;">
       </div>
+      <p class="hint">他の端末で「書き出し」したファイルをここから読み込むと、新しいプロモーションとして追加されます(AirDropやiCloud Driveでファイルを転送してから読み込んでください)。</p>
 
       <div id="promo-new-form" style="display:none; margin-top:14px; border-top:1px solid var(--border); padding-top:14px;">
         <h2 id="promo-form-title" style="font-size:13px;">新規プロモーション作成</h2>
@@ -601,22 +673,40 @@
     </div>
 
     <div id="print-sheet">
-      <h2 class="print-title">原材料マスタ</h2>
-      <div class="table-wrap">
-        <table id="print-ingredientTable">
-          <thead><tr><th class="left">原材料名</th><th>作成可能杯数/個</th><th>ケース入数</th><th>納品単位</th><th>区分</th></tr></thead>
-          <tbody></tbody>
-        </table>
+      <div id="print-ingredient-row">
+        <div id="print-ingredient-col">
+          <h2 class="print-title">原材料マスタ</h2>
+          <div class="table-wrap">
+            <table id="print-ingredientTable">
+              <thead><tr><th class="left">原材料名</th><th>作成可能杯数/個</th><th>ケース入数</th><th>納品単位</th><th>区分</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="print-usage-col">
+          <h2 class="print-title">原材料使用数(実績平均)</h2>
+          <div class="table-wrap">
+            <table id="print-usageTable">
+              <thead><tr><th class="left"></th><th>平日平均</th><th>休日平均</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       <h2 class="print-title">自動納品数カレンダー</h2>
       <div id="print-delivery-tables"></div>
 
-      <h2 class="print-title">予測杯数</h2>
-      <div id="print-forecast-tables"></div>
-
-      <h2 class="print-title">実績記入欄</h2>
-      <div id="print-actual-tables"></div>
+      <div id="print-forecast-actual-row">
+        <div id="print-forecast-col">
+          <h2 class="print-title">予測杯数</h2>
+          <div id="print-forecast-tables"></div>
+        </div>
+        <div id="print-actual-col">
+          <h2 class="print-title">実績記入欄</h2>
+          <div id="print-actual-tables"></div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -659,14 +749,14 @@
     const drink1 = uid("drink"), drink2 = uid("drink"), drink3 = uid("drink");
     return {
       ingredients: [
-        {id: ing1, name: "濃縮オレンジマンゴーベース", cupsPerUnit: 14, unitsPerCase: 6, deliveryUnit: "case", category: "dry", storeDeliveryStartDate: ""},
-        {id: ing2, name: "ハニーブラッドオレンジソース", cupsPerUnit: 25, unitsPerCase: "", deliveryUnit: "unit", category: "dry", storeDeliveryStartDate: ""},
-        {id: ing3, name: "オレンジマンゴー果肉", cupsPerUnit: 17, unitsPerCase: 12, deliveryUnit: "unit", category: "daily", storeDeliveryStartDate: ""}
+        {id: ing1, name: "原材料A", cupsPerUnit: 14, unitsPerCase: 6, deliveryUnit: "case", category: "dry", storeDeliveryStartDate: ""},
+        {id: ing2, name: "原材料B", cupsPerUnit: 25, unitsPerCase: "", deliveryUnit: "unit", category: "dry", storeDeliveryStartDate: ""},
+        {id: ing3, name: "原材料C", cupsPerUnit: 17, unitsPerCase: 12, deliveryUnit: "unit", category: "daily", storeDeliveryStartDate: ""}
       ],
       drinks: [
-        {id: drink1, name: "フラペチーノ", uptFirstWeek: 0.15, uptAverage: 0.08, uses: {[ing1]: true, [ing2]: true, [ing3]: true}},
-        {id: drink2, name: "ソーダ", uptFirstWeek: 0.05, uptAverage: 0.03, uses: {[ing1]: false, [ing2]: false, [ing3]: true}},
-        {id: drink3, name: "ティー", uptFirstWeek: 0.03, uptAverage: 0.02, uses: {[ing1]: false, [ing2]: false, [ing3]: true}}
+        {id: drink1, name: "ドリンクA", uptFirstWeek: 0.15, uptAverage: 0.08, uses: {[ing1]: true, [ing2]: true, [ing3]: true}},
+        {id: drink2, name: "ドリンクB", uptFirstWeek: 0.05, uptAverage: 0.03, uses: {[ing1]: false, [ing2]: false, [ing3]: true}},
+        {id: drink3, name: "ドリンクC", uptFirstWeek: 0.03, uptAverage: 0.02, uses: {[ing1]: false, [ing2]: false, [ing3]: true}}
       ],
       settings: {
         launchDate: "",
@@ -1895,6 +1985,20 @@
       ingBody.appendChild(tr);
     });
 
+    const usageBody = document.querySelector("#print-usageTable tbody");
+    usageBody.innerHTML = "";
+    const usageAverages = computeIngredientUsageAverages();
+    state.ingredients.forEach(ing=>{
+      const a = usageAverages[ing.id];
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="left">${escapeHtml(ing.name)}</td>
+        <td>${a.weekday===null ? "-" : fmt(a.weekday,1)+"個"}</td>
+        <td>${a.weekend===null ? "-" : fmt(a.weekend,1)+"個"}</td>
+      `;
+      usageBody.appendChild(tr);
+    });
+
     const dvContainer = document.getElementById("print-delivery-tables");
     dvContainer.innerHTML = "";
     state.deliveryWeeks.forEach(weekStart=>{
@@ -1959,6 +2063,7 @@
         <td class="left">${formatPromoPeriod(p)}</td>
         <td><button class="btn secondary" data-role="promo-open" data-id="${p.id}">開く</button></td>
         <td><button class="btn secondary" data-role="promo-edit" data-id="${p.id}">編集</button></td>
+        <td><button class="btn secondary" data-role="promo-export" data-id="${p.id}">書き出し</button></td>
         <td><button class="btn danger" data-role="promo-del" data-id="${p.id}">削除</button></td>
       `;
       tbody.appendChild(tr);
@@ -1973,6 +2078,12 @@
       el.addEventListener("click", e=>{
         const p = meta.promotions.find(x=>x.id===e.target.dataset.id);
         openEditPromoForm(p);
+      });
+    });
+    tbody.querySelectorAll("[data-role=promo-export]").forEach(el=>{
+      el.addEventListener("click", e=>{
+        const p = meta.promotions.find(x=>x.id===e.target.dataset.id);
+        exportPromotion(p);
       });
     });
     tbody.querySelectorAll("[data-role=promo-del]").forEach(el=>{
@@ -1992,6 +2103,62 @@
       });
     });
   }
+
+  // manual cross-device data transfer (no backend): export a promotion to a JSON file the user
+  // moves themselves (AirDrop/iCloud Drive/etc), then imports on the other device
+  function exportPromotion(p){
+    const raw = localStorage.getItem(promoDataKey(p.id));
+    const payload = {
+      kind: "sbux_drink_forecast_promo_export",
+      name: p.name,
+      startDate: p.startDate || "",
+      endDate: p.endDate || "",
+      state: raw ? JSON.parse(raw) : emptyState()
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type: "application/json"});
+    const url = URL.createObjectURL(blob);
+    const safeName = p.name.replace(/[\\/:*?"<>|]/g, "_") || "promotion";
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${safeName}_${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  document.getElementById("promo-import-btn").addEventListener("click", ()=>{
+    document.getElementById("promo-import-file").click();
+  });
+
+  document.getElementById("promo-import-file").addEventListener("change", e=>{
+    const file = e.target.files[0];
+    e.target.value = "";
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      let payload;
+      try{
+        payload = JSON.parse(reader.result);
+      }catch(err){
+        alert("ファイルの読み込みに失敗しました(JSON形式ではありません)。");
+        return;
+      }
+      if(!payload || typeof payload !== "object" || !payload.state || !payload.state.ingredients || !payload.state.drinks){
+        alert("このファイルはプロモーションの書き出しデータではないようです。");
+        return;
+      }
+      const id = uid("promo");
+      let name = payload.name || "インポートしたプロモーション";
+      if(meta.promotions.some(x=>x.name===name)) name = `${name}(インポート)`;
+      meta.promotions.push({id, name, startDate: payload.startDate || "", endDate: payload.endDate || ""});
+      localStorage.setItem(promoDataKey(id), JSON.stringify(payload.state));
+      saveMeta();
+      renderPromoTable();
+      alert(`「${name}」として読み込みました。`);
+    };
+    reader.readAsText(file);
+  });
 
   // re-syncs every on-screen view to the currently loaded promotion's state
   function renderAll(){

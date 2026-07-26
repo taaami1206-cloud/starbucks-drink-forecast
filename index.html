@@ -410,14 +410,24 @@
   }
   #print-forecast-actual-row{
     display:flex;
-    gap:16px;
-    align-items:flex-start;
+    flex-direction:column;
+    gap:24px;
   }
   #print-forecast-col, #print-actual-col{
-    flex:1 1 50%;
     min-width:0;
   }
+  #print-forecast-tables, #print-actual-tables, #print-delivery-tables{
+    overflow-x:auto;
+  }
   @media print{
+    #print-forecast-actual-row{
+      flex-direction:row;
+      gap:16px;
+      align-items:flex-start;
+    }
+    #print-forecast-col, #print-actual-col{
+      flex:1 1 50%;
+    }
     @page{
       size: A4 landscape;
       margin: 8mm;
@@ -645,6 +655,20 @@
     </div>
 
     <div class="card">
+      <h2>棚卸し(実在庫)記録</h2>
+      <p class="desc">設定タブで登録した「作成可能杯数」はあくまで理論値で、実際の使用量とはズレが生じることがあります。定期的に実在庫を数えて記録すると、その日の在庫をこの実数に補正した上で以降の在庫・発注推奨数を計算します(理論値との差も参考表示されます)。</p>
+      <div class="table-wrap">
+        <table id="stockCountTable">
+          <thead><tr id="stockCountHeadRow"><th class="left">日付</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="actions">
+        <button class="btn secondary" id="stockCount-add">+ 棚卸しを記録</button>
+      </div>
+    </div>
+
+    <div class="card">
       <h2>原材料使用数(実績平均)</h2>
       <p class="desc">各原材料の作成可能杯数と、杯数予測タブに入力済みの販売実績から、1日あたりの想定使用数を平日/休日別に平均して算出します。</p>
       <div class="table-wrap">
@@ -657,7 +681,7 @@
 
     <div class="card">
       <h2>発注推奨数</h2>
-      <p class="desc">設定タブで店舗納品開始日を過ぎた原材料のみ対象です。現在庫(納品累計−消費実績、実績が無い日は予測で補完)と、次の納品が届いてから次々回の納品が届くまでに必要な想定消費量(実績優先・不足分は予測で補完)を比較し、不足分だけを発注数として算出します(発注単位で切り上げ)。ドライ品は発注→2日後納品(月→水・水→金・金→日)、日配品は毎日発注→2日後納品のサイクルで計算しています。</p>
+      <p class="desc">設定タブで店舗納品開始日を過ぎた原材料のみ対象です。現在庫(納品累計−消費実績、実績が無い日は予測で補完。棚卸し記録があればその日の実数を起点に補正)と、次の納品が届いてから次々回の納品が届くまでに必要な想定消費量(実績優先・不足分は予測で補完)を比較し、不足分だけを発注数として算出します(発注単位で切り上げ)。ドライ品は発注→2日後納品(月→水・水→金・金→日)、日配品は毎日発注→2日後納品のサイクルで計算しています。</p>
       <div class="table-wrap">
         <table id="orderRecTable">
           <thead><tr><th class="left">原材料名</th><th>現在庫(杯換算)</th><th>対象納品日</th><th>発注推奨数</th></tr></thead>
@@ -744,6 +768,7 @@
       forecastDays: [],
       holidays: {},
       deliveryDays: [],
+      stockCounts: [],
       forecastWeeks: [],
       deliveryWeeks: [],
       inputs: {}
@@ -771,6 +796,7 @@
       forecastDays: [],
       holidays: {},
       deliveryDays: [],
+      stockCounts: [],
       forecastWeeks: [],
       deliveryWeeks: [],
       inputs: {}
@@ -821,6 +847,7 @@
       if(!parsed.forecastDays) parsed.forecastDays = [];
       if(!parsed.holidays) parsed.holidays = {};
       if(!parsed.deliveryDays) parsed.deliveryDays = [];
+      if(!Array.isArray(parsed.stockCounts)) parsed.stockCounts = [];
       if(!parsed.forecastWeeks) parsed.forecastWeeks = [];
       if(!parsed.deliveryWeeks) parsed.deliveryWeeks = [];
 
@@ -1502,6 +1529,15 @@
     renderDeliveryTab();
   });
 
+  document.getElementById("stockCount-add").addEventListener("click", ()=>{
+    const today = dateStr(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+    let ds = today;
+    while(state.stockCounts.some(x=>x.date===ds)) ds = addDays(ds, 1);
+    getOrCreateStockCountEntry(ds);
+    save();
+    renderStockCountTable();
+  });
+
   // appends the next Monday-start week to the running list (seeds with the first-delivery week's Monday if empty)
   function addNextDeliveryWeek(){
     if(state.deliveryWeeks.length === 0){
@@ -1568,11 +1604,40 @@
     }, 0);
   }
 
-  // walks every recorded date in order and flags the first date each ingredient's running stock would go negative
+  // net stock change (in cups) for one ingredient on a single date: that date's delivery minus that date's consumption
+  function ingredientDayDelta(ingredient, ds){
+    let delta = 0;
+    const dvEntry = state.deliveryDays.find(e=>e.date===ds);
+    if(dvEntry && dvEntry.deliveries && dvEntry.deliveries[ingredient.id] !== undefined && dvEntry.deliveries[ingredient.id] !== ""){
+      delta += deliveryQtyToCups(ingredient, dvEntry.deliveries[ingredient.id]);
+    }
+    const fcEntry = state.forecastDays.find(e=>e.date===ds);
+    delta -= ingredientCupsConsumedOnDate(ingredient, fcEntry, ds);
+    return delta;
+  }
+
+  // physically-counted stock (in cups) for one ingredient on ds, if a 棚卸し entry was recorded that date
+  // 棚卸しは納品単位(ケース等)にかかわらず常に「個」で数えるため、cupsPerUnit のみで換算する
+  function stockCountUnitsToCups(ingredient, qty){
+    return (Number(qty) || 0) * (Number(ingredient.cupsPerUnit) || 0);
+  }
+
+  function stockCountCupsOn(ingredient, ds){
+    const entry = state.stockCounts.find(e=>e.date===ds);
+    if(!entry || !entry.counts) return undefined;
+    const v = entry.counts[ingredient.id];
+    if(v === undefined || v === "") return undefined;
+    return stockCountUnitsToCups(ingredient, v);
+  }
+
+  // walks every recorded date in order and flags the first date each ingredient's running stock would go negative.
+  // a 棚卸し (physical count) on a date resets the running balance to the counted value, correcting for any drift
+  // between the registered 作成可能杯数 and real-world usage/waste up to that point.
   function computeStockShortageWarnings(){
     const allDates = new Set();
     state.deliveryDays.forEach(e=>allDates.add(e.date));
     state.forecastDays.forEach(e=>allDates.add(e.date));
+    state.stockCounts.forEach(e=>allDates.add(e.date));
     const sortedDates = Array.from(allDates).sort();
     if(sortedDates.length === 0) return [];
 
@@ -1584,12 +1649,8 @@
       let deficit = 0;
       sortedDates.forEach(ds=>{
         if(shortageDate) return;
-        const dvEntry = state.deliveryDays.find(e=>e.date===ds);
-        if(dvEntry && dvEntry.deliveries && dvEntry.deliveries[ing.id] !== undefined && dvEntry.deliveries[ing.id] !== ""){
-          balance += deliveryQtyToCups(ing, dvEntry.deliveries[ing.id]);
-        }
-        const fcEntry = state.forecastDays.find(e=>e.date===ds);
-        balance -= ingredientCupsConsumedOnDate(ing, fcEntry, ds);
+        const counted = stockCountCupsOn(ing, ds);
+        balance = counted !== undefined ? counted : balance + ingredientDayDelta(ing, ds);
         if(balance < -0.01){
           shortageDate = ds;
           deficit = -balance;
@@ -1606,22 +1667,37 @@
     return dateStr(d.getFullYear(), d.getMonth(), d.getDate());
   }
 
-  // running stock balance (in cups) for one ingredient, counting only dates up to and including cutoffDs
+  // running stock balance (in cups) for one ingredient, counting only dates up to and including cutoffDs.
+  // a 棚卸し (physical count) on a date resets the balance to the counted value instead of accumulating further
+  // from the theoretical 作成可能杯数, so recommendations stay grounded in reality between counts.
   function computeIngredientBalanceAsOf(ingredient, cutoffDs){
     const allDates = new Set();
     state.deliveryDays.forEach(e=>{ if(e.date <= cutoffDs) allDates.add(e.date); });
     state.forecastDays.forEach(e=>{ if(e.date <= cutoffDs) allDates.add(e.date); });
+    state.stockCounts.forEach(e=>{ if(e.date <= cutoffDs) allDates.add(e.date); });
     const sortedDates = Array.from(allDates).sort();
     let balance = 0;
     sortedDates.forEach(ds=>{
-      const dvEntry = state.deliveryDays.find(e=>e.date===ds);
-      if(dvEntry && dvEntry.deliveries && dvEntry.deliveries[ingredient.id] !== undefined && dvEntry.deliveries[ingredient.id] !== ""){
-        balance += deliveryQtyToCups(ingredient, dvEntry.deliveries[ingredient.id]);
-      }
-      const fcEntry = state.forecastDays.find(e=>e.date===ds);
-      balance -= ingredientCupsConsumedOnDate(ingredient, fcEntry, ds);
+      const counted = stockCountCupsOn(ingredient, ds);
+      balance = counted !== undefined ? counted : balance + ingredientDayDelta(ingredient, ds);
     });
     return balance;
+  }
+
+  // what the balance would have been on a count date if no 棚卸し had been entered that day (i.e. purely from
+  // deliveries/consumption since the previous count) - used to show the drift a physical count corrects for
+  function theoreticalCupsOnCountDate(ingredient, ds){
+    return computeIngredientBalanceAsOf(ingredient, addDays(ds, -1)) + ingredientDayDelta(ingredient, ds);
+  }
+
+  function getOrCreateStockCountEntry(ds){
+    let entry = state.stockCounts.find(x=>x.date===ds);
+    if(!entry){
+      entry = {id: uid("sc"), date: ds, counts: {}};
+      state.stockCounts.push(entry);
+    }
+    if(!entry.counts) entry.counts = {};
+    return entry;
   }
 
   // next dry-goods order day (Mon/Wed/Fri) on or after ds
@@ -1740,6 +1816,73 @@
     }).join("");
   }
 
+  function renderStockCountTable(){
+    const headRow = document.getElementById("stockCountHeadRow");
+    headRow.innerHTML = `<th class="left">日付</th>` +
+      state.ingredients.map(ing=>`<th>${escapeHtml(ing.name)}<br><span class="hint" style="font-size:9px;">(個)</span></th>`).join("") +
+      `<th></th>`;
+
+    const tbody = document.querySelector("#stockCountTable tbody");
+    tbody.innerHTML = "";
+    const sorted = [...state.stockCounts].sort((a,b)=> a.date < b.date ? 1 : -1);
+    sorted.forEach(entry=>{
+      const tr = document.createElement("tr");
+      let rowHtml = `<td class="left"><input type="date" data-role="sc-date" data-id="${entry.id}" value="${entry.date}"></td>`;
+      state.ingredients.forEach(ing=>{
+        const val = entry.counts[ing.id] !== undefined ? entry.counts[ing.id] : "";
+        let diffHtml = "";
+        const cupsPerUnit = Number(ing.cupsPerUnit) || 0;
+        if(val !== "" && !isNaN(Number(val)) && cupsPerUnit > 0){
+          const diffUnits = (stockCountUnitsToCups(ing, val) - theoreticalCupsOnCountDate(ing, entry.date)) / cupsPerUnit;
+          const sign = diffUnits > 0 ? "+" : "";
+          diffHtml = `<span class="hint" style="display:block;font-size:9px;white-space:nowrap;">理論比${sign}${fmt(diffUnits,1)}個</span>`;
+        }
+        rowHtml += `<td><input type="number" class="qty" min="0" step="1" data-role="sc-qty" data-date="${entry.date}" data-ing="${ing.id}" value="${val}">${diffHtml}</td>`;
+      });
+      rowHtml += `<td><button class="btn secondary sc-del" data-id="${entry.id}">削除</button></td>`;
+      tr.innerHTML = rowHtml;
+      tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll("[data-role=sc-qty]").forEach(el=>{
+      el.addEventListener("input", e=>{
+        const entry = getOrCreateStockCountEntry(e.target.dataset.date);
+        entry.counts[e.target.dataset.ing] = e.target.value;
+        save();
+        renderStockAlerts();
+        renderOrderRecommendations();
+        renderStockCountTable();
+      });
+    });
+
+    tbody.querySelectorAll("[data-role=sc-date]").forEach(el=>{
+      el.addEventListener("change", e=>{
+        const entry = state.stockCounts.find(x=>x.id===e.target.dataset.id);
+        if(!entry) return;
+        if(state.stockCounts.some(x=>x.id!==entry.id && x.date===e.target.value)){
+          alert("その日付には既に棚卸し記録があります。");
+          e.target.value = entry.date;
+          return;
+        }
+        entry.date = e.target.value;
+        save();
+        renderStockAlerts();
+        renderOrderRecommendations();
+        renderStockCountTable();
+      });
+    });
+
+    tbody.querySelectorAll(".sc-del").forEach(btn=>{
+      btn.addEventListener("click", e=>{
+        state.stockCounts = state.stockCounts.filter(x=>x.id!==e.target.dataset.id);
+        save();
+        renderStockAlerts();
+        renderOrderRecommendations();
+        renderStockCountTable();
+      });
+    });
+  }
+
   // per-ingredient average daily usage (in 個, converted via 作成可能杯数), split weekday/weekend, from actual sales only
   function computeIngredientUsageAverages(){
     const weekdayVals = {}, weekendVals = {};
@@ -1812,6 +1955,7 @@
     renderStockAlerts();
     renderUsageTable();
     renderOrderRecommendations();
+    renderStockCountTable();
 
     container.querySelectorAll("[data-role=dv-qty]").forEach(el=>{
       el.addEventListener("input", e=>{

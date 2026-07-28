@@ -685,7 +685,7 @@
 
     <div class="card">
       <h2>発注推奨数カレンダー</h2>
-      <p class="desc">設定タブで店舗納品開始日を入力した原材料が対象です(開始日が来ていない原材料は「予定」表示)。納品日(ドライ品は水・金・日、日配品は毎日)のセルに、その日届くよう2日前に発注しておくべき推奨発注数を表示します(セルを長押し/ホバーすると実際の発注日も確認できます)。現在庫は納品実績・実績販売数・棚卸し記録(あれば最優先)を反映し、まだ実績のない先の日付は「その時点までの推奨数どおりに発注した」と仮定して積み上げ計算しています。実績や棚卸しを入力するとその時点から自動的に補正されます。</p>
+      <p class="desc">設定タブで店舗納品開始日を入力した原材料が対象です(開始日が来ていない原材料は「予定」表示)。納品日(ドライ品は水・金・日、日配品は毎日)のセルに、その日届くよう2日前に発注しておくべき推奨発注数を表示します(セルを長押し/ホバーすると実際の発注日も確認できます)。数字の下の「目安◯個」は、その納品から次の納品までを賄うのに必要な適正在庫量(現在庫を考慮する前の必要量そのもの)です。現在庫は納品実績・実績販売数・棚卸し記録(あれば最優先)を反映し、まだ実績のない先の日付は「その時点までの推奨数どおりに発注した」と仮定して積み上げ計算しています。実績や棚卸しを入力するとその時点から自動的に補正されます。</p>
       <div id="order-tables"></div>
       <div class="actions">
         <button class="btn secondary" id="order-addWeek">+ 次の週を追加</button>
@@ -1816,6 +1816,7 @@
           neededCups += (val===null ? 0 : val);
         }
 
+        const targetUnits = neededCups / cupsPerUnit;
         const shortfallCups = neededCups - balance;
         const shortfallUnits = shortfallCups > 0 ? shortfallCups / cupsPerUnit : 0;
         const orderQty = ingredient.deliveryUnit === "case"
@@ -1823,7 +1824,7 @@
           : Math.ceil(shortfallUnits);
 
         const arrivalDs = addDays(ds, 2);
-        recs[arrivalDs] = {orderQty, orderDate: ds, coverageStart, coverageEnd, balanceCups: balance};
+        recs[arrivalDs] = {orderQty, orderDate: ds, coverageStart, coverageEnd, balanceCups: balance, targetUnits};
 
         if(orderQty > 0){
           scheduledArrivals[arrivalDs] = (scheduledArrivals[arrivalDs] || 0) + deliveryQtyToCups(ingredient, orderQty);
@@ -1895,7 +1896,7 @@
               ? rec.coverageStart.slice(5).replace("-","/")
               : `${rec.coverageStart.slice(5).replace("-","/")}〜${rec.coverageEnd.slice(5).replace("-","/")}`;
             const orderDateLabel = rec.orderDate.slice(5).replace("-","/");
-            bodyHtml += `<td title="発注日${orderDateLabel} / 現在庫${fmt(rec.balanceCups,0)}杯 / 対象${rangeLabel2}">${rec.orderQty}</td>`;
+            bodyHtml += `<td title="発注日${orderDateLabel} / 現在庫${fmt(rec.balanceCups,0)}杯 / 対象${rangeLabel2}">${rec.orderQty}<span class="hint" style="display:block;font-size:9px;white-space:nowrap;">目安${fmt(rec.targetUnits,1)}個</span></td>`;
           } else {
             bodyHtml += `<td class="na">-</td>`;
           }

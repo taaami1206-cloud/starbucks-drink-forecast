@@ -640,7 +640,7 @@
   <!-- 納品・発注タブ -->
   <section class="tab" id="tab-delivery">
     <div class="card">
-      <h2>自動納品数の記録</h2>
+      <h2>納品数の記録</h2>
       <p class="desc">週ごとの表に、その日届いた各原材料の納品量を記録します。原材料ごとに設定した納品単位(個数/ケース)と区分(ドライ品は水・金・日、日配品は毎日)に合わせて、納品のない日は「-」になり入力できません。設定タブで店舗納品開始日を設定した原材料は、その日以降のセルがオレンジ色になり、店舗発注による納品であることを示します(引き続き入力できます)。</p>
 
       <div id="dv-stock-alert"></div>
@@ -660,7 +660,7 @@
 
     <div class="card">
       <h2>棚卸し(実在庫)記録</h2>
-      <p class="desc">設定タブで登録した「作成可能杯数」はあくまで理論値で、実際の使用量とはズレが生じることがあります。定期的に実在庫を数えて記録すると、その日の在庫をこの実数に補正した上で以降の在庫・発注推奨数を計算します(理論値との差も参考表示されます)。</p>
+      <p class="desc">設定タブで登録した「作成可能杯数」はあくまで理論値で、実際の使用量とはズレが生じることがあります。定期的に実在庫を数えて記録すると、その日の在庫をこの実数に補正した上で以降の在庫・発注推奨数を計算します。各セルの「理論比」は実在庫と理論値との差(参考表示)で、<strong>プラスは実在庫が理論値より多い(アンダーポーションの可能性)、マイナスは実在庫が理論値より少ない(オーバーポーション・こぼれ・廃棄・数え間違いなどの可能性)</strong>を示します。</p>
       <div class="table-wrap">
         <table id="stockCountTable">
           <thead><tr id="stockCountHeadRow"><th class="left">日付</th></tr></thead>
@@ -684,15 +684,12 @@
     </div>
 
     <div class="card">
-      <h2>発注推奨数</h2>
-      <p class="desc">設定タブで店舗納品開始日を過ぎた原材料のみ対象です。現在庫(納品累計−消費実績、実績が無い日は予測で補完。棚卸し記録があればその日の実数を起点に補正)と、次の納品が届いてから次々回の納品が届くまでに必要な想定消費量(実績優先・不足分は予測で補完)を比較し、不足分だけを発注数として算出します(発注単位で切り上げ)。ドライ品は発注→2日後納品(月→水・水→金・金→日)、日配品は毎日発注→2日後納品のサイクルで計算しています。</p>
-      <div class="table-wrap">
-        <table id="orderRecTable">
-          <thead><tr><th class="left">原材料名</th><th>現在庫(杯換算)</th><th>対象納品日</th><th>発注推奨数</th></tr></thead>
-          <tbody></tbody>
-        </table>
+      <h2>発注推奨数カレンダー</h2>
+      <p class="desc">設定タブで店舗納品開始日を入力した原材料が対象です(開始日が来ていない原材料は「予定」表示)。納品日(ドライ品は水・金・日、日配品は毎日)のセルに、その日届くよう2日前に発注しておくべき推奨発注数を表示します(セルを長押し/ホバーすると実際の発注日も確認できます)。現在庫は納品実績・実績販売数・棚卸し記録(あれば最優先)を反映し、まだ実績のない先の日付は「その時点までの推奨数どおりに発注した」と仮定して積み上げ計算しています。実績や棚卸しを入力するとその時点から自動的に補正されます。</p>
+      <div id="order-tables"></div>
+      <div class="actions">
+        <button class="btn secondary" id="order-addWeek">+ 次の週を追加</button>
       </div>
-      <p class="hint" id="orderRecHint" style="display:none;">店舗納品開始日が設定・到来している原材料はまだありません。</p>
     </div>
   </section>
 
@@ -700,7 +697,7 @@
   <section class="tab" id="tab-print">
     <div class="card no-print">
       <h2>印刷用シート</h2>
-      <p class="desc">原材料マスタ・自動納品数カレンダー・予測杯数・実績記入欄をまとめて印刷し、紙で共有できます。</p>
+      <p class="desc">原材料マスタ・納品数カレンダー・予測杯数・実績記入欄をまとめて印刷し、紙で共有できます。</p>
       <div class="actions">
         <button class="btn" id="print-btn">🖨 印刷する</button>
       </div>
@@ -728,7 +725,7 @@
         </div>
       </div>
 
-      <h2 class="print-title">自動納品数カレンダー</h2>
+      <h2 class="print-title">納品数カレンダー</h2>
       <div id="print-delivery-tables"></div>
 
       <div id="print-forecast-actual-row">
@@ -775,6 +772,7 @@
       stockCounts: [],
       forecastWeeks: [],
       deliveryWeeks: [],
+      orderWeeks: [],
       inputs: {}
     };
   }
@@ -803,6 +801,7 @@
       stockCounts: [],
       forecastWeeks: [],
       deliveryWeeks: [],
+      orderWeeks: [],
       inputs: {}
     };
   }
@@ -854,6 +853,7 @@
       if(!Array.isArray(parsed.stockCounts)) parsed.stockCounts = [];
       if(!parsed.forecastWeeks) parsed.forecastWeeks = [];
       if(!parsed.deliveryWeeks) parsed.deliveryWeeks = [];
+      if(!parsed.orderWeeks) parsed.orderWeeks = [];
 
       // migrate old single-value forecast input (fc) to the new day-based model
       if(parsed.inputs.fc){
@@ -1542,6 +1542,11 @@
     renderStockCountTable();
   });
 
+  document.getElementById("order-addWeek").addEventListener("click", ()=>{
+    addNextOrderWeek();
+    renderOrderCalendar();
+  });
+
   // appends the next Monday-start week to the running list (seeds with the first-delivery week's Monday if empty)
   function addNextDeliveryWeek(){
     if(state.deliveryWeeks.length === 0){
@@ -1552,6 +1557,17 @@
       const d = new Date(last+"T00:00:00");
       d.setDate(d.getDate()+7);
       state.deliveryWeeks.push(dateStr(d.getFullYear(), d.getMonth(), d.getDate()));
+    }
+    save();
+  }
+
+  // appends the next Monday-start week to the order-recommendation calendar (seeds with the current week if empty)
+  function addNextOrderWeek(){
+    if(state.orderWeeks.length === 0){
+      state.orderWeeks.push(mondayOfWeek(new Date().toISOString().slice(0,10)));
+    } else {
+      const last = state.orderWeeks[state.orderWeeks.length-1];
+      state.orderWeeks.push(addDays(last, 7));
     }
     save();
   }
@@ -1573,6 +1589,14 @@
     if(ingredient.category !== "dry") return true;
     const dow = new Date(ds+"T00:00:00").getDay(); // 0=Sun,3=Wed,5=Fri
     return dow === 0 || dow === 3 || dow === 5;
+  }
+
+  // order days mirror the delivery cadence 2 days earlier: dry goods order Mon/Wed/Fri (arriving Wed/Fri/Sun),
+  // daily goods can be ordered any day
+  function ingredientOrdersOn(ingredient, ds){
+    if(ingredient.category !== "dry") return true;
+    const dow = new Date(ds+"T00:00:00").getDay(); // 1=Mon,3=Wed,5=Fri
+    return dow === 1 || dow === 3 || dow === 5;
   }
 
   // from the ingredient's own 店舗納品開始日 onward, deliveries on the schedule above are store-ordered rather than automatic
@@ -1637,7 +1661,10 @@
   // walks every recorded date in order and flags the first date each ingredient's running stock would go negative.
   // a 棚卸し (physical count) on a date resets the running balance to the counted value, correcting for any drift
   // between the registered 作成可能杯数 and real-world usage/waste up to that point.
+  // only flags shortages on/after today - a shortage date that's already passed is no longer actionable
+  // (it's either already been resolved by a later delivery/棚卸し entry, or is just stale history)
   function computeStockShortageWarnings(){
+    const today = dateStr(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
     const allDates = new Set();
     state.deliveryDays.forEach(e=>allDates.add(e.date));
     state.forecastDays.forEach(e=>allDates.add(e.date));
@@ -1660,7 +1687,7 @@
           deficit = -balance;
         }
       });
-      if(shortageDate) warnings.push({ingredient: ing, date: shortageDate, deficit});
+      if(shortageDate && shortageDate >= today) warnings.push({ingredient: ing, date: shortageDate, deficit});
     });
     return warnings;
   }
@@ -1740,71 +1767,145 @@
   }
 
   // for each ingredient past its 店舗納品開始日, how much to order now to cover until the delivery after next arrives
-  function computeOrderRecommendations(){
-    const today = dateStr(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
-    const demand = computeIngredientDemandAverages();
-    const recs = [];
+  // per-ingredient recommended order quantity for every order day from ingredient.storeDeliveryStartDate through
+  // toDs, keyed by the date the order ARRIVES (2 days after the order was placed) so it lines up with the delivery
+  // calendar. Walks forward day by day: real delivery/actual-sales/棚卸し entries always win when present; for dates
+  // with no real data yet, assumes the recommended order computed at each earlier order day was placed as suggested,
+  // so later recommendations stay realistic instead of double-counting the same shortfall. As actuals or 棚卸し get
+  // entered for a date, the next recompute (any render) picks them up automatically.
+  function computeOrderRecommendationSeries(ingredient, demand, toDs){
+    const cupsPerUnit = Number(ingredient.cupsPerUnit) || 0;
+    if(cupsPerUnit <= 0 || !ingredient.storeDeliveryStartDate || toDs < ingredient.storeDeliveryStartDate) return {};
 
-    state.ingredients.forEach(ing=>{
-      const cupsPerUnit = Number(ing.cupsPerUnit) || 0;
-      if(cupsPerUnit <= 0) return;
-      if(!ing.storeDeliveryStartDate || today < ing.storeDeliveryStartDate) return;
+    const start = ingredient.storeDeliveryStartDate;
+    let balance = computeIngredientBalanceAsOf(ingredient, addDays(start, -1));
+    const scheduledArrivals = {};
+    const recs = {};
 
-      let coverageStart, coverageEnd;
-      if(ing.category === "dry"){
-        const order1 = nextDryOrderDay(today);
-        const order2 = nextDryOrderDay(addDays(order1,1));
-        coverageStart = addDays(order1,2);
-        coverageEnd = addDays(addDays(order2,2), -1);
+    for(let ds=start; ds<=toDs; ds=addDays(ds,1)){
+      const counted = stockCountCupsOn(ingredient, ds);
+      if(counted !== undefined){
+        balance = counted;
       } else {
-        // daily goods: ordering today arrives in 2 days and covers just that single day (tomorrow's order covers the day after)
-        coverageStart = addDays(today,2);
-        coverageEnd = coverageStart;
+        const dvEntry = state.deliveryDays.find(e=>e.date===ds);
+        const hasRealDelivery = dvEntry && dvEntry.deliveries && dvEntry.deliveries[ingredient.id] !== undefined && dvEntry.deliveries[ingredient.id] !== "";
+        if(hasRealDelivery){
+          balance += deliveryQtyToCups(ingredient, dvEntry.deliveries[ingredient.id]);
+        } else if(scheduledArrivals[ds]){
+          balance += scheduledArrivals[ds];
+        }
+        const fcEntry = state.forecastDays.find(e=>e.date===ds);
+        balance -= ingredientCupsConsumedOnDate(ingredient, fcEntry, ds);
       }
 
-      let neededCups = 0;
-      for(let d=coverageStart; d<=coverageEnd; d=addDays(d,1)){
-        const a = demand[ing.id];
-        const val = isWeekendType(d) ? a.weekend : a.weekday;
-        neededCups += (val===null ? 0 : val);
+      if(ingredientOrdersOn(ingredient, ds)){
+        let coverageStart, coverageEnd;
+        if(ingredient.category === "dry"){
+          const nextOrder = nextDryOrderDay(addDays(ds,1));
+          coverageStart = addDays(ds,2);
+          coverageEnd = addDays(addDays(nextOrder,2), -1);
+        } else {
+          coverageStart = addDays(ds,2);
+          coverageEnd = coverageStart;
+        }
+
+        let neededCups = 0;
+        for(let d=coverageStart; d<=coverageEnd; d=addDays(d,1)){
+          const a = demand[ingredient.id];
+          const val = isWeekendType(d) ? a.weekend : a.weekday;
+          neededCups += (val===null ? 0 : val);
+        }
+
+        const shortfallCups = neededCups - balance;
+        const shortfallUnits = shortfallCups > 0 ? shortfallCups / cupsPerUnit : 0;
+        const orderQty = ingredient.deliveryUnit === "case"
+          ? Math.ceil(shortfallUnits / (Number(ingredient.unitsPerCase) || 1))
+          : Math.ceil(shortfallUnits);
+
+        const arrivalDs = addDays(ds, 2);
+        recs[arrivalDs] = {orderQty, orderDate: ds, coverageStart, coverageEnd, balanceCups: balance};
+
+        if(orderQty > 0){
+          scheduledArrivals[arrivalDs] = (scheduledArrivals[arrivalDs] || 0) + deliveryQtyToCups(ingredient, orderQty);
+        }
       }
-
-      const balanceCups = computeIngredientBalanceAsOf(ing, today);
-      const shortfallCups = neededCups - balanceCups;
-      const shortfallUnits = shortfallCups > 0 ? shortfallCups / cupsPerUnit : 0;
-      const orderQty = ing.deliveryUnit === "case"
-        ? Math.ceil(shortfallUnits / (Number(ing.unitsPerCase) || 1))
-        : Math.ceil(shortfallUnits);
-
-      recs.push({ingredient: ing, balanceCups, coverageStart, coverageEnd, orderQty});
-    });
+    }
 
     return recs;
   }
 
-  function renderOrderRecommendations(){
-    const tbody = document.querySelector("#orderRecTable tbody");
-    const hint = document.getElementById("orderRecHint");
-    const recs = computeOrderRecommendations();
-    tbody.innerHTML = "";
-    if(recs.length === 0){
-      hint.style.display = "";
-      return;
+  function renderOrderCalendar(){
+    if(state.orderWeeks.length === 0){
+      addNextOrderWeek();
     }
-    hint.style.display = "none";
-    recs.forEach(r=>{
-      const rangeLabel = r.coverageStart === r.coverageEnd
-        ? r.coverageStart.slice(5).replace("-","/")
-        : `${r.coverageStart.slice(5).replace("-","/")}〜${r.coverageEnd.slice(5).replace("-","/")}`;
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td class="left">${escapeHtml(r.ingredient.name)}</td>
-        <td>${fmt(r.balanceCups,0)}杯</td>
-        <td>${rangeLabel}</td>
-        <td>${r.orderQty}${unitLabel(r.ingredient)}</td>
-      `;
-      tbody.appendChild(tr);
+
+    const container = document.getElementById("order-tables");
+    container.innerHTML = "";
+
+    const today = dateStr(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+    const lastWeekStart = state.orderWeeks[state.orderWeeks.length-1];
+    const toDs = addDays(lastWeekStart, 6);
+    const demand = computeIngredientDemandAverages();
+    const recsByIngredient = {};
+    state.ingredients.forEach(ing=>{
+      recsByIngredient[ing.id] = computeOrderRecommendationSeries(ing, demand, toDs);
     });
+
+    state.orderWeeks.forEach(weekStart=>{
+      container.appendChild(buildOrderWeekTable(weekDatesFrom(weekStart), recsByIngredient, today));
+    });
+
+    container.querySelectorAll("[data-role=order-week-del]").forEach(el=>{
+      el.addEventListener("click", e=>{
+        const weekStart = e.target.dataset.week;
+        if(!confirm("この週を表から削除しますか?")) return;
+        state.orderWeeks = state.orderWeeks.filter(w=>w!==weekStart);
+        save();
+        renderOrderCalendar();
+      });
+    });
+  }
+
+  function buildOrderWeekTable(weekDates, recsByIngredient, today){
+    const table = document.createElement("table");
+    table.className = "week-table";
+    const weekdayNames = ["月","火","水","木","金","土","日"];
+    const rangeLabel = `${weekDates[0].slice(5).replace("-","/")}〜${weekDates[6].slice(5).replace("-","/")}`;
+
+    let headHtml = `<tr><th class="left"><span class="range-label">${rangeLabel}</span><button type="button" class="btn danger week-del-btn" data-role="order-week-del" data-week="${weekDates[0]}">削除</button></th>`;
+    weekDates.forEach((ds,i)=>{
+      headHtml += `<th><span class="weekday-name">${weekdayNames[i]}</span><span class="weekday-date">${ds.slice(5).replace("-","/")}</span></th>`;
+    });
+    headHtml += `</tr>`;
+
+    const eligible = state.ingredients.filter(ing=>(Number(ing.cupsPerUnit)||0) > 0 && ing.storeDeliveryStartDate);
+    let bodyHtml = "";
+    if(eligible.length === 0){
+      bodyHtml = `<tr><td class="left" colspan="8">店舗納品開始日が設定されている原材料はまだありません。</td></tr>`;
+    } else {
+      eligible.forEach(ing=>{
+        const upcomingBadge = ing.storeDeliveryStartDate > today
+          ? `<span class="badge">予定(${ing.storeDeliveryStartDate.slice(5).replace("-","/")}〜)</span>`
+          : "";
+        bodyHtml += `<tr><td class="left">${escapeHtml(ing.name)}<span class="unit-tag">(${unitLabel(ing)})</span>${upcomingBadge}</td>`;
+        weekDates.forEach(ds=>{
+          const rec = recsByIngredient[ing.id][ds];
+          if(rec){
+            const rangeLabel2 = rec.coverageStart === rec.coverageEnd
+              ? rec.coverageStart.slice(5).replace("-","/")
+              : `${rec.coverageStart.slice(5).replace("-","/")}〜${rec.coverageEnd.slice(5).replace("-","/")}`;
+            const orderDateLabel = rec.orderDate.slice(5).replace("-","/");
+            bodyHtml += `<td title="発注日${orderDateLabel} / 現在庫${fmt(rec.balanceCups,0)}杯 / 対象${rangeLabel2}">${rec.orderQty}</td>`;
+          } else {
+            bodyHtml += `<td class="na">-</td>`;
+          }
+        });
+        bodyHtml += `</tr>`;
+      });
+    }
+
+    table.innerHTML = `<thead>${headHtml}</thead><tbody>${bodyHtml}</tbody>`;
+    return table;
   }
 
   function renderStockAlerts(){
@@ -1854,7 +1955,7 @@
         entry.counts[e.target.dataset.ing] = e.target.value;
         save();
         renderStockAlerts();
-        renderOrderRecommendations();
+        renderOrderCalendar();
         renderStockCountTable();
       });
     });
@@ -1871,7 +1972,7 @@
         entry.date = e.target.value;
         save();
         renderStockAlerts();
-        renderOrderRecommendations();
+        renderOrderCalendar();
         renderStockCountTable();
       });
     });
@@ -1881,7 +1982,7 @@
         state.stockCounts = state.stockCounts.filter(x=>x.id!==e.target.dataset.id);
         save();
         renderStockAlerts();
-        renderOrderRecommendations();
+        renderOrderCalendar();
         renderStockCountTable();
       });
     });
@@ -1958,7 +2059,7 @@
 
     renderStockAlerts();
     renderUsageTable();
-    renderOrderRecommendations();
+    renderOrderCalendar();
     renderStockCountTable();
 
     container.querySelectorAll("[data-role=dv-qty]").forEach(el=>{
@@ -1969,7 +2070,7 @@
         entry.deliveries[ingId] = e.target.value;
         save();
         renderStockAlerts();
-        renderOrderRecommendations();
+        renderOrderCalendar();
       });
     });
 

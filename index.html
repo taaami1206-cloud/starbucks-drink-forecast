@@ -286,6 +286,16 @@
   .week-table.forecast-table col.label-col{
     width:64px;
   }
+  .week-table.order-table{
+    table-layout:fixed;
+  }
+  .week-table.order-table col.label-col{
+    width:230px;
+  }
+  .week-table.order-table td.left{
+    white-space:normal;
+    word-break:break-word;
+  }
   .week-table th, .week-table td{
     border:1px solid var(--border);
     padding:6px 4px;
@@ -1869,9 +1879,10 @@
 
   function buildOrderWeekTable(weekDates, recsByIngredient, today){
     const table = document.createElement("table");
-    table.className = "week-table";
+    table.className = "week-table order-table";
     const weekdayNames = ["月","火","水","木","金","土","日"];
     const rangeLabel = `${weekDates[0].slice(5).replace("-","/")}〜${weekDates[6].slice(5).replace("-","/")}`;
+    const colgroupHtml = `<colgroup><col class="label-col">${weekDates.map(()=>"<col>").join("")}</colgroup>`;
 
     let headHtml = `<tr><th class="left"><span class="range-label">${rangeLabel}</span><button type="button" class="btn danger week-del-btn" data-role="order-week-del" data-week="${weekDates[0]}">削除</button></th>`;
     weekDates.forEach((ds,i)=>{
@@ -1905,7 +1916,7 @@
       });
     }
 
-    table.innerHTML = `<thead>${headHtml}</thead><tbody>${bodyHtml}</tbody>`;
+    table.innerHTML = `${colgroupHtml}<thead>${headHtml}</thead><tbody>${bodyHtml}</tbody>`;
     return table;
   }
 

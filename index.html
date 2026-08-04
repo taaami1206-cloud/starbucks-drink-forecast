@@ -695,7 +695,7 @@
 
     <div class="card">
       <h2>発注推奨数カレンダー</h2>
-      <p class="desc">設定タブで店舗納品開始日を入力した原材料が対象です(開始日が来ていない原材料は「予定」表示)。納品日(ドライ品は水・金・日、日配品は毎日)のセルに、その日届くよう2日前に発注しておくべき推奨発注数を表示します(セルを長押し/ホバーすると実際の発注日も確認できます)。数字の下の「目安◯個」は、その納品から次の納品までを賄うのに必要な適正在庫量(現在庫を考慮する前の必要量そのもの)です。さらにその下の「着荷迄◯個」は、発注時点から実際に届くまでを欠品させずに乗り切るために、発注前の時点で手元に持っておくべき在庫量です。通常は発注日から2日分ですが、その原材料で最初に発注が発生するセルに限り、店舗納品開始日を起点に計算します(ドライ品は月・水・金の発注日にしか発注が乗らないため、開始日がその発注日と重ならない場合はこの初回分が2日より長くなります)。特に新規取り扱い品などで現在庫がまだ0の場合は、この「着荷迄」の数量を発注前に実棚として用意し、棚卸し欄に入力しておく必要があります。現在庫は納品実績・実績販売数・棚卸し記録(あれば最優先)を反映し、まだ実績のない先の日付は「その時点までの推奨数どおりに発注した」と仮定して積み上げ計算しています。実績や棚卸しを入力するとその時点から自動的に補正されます。</p>
+      <p class="desc">設定タブで店舗納品開始日を入力した原材料が対象です(開始日が来ていない原材料は「予定」表示)。納品日(ドライ品は水・金・日、日配品は毎日)のセルに、その日届くよう2日前に発注しておくべき推奨発注数を表示します(セルを長押し/ホバーすると実際の発注日も確認できます)。数字の下の「目安◯個」は、その納品から次の納品までを賄うのに必要な適正在庫量(現在庫を考慮する前の必要量そのもの)です。「着荷迄◯個」は、発注時点から実際に届くまでを欠品させずに乗り切るために、発注する当日の時点で手元に持っておくべき在庫量です。「目安」は届いた便が担当する日(着荷日)のセルに、「着荷迄」はその発注を行う日(発注日、着荷日の2日前)のセルに、それぞれ表示されます。通常は発注日から2日分ですが、その原材料で最初に発注が発生する回に限り、店舗納品開始日を起点に計算します(ドライ品は月・水・金の発注日にしか発注が乗らないため、開始日がその発注日と重ならない場合はこの初回分が2日より長くなります)。特に新規取り扱い品などで現在庫がまだ0の場合は、この「着荷迄」の数量を発注日当日までに実棚として用意し、棚卸し欄に入力しておく必要があります。現在庫は納品実績・実績販売数・棚卸し記録(あれば最優先)を反映し、まだ実績のない先の日付は「その時点までの推奨数どおりに発注した」と仮定して積み上げ計算しています。実績や棚卸しを入力するとその時点から自動的に補正されます。</p>
       <div id="order-tables"></div>
       <div class="actions">
         <button class="btn secondary" id="order-addWeek">+ 次の週を追加</button>
@@ -1785,12 +1785,13 @@
   // entered for a date, the next recompute (any render) picks them up automatically.
   function computeOrderRecommendationSeries(ingredient, demand, toDs){
     const cupsPerUnit = Number(ingredient.cupsPerUnit) || 0;
-    if(cupsPerUnit <= 0 || !ingredient.storeDeliveryStartDate || toDs < ingredient.storeDeliveryStartDate) return {};
+    if(cupsPerUnit <= 0 || !ingredient.storeDeliveryStartDate || toDs < ingredient.storeDeliveryStartDate) return {recs:{}, bridges:{}};
 
     const start = ingredient.storeDeliveryStartDate;
     let balance = computeIngredientBalanceAsOf(ingredient, addDays(start, -1));
     const scheduledArrivals = {};
     const recs = {};
+    const bridges = {};
     let firstOrderSeen = false;
 
     for(let ds=start; ds<=toDs; ds=addDays(ds,1)){
@@ -1852,7 +1853,8 @@
         }
         const bridgeUnits = bridgeCups / cupsPerUnit;
 
-        recs[arrivalDs] = {orderQty, orderDate: ds, coverageStart, coverageEnd, balanceCups: balance, targetUnits, bridgeUnits};
+        recs[arrivalDs] = {orderQty, orderDate: ds, coverageStart, coverageEnd, balanceCups: balance, targetUnits};
+        bridges[ds] = {bridgeUnits, arrivalDs};
 
         if(orderQty > 0){
           scheduledArrivals[arrivalDs] = (scheduledArrivals[arrivalDs] || 0) + deliveryQtyToCups(ingredient, orderQty);
@@ -1860,7 +1862,7 @@
       }
     }
 
-    return recs;
+    return {recs, bridges};
   }
 
   function renderOrderCalendar(){
@@ -1919,13 +1921,25 @@
           : "";
         bodyHtml += `<tr><td class="left">${escapeHtml(ing.name)}<span class="unit-tag">(${unitLabel(ing)})</span>${upcomingBadge}</td>`;
         weekDates.forEach(ds=>{
-          const rec = recsByIngredient[ing.id][ds];
-          if(rec){
-            const rangeLabel2 = rec.coverageStart === rec.coverageEnd
-              ? rec.coverageStart.slice(5).replace("-","/")
-              : `${rec.coverageStart.slice(5).replace("-","/")}〜${rec.coverageEnd.slice(5).replace("-","/")}`;
-            const orderDateLabel = rec.orderDate.slice(5).replace("-","/");
-            bodyHtml += `<td title="発注日${orderDateLabel} / 現在庫${fmt(rec.balanceCups,0)}杯 / 対象${rangeLabel2}">${rec.orderQty}<span class="hint" style="display:block;font-size:9px;white-space:nowrap;">目安${fmt(rec.targetUnits,1)}個</span><span class="hint" style="display:block;font-size:9px;white-space:nowrap;">着荷迄${fmt(rec.bridgeUnits,1)}個</span></td>`;
+          const rec = recsByIngredient[ing.id].recs[ds];
+          const bridge = recsByIngredient[ing.id].bridges[ds];
+          if(rec || bridge){
+            const titleParts = [];
+            let cellHtml = "";
+            if(rec){
+              const rangeLabel2 = rec.coverageStart === rec.coverageEnd
+                ? rec.coverageStart.slice(5).replace("-","/")
+                : `${rec.coverageStart.slice(5).replace("-","/")}〜${rec.coverageEnd.slice(5).replace("-","/")}`;
+              const orderDateLabel = rec.orderDate.slice(5).replace("-","/");
+              titleParts.push(`発注日${orderDateLabel} / 現在庫${fmt(rec.balanceCups,0)}杯 / 対象${rangeLabel2}`);
+              cellHtml += `${rec.orderQty}<span class="hint" style="display:block;font-size:9px;white-space:nowrap;">目安${fmt(rec.targetUnits,1)}個</span>`;
+            }
+            if(bridge){
+              const arrivalLabel = bridge.arrivalDs.slice(5).replace("-","/");
+              titleParts.push(`着荷日${arrivalLabel}までに必要な在庫`);
+              cellHtml += `<span class="hint" style="display:block;font-size:9px;white-space:nowrap;">着荷迄${fmt(bridge.bridgeUnits,1)}個</span>`;
+            }
+            bodyHtml += `<td title="${titleParts.join(" / ")}">${cellHtml}</td>`;
           } else {
             bodyHtml += `<td class="na">-</td>`;
           }

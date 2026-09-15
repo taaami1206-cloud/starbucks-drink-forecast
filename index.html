@@ -1895,6 +1895,9 @@
         const isFirstOrder = !firstOrderSeen;
         firstOrderSeen = true;
         const bridgeStart = isFirstOrder ? start : ds;
+        // if the bridge window starts after the promotion's own end date, there's nothing left to bridge to -
+        // this is "sale already ended", not "no data", and must be distinguished from a genuine data gap below
+        const bridgeSaleEnded = !!(saleEndDate && bridgeStart > saleEndDate);
         let bridgeCups = 0;
         let bridgeHasData = false;
         for(let d=bridgeStart; d<arrivalDs; d=addDays(d,1)){
@@ -1906,7 +1909,7 @@
         const bridgeUnits = (bridgeCups * BRIDGE_SAFETY_MARGIN) / cupsPerUnit;
 
         recs[arrivalDs] = {orderQty, orderDate: ds, coverageStart, coverageEnd, balanceCups: balance, targetUnits, coverageHasData};
-        bridges[ds] = {bridgeUnits, arrivalDs, bridgeHasData};
+        bridges[ds] = {bridgeUnits, arrivalDs, bridgeHasData, bridgeSaleEnded};
 
         if(orderQty > 0){
           scheduledArrivals[arrivalDs] = (scheduledArrivals[arrivalDs] || 0) + deliveryQtyToCups(ingredient, orderQty);
@@ -1929,11 +1932,9 @@
     const lastWeekStart = state.orderWeeks[state.orderWeeks.length-1];
     const toDs = addDays(lastWeekStart, 6);
     const demand = computeIngredientDemandAverages();
-    console.log("[debug] demand averages", state.ingredients.map(ing=>({name:ing.name, weekday:demand[ing.id] && demand[ing.id].weekday, weekend:demand[ing.id] && demand[ing.id].weekend})));
     // プロモーションに販売終了日が設定されていれば、それ以降の需要は発注推奨数から除外する(在庫の余りすぎ防止)
     const currentPromo = meta.promotions.find(p=>p.id===meta.currentId);
     const saleEndDate = currentPromo && currentPromo.endDate ? currentPromo.endDate : null;
-    console.log("[debug] saleEndDate", saleEndDate);
     const recsByIngredient = {};
     const remainingByIngredient = {};
     state.ingredients.forEach(ing=>{
@@ -2016,7 +2017,10 @@
             }
             if(bridge){
               const arrivalLabel = bridge.arrivalDs.slice(5).replace("-","/");
-              if(!bridge.bridgeHasData){
+              if(bridge.bridgeSaleEnded){
+                titleParts.push(`販売終了のため不要`);
+                cellHtml += `<span class="hint" style="display:block;font-size:9px;white-space:nowrap;">適材: 販売終了のため不要</span>`;
+              } else if(!bridge.bridgeHasData){
                 titleParts.push(`着荷日${arrivalLabel}までに必要な在庫 / 杯数予測・実績が未入力のため算出できません(取引件数または実績を入力してください)`);
                 cellHtml += `<span class="hint" style="display:block;font-size:9px;white-space:nowrap;color:var(--danger);">適材:データ不足</span>`;
               } else {

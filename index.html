@@ -613,7 +613,7 @@
 
     <div class="card">
       <h2>ドリンク別 UPT・使用原材料</h2>
-      <p class="desc">ドリンクごとにUPT(初週・平均)と、そのドリンクで使う原材料にチェックを入れます(1杯あたりの消費量は原材料マスタの作成可能杯数から共通で計算されます)。販売開始日は杯数予測タブで共通設定します。ドリンク間の販売比率はUPTの大小から自動算出されます。「販売終了日」は任意です。プロモーション全体より先にそのドリンクだけ販売が終わる場合に入力すると、終了日以降は杯数予測・発注推奨数・目安・適材の計算からそのドリンクの分だけ除外されます(未入力ならプロモーション一覧の終了日、またはずっと販売継続として扱います)。</p>
+      <p class="desc">ドリンクごとにUPT(初週・平均)と、そのドリンクで使う原材料にチェックを入れます(1杯あたりの消費量は原材料マスタの作成可能杯数から共通で計算されます)。販売開始日は杯数予測タブで共通設定しますが、プロモーションの途中から追加になるドリンクは「販売開始日」に個別の日付を入力してください(未入力ならプロモーション共通の販売開始日を使います)。初週UPTはこの開始日を基準に適用され、それより前の日は杯数予測・発注推奨数の計算に一切含まれません。ドリンク間の販売比率はUPTの大小から自動算出されます。「販売終了日」は任意です。プロモーション全体より先にそのドリンクだけ販売が終わる場合に入力すると、終了日以降は杯数予測・発注推奨数・目安・適材の計算からそのドリンクの分だけ除外されます(未入力ならプロモーション一覧の終了日、またはずっと販売継続として扱います)。</p>
       <div class="table-wrap">
         <table id="drinkTable">
           <thead><tr></tr></thead>
@@ -799,9 +799,9 @@
         {id: ing3, name: "原材料C", cupsPerUnit: 17, unitsPerCase: 12, deliveryUnit: "unit", category: "daily", storeDeliveryStartDate: "", restockEnded: false}
       ],
       drinks: [
-        {id: drink1, name: "ドリンクA", uptFirstWeek: 0.15, uptAverage: 0.08, endDate: "", uses: {[ing1]: true, [ing2]: true, [ing3]: true}},
-        {id: drink2, name: "ドリンクB", uptFirstWeek: 0.05, uptAverage: 0.03, endDate: "", uses: {[ing1]: false, [ing2]: false, [ing3]: true}},
-        {id: drink3, name: "ドリンクC", uptFirstWeek: 0.03, uptAverage: 0.02, endDate: "", uses: {[ing1]: false, [ing2]: false, [ing3]: true}}
+        {id: drink1, name: "ドリンクA", uptFirstWeek: 0.15, uptAverage: 0.08, startDate: "", endDate: "", uses: {[ing1]: true, [ing2]: true, [ing3]: true}},
+        {id: drink2, name: "ドリンクB", uptFirstWeek: 0.05, uptAverage: 0.03, startDate: "", endDate: "", uses: {[ing1]: false, [ing2]: false, [ing3]: true}},
+        {id: drink3, name: "ドリンクC", uptFirstWeek: 0.03, uptAverage: 0.02, startDate: "", endDate: "", uses: {[ing1]: false, [ing2]: false, [ing3]: true}}
       ],
       settings: {
         launchDate: "",
@@ -905,6 +905,7 @@
         if(d.uptFirstWeek === undefined) d.uptFirstWeek = "";
         if(d.uptAverage === undefined) d.uptAverage = "";
         if(d.endDate === undefined) d.endDate = "";
+        if(d.startDate === undefined) d.startDate = "";
       });
       // migrate ml/g-based ingredient unit + numeric recipe to the cups-yield + used/not-used model
       parsed.ingredients.forEach(ing=>{
@@ -1022,6 +1023,16 @@
 
   function drinkUptForPhase(drink, phase){
     return phase === "first" ? (Number(drink.uptFirstWeek)||0) : (Number(drink.uptAverage)||0);
+  }
+
+  // a drink added partway through a promotion uses its own 販売開始日 (if set) as its "first week" reference
+  // instead of the promotion-wide 販売開始日, so its own 初週UPT phase lines up with when it actually launched
+  function drinkStartDateFor(drink){
+    return drink.startDate || state.settings.launchDate || "";
+  }
+
+  function phaseForDrinkOnDate(drink, dateStr){
+    return isFirstWeek(dateStr, drinkStartDateFor(drink)) ? "first" : "average";
   }
 
   // ---------- Tabs ----------
@@ -1146,7 +1157,7 @@
     const thead = document.querySelector("#drinkTable thead tr");
     const tbody = document.querySelector("#drinkTable tbody");
 
-    let headerHtml = `<th class="left">ドリンク名</th><th>初週UPT</th><th>平均UPT</th><th>販売終了日(任意)</th>`;
+    let headerHtml = `<th class="left">ドリンク名</th><th>初週UPT</th><th>平均UPT</th><th>販売開始日(任意)</th><th>販売終了日(任意)</th>`;
     state.ingredients.forEach(ing=>{
       headerHtml += `<th>${escapeHtml(ing.name)}<br><span style="font-weight:400;color:var(--sub);">使用する</span></th>`;
     });
@@ -1160,6 +1171,7 @@
         <td class="left"><input type="text" class="name-input" data-role="drink-name" data-id="${drink.id}" value="${escapeHtml(drink.name)}"></td>
         <td><input type="number" step="0.01" min="0" data-role="drink-upt-first" data-id="${drink.id}" value="${drink.uptFirstWeek}"></td>
         <td><input type="number" step="0.01" min="0" data-role="drink-upt-avg" data-id="${drink.id}" value="${drink.uptAverage}"></td>
+        <td><input type="date" data-role="drink-start-date" data-id="${drink.id}" value="${drink.startDate || ""}"></td>
         <td><input type="date" data-role="drink-end-date" data-id="${drink.id}" value="${drink.endDate || ""}"></td>
       `;
       state.ingredients.forEach(ing=>{
@@ -1192,6 +1204,13 @@
         save();
       });
     });
+    tbody.querySelectorAll("[data-role=drink-start-date]").forEach(el=>{
+      el.addEventListener("input", e=>{
+        const d = state.drinks.find(x=>x.id===e.target.dataset.id);
+        d.startDate = e.target.value;
+        save();
+      });
+    });
     tbody.querySelectorAll("[data-role=drink-end-date]").forEach(el=>{
       el.addEventListener("input", e=>{
         const d = state.drinks.find(x=>x.id===e.target.dataset.id);
@@ -1221,7 +1240,7 @@
     const id = uid("drink");
     const uses = {};
     state.ingredients.forEach(ing=>{ uses[ing.id] = false; });
-    state.drinks.push({id, name:"新しいドリンク", uptFirstWeek:0, uptAverage:0, endDate:"", uses});
+    state.drinks.push({id, name:"新しいドリンク", uptFirstWeek:0, uptAverage:0, startDate:"", endDate:"", uses});
     save();
     renderDrinkTable();
   });
@@ -1277,15 +1296,17 @@
   }
 
   function cupsForDate(ds, transactions){
-    const phase = phaseForDate(ds);
     let total = 0;
     const perDrink = state.drinks.map(d=>{
-      const upt = drinkUptForPhase(d, phase);
-      const cups = (d.endDate && ds > d.endDate) ? 0 : calcTotalCups(transactions, upt);
+      const start = drinkStartDateFor(d);
+      const notLaunchedYet = start && ds < start;
+      const alreadyEnded = d.endDate && ds > d.endDate;
+      const upt = drinkUptForPhase(d, phaseForDrinkOnDate(d, ds));
+      const cups = (notLaunchedYet || alreadyEnded) ? 0 : calcTotalCups(transactions, upt);
       total += cups;
       return {drink: d, upt, cups};
     });
-    return {phase, total, perDrink};
+    return {total, perDrink};
   }
 
   function getOrCreateDayEntry(ds){
@@ -1652,15 +1673,16 @@
   // cups of an ingredient consumed on one date: actual sales if entered, otherwise the forecast
   function ingredientCupsConsumedOnDate(ingredient, forecastEntry, ds){
     if(!forecastEntry) return 0;
-    const phase = phaseForDate(ds);
     return state.drinks.reduce((sum, d)=>{
       if(!d.uses[ingredient.id]) return sum;
       const actualVal = forecastEntry.actuals ? forecastEntry.actuals[d.id] : undefined;
       if(actualVal !== undefined && actualVal !== "" && !isNaN(Number(actualVal))){
         return sum + Number(actualVal);
       }
+      const start = drinkStartDateFor(d);
+      if(start && ds < start) return sum; // predicted sales don't apply before this drink has launched
       if(d.endDate && ds > d.endDate) return sum; // predicted sales don't apply once this drink is off the menu
-      return sum + calcTotalCups(forecastEntry.transactions, drinkUptForPhase(d, phase));
+      return sum + calcTotalCups(forecastEntry.transactions, drinkUptForPhase(d, phaseForDrinkOnDate(d, ds)));
     }, 0);
   }
 
@@ -1817,12 +1839,18 @@
     state.forecastDays.forEach(entry=>{
       const hasTransactions = entry.transactions !== "" && entry.transactions !== undefined && entry.transactions !== null;
       const weekend = isWeekendType(entry.date);
-      const phase = phaseForDate(entry.date);
       state.drinks.forEach(d=>{
         const actualVal = entry.actuals ? entry.actuals[d.id] : undefined;
         const hasActual = actualVal !== undefined && actualVal !== "" && !isNaN(Number(actualVal));
-        if(!hasActual && !hasTransactions) return;
-        const cups = hasActual ? Number(actualVal) : calcTotalCups(entry.transactions, drinkUptForPhase(d, phase));
+        if(hasActual){
+          (weekend ? weekendVals : weekdayVals)[d.id].push(Number(actualVal));
+          return;
+        }
+        if(!hasTransactions) return;
+        const start = drinkStartDateFor(d);
+        if(start && entry.date < start) return; // hasn't launched yet - a store-wide transaction count that day says nothing about this drink
+        if(d.endDate && entry.date > d.endDate) return; // already off the menu
+        const cups = calcTotalCups(entry.transactions, drinkUptForPhase(d, phaseForDrinkOnDate(d, entry.date)));
         (weekend ? weekendVals : weekdayVals)[d.id].push(cups);
       });
     });
@@ -1876,25 +1904,32 @@
       if(d.endDate && saleEndDate) return d.endDate < saleEndDate ? d.endDate : saleEndDate;
       return d.endDate || saleEndDate || null;
     }
-    // sums demand over [from,to) (or [from,to] when inclusive) counting only linked drinks that haven't
-    // individually ended by that day yet - so an ingredient shared by two drinks keeps tapering correctly
-    // even when only one of them has stopped selling. allEnded=true means every linked drink had already
-    // ended for the *entire* window (genuinely "nothing left to prepare"), as opposed to hasData=false,
-    // which means drinks are still active but we simply have no demand history for them yet.
+    // sums demand over [from,to) (or [from,to] when inclusive) counting only linked drinks that have
+    // launched (their own 販売開始日, if set) and haven't individually ended yet on that day - so an
+    // ingredient shared by two drinks keeps tapering/ramping correctly even when only one of them has
+    // stopped or not yet started selling. allEnded/notStartedYet=true means every linked drink was
+    // inactive for that reason throughout the *entire* window (genuinely "nothing to prepare"), as
+    // opposed to hasData=false, which means drinks are active but we simply have no demand history yet.
     function sumDemand(from, to, inclusive){
-      let cups = 0, hasData = false, anyActiveDay = false;
+      let cups = 0, hasData = false, anyActiveDay = false, anyNotStartedYet = false, anyEnded = false;
       for(let d=from; inclusive ? d<=to : d<to; d=addDays(d,1)){
         const weekend = isWeekendType(d);
         linkedDrinks.forEach(dr=>{
+          const drStart = drinkStartDateFor(dr);
+          if(drStart && d < drStart){ anyNotStartedYet = true; return; }
           const end = drinkEndDateFor(dr);
-          if(end && d > end) return;
+          if(end && d > end){ anyEnded = true; return; }
           anyActiveDay = true;
           const a = drinkDemand[dr.id];
           const val = a ? (weekend ? a.weekend : a.weekday) : null;
           if(val !== null){ hasData = true; cups += val; }
         });
       }
-      return {cups, hasData, allEnded: linkedDrinks.length > 0 && !anyActiveDay};
+      const inactive = linkedDrinks.length > 0 && !anyActiveDay;
+      // a window that's inactive for a mix of reasons is rare in practice; favor "not started yet" as the
+      // more actionable read whenever it applies at all
+      const notStartedYet = inactive && anyNotStartedYet && !anyEnded;
+      return {cups, hasData, allEnded: inactive && !notStartedYet, notStartedYet};
     }
 
     const start = ingredient.storeDeliveryStartDate;
@@ -1936,6 +1971,7 @@
         const neededCups = coverage.cups;
         const coverageHasData = coverage.hasData;
         const coverageAllEnded = coverage.allEnded;
+        const coverageNotStartedYet = coverage.notStartedYet;
 
         const targetUnits = neededCups / cupsPerUnit;
         const shortfallCups = neededCups - balance;
@@ -1959,8 +1995,8 @@
         const bridge = sumDemand(bridgeStart, arrivalDs, false);
         const bridgeUnits = (bridge.cups * BRIDGE_SAFETY_MARGIN) / cupsPerUnit;
 
-        recs[arrivalDs] = {orderQty, orderDate: ds, coverageStart, coverageEnd, balanceCups: balance, targetUnits, coverageHasData, coverageAllEnded};
-        bridges[ds] = {bridgeUnits, arrivalDs, bridgeHasData: bridge.hasData, bridgeSaleEnded: bridge.allEnded};
+        recs[arrivalDs] = {orderQty, orderDate: ds, coverageStart, coverageEnd, balanceCups: balance, targetUnits, coverageHasData, coverageAllEnded, coverageNotStartedYet};
+        bridges[ds] = {bridgeUnits, arrivalDs, bridgeHasData: bridge.hasData, bridgeSaleEnded: bridge.allEnded, bridgeNotStartedYet: bridge.notStartedYet};
 
         if(orderQty > 0){
           scheduledArrivals[arrivalDs] = (scheduledArrivals[arrivalDs] || 0) + deliveryQtyToCups(ingredient, orderQty);
@@ -2052,13 +2088,15 @@
             const titleParts = [];
             let cellHtml = "";
             if(rec){
-              const rangeLabel2 = rec.coverageAllEnded
-                ? "販売終了のため不要"
-                : rec.coverageStart === rec.coverageEnd
-                  ? rec.coverageStart.slice(5).replace("-","/")
-                  : `${rec.coverageStart.slice(5).replace("-","/")}〜${rec.coverageEnd.slice(5).replace("-","/")}`;
+              const rangeLabel2 = rec.coverageNotStartedYet
+                ? "販売開始前のため不要"
+                : rec.coverageAllEnded
+                  ? "販売終了のため不要"
+                  : rec.coverageStart === rec.coverageEnd
+                    ? rec.coverageStart.slice(5).replace("-","/")
+                    : `${rec.coverageStart.slice(5).replace("-","/")}〜${rec.coverageEnd.slice(5).replace("-","/")}`;
               const orderDateLabel = rec.orderDate.slice(5).replace("-","/");
-              const recNoData = !rec.coverageAllEnded && !rec.coverageHasData;
+              const recNoData = !rec.coverageAllEnded && !rec.coverageNotStartedYet && !rec.coverageHasData;
               if(recNoData){
                 titleParts.push(`発注日${orderDateLabel} / 杯数予測・実績が未入力のため算出できません(取引件数または実績を入力してください)`);
                 cellHtml += `<span style="color:var(--danger);">要実績入力</span>`;
@@ -2069,7 +2107,10 @@
             }
             if(bridge){
               const arrivalLabel = bridge.arrivalDs.slice(5).replace("-","/");
-              if(bridge.bridgeSaleEnded){
+              if(bridge.bridgeNotStartedYet){
+                titleParts.push(`販売開始前のため不要`);
+                cellHtml += `<span class="hint" style="display:block;font-size:9px;white-space:nowrap;">適材: 販売開始前のため不要</span>`;
+              } else if(bridge.bridgeSaleEnded){
                 titleParts.push(`販売終了のため不要`);
                 cellHtml += `<span class="hint" style="display:block;font-size:9px;white-space:nowrap;">適材: 販売終了のため不要</span>`;
               } else if(!bridge.bridgeHasData){

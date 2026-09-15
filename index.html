@@ -613,7 +613,7 @@
 
     <div class="card">
       <h2>ドリンク別 UPT・使用原材料</h2>
-      <p class="desc">ドリンクごとにUPT(初週・平均)と、そのドリンクで使う原材料にチェックを入れます(1杯あたりの消費量は原材料マスタの作成可能杯数から共通で計算されます)。販売開始日は杯数予測タブで共通設定します。ドリンク間の販売比率はUPTの大小から自動算出されます。</p>
+      <p class="desc">ドリンクごとにUPT(初週・平均)と、そのドリンクで使う原材料にチェックを入れます(1杯あたりの消費量は原材料マスタの作成可能杯数から共通で計算されます)。販売開始日は杯数予測タブで共通設定します。ドリンク間の販売比率はUPTの大小から自動算出されます。「販売終了日」は任意です。プロモーション全体より先にそのドリンクだけ販売が終わる場合に入力すると、終了日以降は杯数予測・発注推奨数・目安・適材の計算からそのドリンクの分だけ除外されます(未入力ならプロモーション一覧の終了日、またはずっと販売継続として扱います)。</p>
       <div class="table-wrap">
         <table id="drinkTable">
           <thead><tr></tr></thead>
@@ -695,7 +695,7 @@
 
     <div class="card">
       <h2>発注推奨数カレンダー</h2>
-      <p class="desc">設定タブで店舗納品開始日を入力した原材料が対象です(開始日が来ていない原材料は「予定」表示)。納品日(ドライ品は水・金・日、日配品は毎日)のセルに、その日届くよう2日前に発注しておくべき推奨発注数を表示します(セルを長押し/ホバーすると、実際の発注日・現在庫・「目安◯個」(その納品から次の納品までを賄うのに必要な適正在庫量)も確認できます)。数字の下の「適材◯個」は、発注時点から実際に届くまでを欠品させずに乗り切るために、発注する当日の時点で手元に持っておくべき在庫量です(急な杯数増にも耐えられるよう、平均需要から算出した必要量にさらに2割の安全余裕を上乗せしています)。「適材」は発注を行う日(発注日、着荷日の2日前)のセルに表示されます。通常は発注日から2日分ですが、その原材料で最初に発注が発生する回に限り、店舗納品開始日を起点に計算します(ドライ品は月・水・金の発注日にしか発注が乗らないため、開始日がその発注日と重ならない場合はこの初回分が2日より長くなります)。特に新規取り扱い品などで現在庫がまだ0の場合は、この「適材」の数量を発注日当日までに実棚として用意し、棚卸し欄に入力しておく必要があります。現在庫は納品実績・実績販売数・棚卸し記録(あれば最優先)を反映し、まだ実績のない先の日付は「その時点までの推奨数どおりに発注した」と仮定して積み上げ計算しています。実績や棚卸しを入力するとその時点から自動的に補正されます。プロモーション一覧で「期間」の終了日を入力しておくと、その日以降の需要は発注推奨数・目安・適材の計算に含めなくなり、販売終了間際の過剰発注(在庫の余りすぎ)を防ぎます。設定タブで「今後入荷なし」にチェックした原材料は、新たな発注推奨を出さなくなる代わりに、原材料名の横に残り杯数と在庫が尽きる見込み日を赤字で表示します。</p>
+      <p class="desc">設定タブで店舗納品開始日を入力した原材料が対象です(開始日が来ていない原材料は「予定」表示)。納品日(ドライ品は水・金・日、日配品は毎日)のセルに、その日届くよう2日前に発注しておくべき推奨発注数を表示します(セルを長押し/ホバーすると、実際の発注日・現在庫・「目安◯個」(その納品から次の納品までを賄うのに必要な適正在庫量)も確認できます)。数字の下の「適材◯個」は、発注時点から実際に届くまでを欠品させずに乗り切るために、発注する当日の時点で手元に持っておくべき在庫量です(急な杯数増にも耐えられるよう、平均需要から算出した必要量にさらに2割の安全余裕を上乗せしています)。「適材」は発注を行う日(発注日、着荷日の2日前)のセルに表示されます。通常は発注日から2日分ですが、その原材料で最初に発注が発生する回に限り、店舗納品開始日を起点に計算します(ドライ品は月・水・金の発注日にしか発注が乗らないため、開始日がその発注日と重ならない場合はこの初回分が2日より長くなります)。特に新規取り扱い品などで現在庫がまだ0の場合は、この「適材」の数量を発注日当日までに実棚として用意し、棚卸し欄に入力しておく必要があります。現在庫は納品実績・実績販売数・棚卸し記録(あれば最優先)を反映し、まだ実績のない先の日付は「その時点までの推奨数どおりに発注した」と仮定して積み上げ計算しています。実績や棚卸しを入力するとその時点から自動的に補正されます。プロモーション一覧で「期間」の終了日を入力しておくと、その日以降の需要は発注推奨数・目安・適材の計算に含めなくなり、販売終了間際の過剰発注(在庫の余りすぎ)を防ぎます。ドリンクごとに販売終了日が異なる場合は、設定タブのドリンク表で個別に「販売終了日」を入力してください。原材料を複数ドリンクで共有している場合、一部のドリンクだけ終了しても、まだ販売中の他のドリンクの分は引き続き発注対象になります。設定タブで「今後入荷なし」にチェックした原材料は、新たな発注推奨を出さなくなる代わりに、原材料名の横に残り杯数と在庫が尽きる見込み日を赤字で表示します。</p>
       <div id="order-tables"></div>
       <div class="actions">
         <button class="btn secondary" id="order-addWeek">+ 次の週を追加</button>
@@ -799,9 +799,9 @@
         {id: ing3, name: "原材料C", cupsPerUnit: 17, unitsPerCase: 12, deliveryUnit: "unit", category: "daily", storeDeliveryStartDate: "", restockEnded: false}
       ],
       drinks: [
-        {id: drink1, name: "ドリンクA", uptFirstWeek: 0.15, uptAverage: 0.08, uses: {[ing1]: true, [ing2]: true, [ing3]: true}},
-        {id: drink2, name: "ドリンクB", uptFirstWeek: 0.05, uptAverage: 0.03, uses: {[ing1]: false, [ing2]: false, [ing3]: true}},
-        {id: drink3, name: "ドリンクC", uptFirstWeek: 0.03, uptAverage: 0.02, uses: {[ing1]: false, [ing2]: false, [ing3]: true}}
+        {id: drink1, name: "ドリンクA", uptFirstWeek: 0.15, uptAverage: 0.08, endDate: "", uses: {[ing1]: true, [ing2]: true, [ing3]: true}},
+        {id: drink2, name: "ドリンクB", uptFirstWeek: 0.05, uptAverage: 0.03, endDate: "", uses: {[ing1]: false, [ing2]: false, [ing3]: true}},
+        {id: drink3, name: "ドリンクC", uptFirstWeek: 0.03, uptAverage: 0.02, endDate: "", uses: {[ing1]: false, [ing2]: false, [ing3]: true}}
       ],
       settings: {
         launchDate: "",
@@ -904,6 +904,7 @@
         if(d.ratio !== undefined) delete d.ratio;
         if(d.uptFirstWeek === undefined) d.uptFirstWeek = "";
         if(d.uptAverage === undefined) d.uptAverage = "";
+        if(d.endDate === undefined) d.endDate = "";
       });
       // migrate ml/g-based ingredient unit + numeric recipe to the cups-yield + used/not-used model
       parsed.ingredients.forEach(ing=>{
@@ -1145,7 +1146,7 @@
     const thead = document.querySelector("#drinkTable thead tr");
     const tbody = document.querySelector("#drinkTable tbody");
 
-    let headerHtml = `<th class="left">ドリンク名</th><th>初週UPT</th><th>平均UPT</th>`;
+    let headerHtml = `<th class="left">ドリンク名</th><th>初週UPT</th><th>平均UPT</th><th>販売終了日(任意)</th>`;
     state.ingredients.forEach(ing=>{
       headerHtml += `<th>${escapeHtml(ing.name)}<br><span style="font-weight:400;color:var(--sub);">使用する</span></th>`;
     });
@@ -1159,6 +1160,7 @@
         <td class="left"><input type="text" class="name-input" data-role="drink-name" data-id="${drink.id}" value="${escapeHtml(drink.name)}"></td>
         <td><input type="number" step="0.01" min="0" data-role="drink-upt-first" data-id="${drink.id}" value="${drink.uptFirstWeek}"></td>
         <td><input type="number" step="0.01" min="0" data-role="drink-upt-avg" data-id="${drink.id}" value="${drink.uptAverage}"></td>
+        <td><input type="date" data-role="drink-end-date" data-id="${drink.id}" value="${drink.endDate || ""}"></td>
       `;
       state.ingredients.forEach(ing=>{
         const checked = drink.uses[ing.id] ? "checked" : "";
@@ -1190,6 +1192,13 @@
         save();
       });
     });
+    tbody.querySelectorAll("[data-role=drink-end-date]").forEach(el=>{
+      el.addEventListener("input", e=>{
+        const d = state.drinks.find(x=>x.id===e.target.dataset.id);
+        d.endDate = e.target.value;
+        save();
+      });
+    });
     tbody.querySelectorAll("[data-role=drink-uses]").forEach(el=>{
       el.addEventListener("change", e=>{
         const d = state.drinks.find(x=>x.id===e.target.dataset.id);
@@ -1212,7 +1221,7 @@
     const id = uid("drink");
     const uses = {};
     state.ingredients.forEach(ing=>{ uses[ing.id] = false; });
-    state.drinks.push({id, name:"新しいドリンク", uptFirstWeek:0, uptAverage:0, uses});
+    state.drinks.push({id, name:"新しいドリンク", uptFirstWeek:0, uptAverage:0, endDate:"", uses});
     save();
     renderDrinkTable();
   });
@@ -1272,7 +1281,7 @@
     let total = 0;
     const perDrink = state.drinks.map(d=>{
       const upt = drinkUptForPhase(d, phase);
-      const cups = calcTotalCups(transactions, upt);
+      const cups = (d.endDate && ds > d.endDate) ? 0 : calcTotalCups(transactions, upt);
       total += cups;
       return {drink: d, upt, cups};
     });
@@ -1650,6 +1659,7 @@
       if(actualVal !== undefined && actualVal !== "" && !isNaN(Number(actualVal))){
         return sum + Number(actualVal);
       }
+      if(d.endDate && ds > d.endDate) return sum; // predicted sales don't apply once this drink is off the menu
       return sum + calcTotalCups(forecastEntry.transactions, drinkUptForPhase(d, phase));
     }, 0);
   }
@@ -1796,6 +1806,34 @@
     return result;
   }
 
+  // per-drink average daily cups sold (actual if entered, otherwise the transactions-based forecast), split
+  // weekday/weekend. Kept separate from computeIngredientDemandAverages so the order-recommendation calendar
+  // can taper each drink's contribution to a shared ingredient off individually as that drink's own 販売終了日
+  // (if set) approaches, instead of only reacting once the whole ingredient/promotion ends.
+  function computeDrinkDemandAverages(){
+    const weekdayVals = {}, weekendVals = {};
+    state.drinks.forEach(d=>{ weekdayVals[d.id] = []; weekendVals[d.id] = []; });
+
+    state.forecastDays.forEach(entry=>{
+      const hasTransactions = entry.transactions !== "" && entry.transactions !== undefined && entry.transactions !== null;
+      const weekend = isWeekendType(entry.date);
+      const phase = phaseForDate(entry.date);
+      state.drinks.forEach(d=>{
+        const actualVal = entry.actuals ? entry.actuals[d.id] : undefined;
+        const hasActual = actualVal !== undefined && actualVal !== "" && !isNaN(Number(actualVal));
+        if(!hasActual && !hasTransactions) return;
+        const cups = hasActual ? Number(actualVal) : calcTotalCups(entry.transactions, drinkUptForPhase(d, phase));
+        (weekend ? weekendVals : weekdayVals)[d.id].push(cups);
+      });
+    });
+
+    const result = {};
+    state.drinks.forEach(d=>{
+      result[d.id] = {weekday: avg(weekdayVals[d.id]), weekend: avg(weekendVals[d.id])};
+    });
+    return result;
+  }
+
   // for an ingredient whose supply has ended (今後入荷なし), projects forward from today using average demand
   // (no further deliveries assumed, since none are coming) to find how many more cups can still be sold from
   // the stock on hand, and roughly when that stock will run out.
@@ -1825,11 +1863,39 @@
   // with no real data yet, assumes the recommended order computed at each earlier order day was placed as suggested,
   // so later recommendations stay realistic instead of double-counting the same shortfall. As actuals or 棚卸し get
   // entered for a date, the next recompute (any render) picks them up automatically.
-  function computeOrderRecommendationSeries(ingredient, demand, toDs, saleEndDate){
+  function computeOrderRecommendationSeries(ingredient, drinkDemand, toDs, saleEndDate){
     const cupsPerUnit = Number(ingredient.cupsPerUnit) || 0;
     if(cupsPerUnit <= 0 || !ingredient.storeDeliveryStartDate || toDs < ingredient.storeDeliveryStartDate) return {recs:{}, bridges:{}};
     // 今後入荷なし: no more deliveries are coming for this ingredient, so there's nothing left to recommend
     if(ingredient.restockEnded) return {recs:{}, bridges:{}};
+
+    const linkedDrinks = state.drinks.filter(d=>d.uses[ingredient.id]);
+    // a drink stops contributing demand once its OWN 販売終了日 passes, or - if it has none set - once the
+    // promotion's overall 終了日 passes; whichever of the two applies is the earlier of them
+    function drinkEndDateFor(d){
+      if(d.endDate && saleEndDate) return d.endDate < saleEndDate ? d.endDate : saleEndDate;
+      return d.endDate || saleEndDate || null;
+    }
+    // sums demand over [from,to) (or [from,to] when inclusive) counting only linked drinks that haven't
+    // individually ended by that day yet - so an ingredient shared by two drinks keeps tapering correctly
+    // even when only one of them has stopped selling. allEnded=true means every linked drink had already
+    // ended for the *entire* window (genuinely "nothing left to prepare"), as opposed to hasData=false,
+    // which means drinks are still active but we simply have no demand history for them yet.
+    function sumDemand(from, to, inclusive){
+      let cups = 0, hasData = false, anyActiveDay = false;
+      for(let d=from; inclusive ? d<=to : d<to; d=addDays(d,1)){
+        const weekend = isWeekendType(d);
+        linkedDrinks.forEach(dr=>{
+          const end = drinkEndDateFor(dr);
+          if(end && d > end) return;
+          anyActiveDay = true;
+          const a = drinkDemand[dr.id];
+          const val = a ? (weekend ? a.weekend : a.weekday) : null;
+          if(val !== null){ hasData = true; cups += val; }
+        });
+      }
+      return {cups, hasData, allEnded: linkedDrinks.length > 0 && !anyActiveDay};
+    }
 
     const start = ingredient.storeDeliveryStartDate;
     let balance = computeIngredientBalanceAsOf(ingredient, addDays(start, -1));
@@ -1864,17 +1930,12 @@
           coverageStart = addDays(ds,2);
           coverageEnd = coverageStart;
         }
-        // プロモーションの販売終了日以降は誰も飲まないので、その分の需要は必要量に含めない
+        // プロモーション/各ドリンクの販売終了日以降は誰も飲まないので、その分の需要は必要量に含めない
         // (在庫が余りすぎるのを防ぐため - 終了日を過ぎたら発注推奨数は自然と0に収束する)
-        if(saleEndDate && coverageEnd > saleEndDate) coverageEnd = saleEndDate;
-
-        let neededCups = 0;
-        let coverageHasData = false;
-        for(let d=coverageStart; d<=coverageEnd; d=addDays(d,1)){
-          const a = demand[ingredient.id];
-          const val = isWeekendType(d) ? a.weekend : a.weekday;
-          if(val !== null){ coverageHasData = true; neededCups += val; }
-        }
+        const coverage = sumDemand(coverageStart, coverageEnd, true);
+        const neededCups = coverage.cups;
+        const coverageHasData = coverage.hasData;
+        const coverageAllEnded = coverage.allEnded;
 
         const targetUnits = neededCups / cupsPerUnit;
         const shortfallCups = neededCups - balance;
@@ -1895,21 +1956,11 @@
         const isFirstOrder = !firstOrderSeen;
         firstOrderSeen = true;
         const bridgeStart = isFirstOrder ? start : ds;
-        // if the bridge window starts after the promotion's own end date, there's nothing left to bridge to -
-        // this is "sale already ended", not "no data", and must be distinguished from a genuine data gap below
-        const bridgeSaleEnded = !!(saleEndDate && bridgeStart > saleEndDate);
-        let bridgeCups = 0;
-        let bridgeHasData = false;
-        for(let d=bridgeStart; d<arrivalDs; d=addDays(d,1)){
-          if(saleEndDate && d > saleEndDate) break;
-          const a = demand[ingredient.id];
-          const val = isWeekendType(d) ? a.weekend : a.weekday;
-          if(val !== null){ bridgeHasData = true; bridgeCups += val; }
-        }
-        const bridgeUnits = (bridgeCups * BRIDGE_SAFETY_MARGIN) / cupsPerUnit;
+        const bridge = sumDemand(bridgeStart, arrivalDs, false);
+        const bridgeUnits = (bridge.cups * BRIDGE_SAFETY_MARGIN) / cupsPerUnit;
 
-        recs[arrivalDs] = {orderQty, orderDate: ds, coverageStart, coverageEnd, balanceCups: balance, targetUnits, coverageHasData};
-        bridges[ds] = {bridgeUnits, arrivalDs, bridgeHasData, bridgeSaleEnded};
+        recs[arrivalDs] = {orderQty, orderDate: ds, coverageStart, coverageEnd, balanceCups: balance, targetUnits, coverageHasData, coverageAllEnded};
+        bridges[ds] = {bridgeUnits, arrivalDs, bridgeHasData: bridge.hasData, bridgeSaleEnded: bridge.allEnded};
 
         if(orderQty > 0){
           scheduledArrivals[arrivalDs] = (scheduledArrivals[arrivalDs] || 0) + deliveryQtyToCups(ingredient, orderQty);
@@ -1932,13 +1983,14 @@
     const lastWeekStart = state.orderWeeks[state.orderWeeks.length-1];
     const toDs = addDays(lastWeekStart, 6);
     const demand = computeIngredientDemandAverages();
+    const drinkDemand = computeDrinkDemandAverages();
     // プロモーションに販売終了日が設定されていれば、それ以降の需要は発注推奨数から除外する(在庫の余りすぎ防止)
     const currentPromo = meta.promotions.find(p=>p.id===meta.currentId);
     const saleEndDate = currentPromo && currentPromo.endDate ? currentPromo.endDate : null;
     const recsByIngredient = {};
     const remainingByIngredient = {};
     state.ingredients.forEach(ing=>{
-      recsByIngredient[ing.id] = computeOrderRecommendationSeries(ing, demand, toDs, saleEndDate);
+      recsByIngredient[ing.id] = computeOrderRecommendationSeries(ing, drinkDemand, toDs, saleEndDate);
       if(ing.restockEnded) remainingByIngredient[ing.id] = computeRemainingStock(ing, demand);
     });
 
@@ -2000,13 +2052,13 @@
             const titleParts = [];
             let cellHtml = "";
             if(rec){
-              const rangeLabel2 = rec.coverageEnd < rec.coverageStart
+              const rangeLabel2 = rec.coverageAllEnded
                 ? "販売終了のため不要"
                 : rec.coverageStart === rec.coverageEnd
                   ? rec.coverageStart.slice(5).replace("-","/")
                   : `${rec.coverageStart.slice(5).replace("-","/")}〜${rec.coverageEnd.slice(5).replace("-","/")}`;
               const orderDateLabel = rec.orderDate.slice(5).replace("-","/");
-              const recNoData = rec.coverageEnd >= rec.coverageStart && !rec.coverageHasData;
+              const recNoData = !rec.coverageAllEnded && !rec.coverageHasData;
               if(recNoData){
                 titleParts.push(`発注日${orderDateLabel} / 杯数予測・実績が未入力のため算出できません(取引件数または実績を入力してください)`);
                 cellHtml += `<span style="color:var(--danger);">要実績入力</span>`;

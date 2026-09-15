@@ -1771,11 +1771,19 @@
 
     state.forecastDays.forEach(entry=>{
       const hasTransactions = entry.transactions !== "" && entry.transactions !== undefined && entry.transactions !== null;
-      const hasAnyActual = entry.actuals && Object.values(entry.actuals).some(v=>v!==undefined && v!=="" && !isNaN(Number(v)));
-      if(!hasTransactions && !hasAnyActual) return; // no usable data for this day at all
       const weekend = isWeekendType(entry.date);
       state.ingredients.forEach(ing=>{
         if((Number(ing.cupsPerUnit) || 0) <= 0) return;
+        // a day only counts toward THIS ingredient's average if at least one drink that uses it has
+        // real data that day (its own actual, or transactions to predict from via UPT) - otherwise
+        // ingredientCupsConsumedOnDate would silently fall back to 0 for that drink and wrongly dilute
+        // the average, even though the day had unrelated data for some other drink.
+        const hasUsableData = state.drinks.some(d=>{
+          if(!d.uses[ing.id]) return false;
+          const actualVal = entry.actuals ? entry.actuals[d.id] : undefined;
+          return (actualVal !== undefined && actualVal !== "" && !isNaN(Number(actualVal))) || hasTransactions;
+        });
+        if(!hasUsableData) return;
         const cups = ingredientCupsConsumedOnDate(ing, entry, entry.date);
         (weekend ? weekendVals : weekdayVals)[ing.id].push(cups);
       });
@@ -1861,10 +1869,11 @@
         if(saleEndDate && coverageEnd > saleEndDate) coverageEnd = saleEndDate;
 
         let neededCups = 0;
+        let coverageHasData = false;
         for(let d=coverageStart; d<=coverageEnd; d=addDays(d,1)){
           const a = demand[ingredient.id];
           const val = isWeekendType(d) ? a.weekend : a.weekday;
-          neededCups += (val===null ? 0 : val);
+          if(val !== null){ coverageHasData = true; neededCups += val; }
         }
 
         const targetUnits = neededCups / cupsPerUnit;
@@ -1887,16 +1896,17 @@
         firstOrderSeen = true;
         const bridgeStart = isFirstOrder ? start : ds;
         let bridgeCups = 0;
+        let bridgeHasData = false;
         for(let d=bridgeStart; d<arrivalDs; d=addDays(d,1)){
           if(saleEndDate && d > saleEndDate) break;
           const a = demand[ingredient.id];
           const val = isWeekendType(d) ? a.weekend : a.weekday;
-          bridgeCups += (val===null ? 0 : val);
+          if(val !== null){ bridgeHasData = true; bridgeCups += val; }
         }
         const bridgeUnits = (bridgeCups * BRIDGE_SAFETY_MARGIN) / cupsPerUnit;
 
-        recs[arrivalDs] = {orderQty, orderDate: ds, coverageStart, coverageEnd, balanceCups: balance, targetUnits};
-        bridges[ds] = {bridgeUnits, arrivalDs};
+        recs[arrivalDs] = {orderQty, orderDate: ds, coverageStart, coverageEnd, balanceCups: balance, targetUnits, coverageHasData};
+        bridges[ds] = {bridgeUnits, arrivalDs, bridgeHasData};
 
         if(orderQty > 0){
           scheduledArrivals[arrivalDs] = (scheduledArrivals[arrivalDs] || 0) + deliveryQtyToCups(ingredient, orderQty);
@@ -1993,13 +2003,24 @@
                   ? rec.coverageStart.slice(5).replace("-","/")
                   : `${rec.coverageStart.slice(5).replace("-","/")}〜${rec.coverageEnd.slice(5).replace("-","/")}`;
               const orderDateLabel = rec.orderDate.slice(5).replace("-","/");
-              titleParts.push(`発注日${orderDateLabel} / 現在庫${fmt(rec.balanceCups,0)}杯 / 対象${rangeLabel2} / 目安${fmt(rec.targetUnits,1)}個(次の便までに必要な量)`);
-              cellHtml += `${rec.orderQty}`;
+              const recNoData = rec.coverageEnd >= rec.coverageStart && !rec.coverageHasData;
+              if(recNoData){
+                titleParts.push(`発注日${orderDateLabel} / 杯数予測・実績が未入力のため算出できません(取引件数または実績を入力してください)`);
+                cellHtml += `<span style="color:var(--danger);">要実績入力</span>`;
+              } else {
+                titleParts.push(`発注日${orderDateLabel} / 現在庫${fmt(rec.balanceCups,0)}杯 / 対象${rangeLabel2} / 目安${fmt(rec.targetUnits,1)}個(次の便までに必要な量)`);
+                cellHtml += `${rec.orderQty}`;
+              }
             }
             if(bridge){
               const arrivalLabel = bridge.arrivalDs.slice(5).replace("-","/");
-              titleParts.push(`着荷日${arrivalLabel}までに必要な在庫(安全余裕込み)`);
-              cellHtml += `<span class="hint" style="display:block;font-size:9px;white-space:nowrap;">適材${fmt(bridge.bridgeUnits,1)}個</span>`;
+              if(!bridge.bridgeHasData){
+                titleParts.push(`着荷日${arrivalLabel}までに必要な在庫 / 杯数予測・実績が未入力のため算出できません(取引件数または実績を入力してください)`);
+                cellHtml += `<span class="hint" style="display:block;font-size:9px;white-space:nowrap;color:var(--danger);">適材:データ不足</span>`;
+              } else {
+                titleParts.push(`着荷日${arrivalLabel}までに必要な在庫(安全余裕込み)`);
+                cellHtml += `<span class="hint" style="display:block;font-size:9px;white-space:nowrap;">適材${fmt(bridge.bridgeUnits,1)}個</span>`;
+              }
             }
             bodyHtml += `<td title="${titleParts.join(" / ")}">${cellHtml}</td>`;
           } else {

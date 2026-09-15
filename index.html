@@ -1929,9 +1929,11 @@
     const lastWeekStart = state.orderWeeks[state.orderWeeks.length-1];
     const toDs = addDays(lastWeekStart, 6);
     const demand = computeIngredientDemandAverages();
+    console.log("[debug] demand averages", state.ingredients.map(ing=>({name:ing.name, weekday:demand[ing.id] && demand[ing.id].weekday, weekend:demand[ing.id] && demand[ing.id].weekend})));
     // プロモーションに販売終了日が設定されていれば、それ以降の需要は発注推奨数から除外する(在庫の余りすぎ防止)
     const currentPromo = meta.promotions.find(p=>p.id===meta.currentId);
     const saleEndDate = currentPromo && currentPromo.endDate ? currentPromo.endDate : null;
+    console.log("[debug] saleEndDate", saleEndDate);
     const recsByIngredient = {};
     const remainingByIngredient = {};
     state.ingredients.forEach(ing=>{

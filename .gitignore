@@ -1,16 +1,6 @@
 .DS_Store
 
 # ブラックエプロン学習用の資料（社外秘）は絶対に公開しない
-BA/*.pdf
-BA/*.PDF
-BA/*.jpg
-BA/*.jpeg
-BA/*.JPG
-BA/*.JPEG
-BA/*.png
-BA/*.PNG
-BA/*.heic
-BA/*.HEIC
-BA/photos/
-BA/data/
-BA/*.json
+# BA/ はアプリ本体（index.html）以外すべて対象外
+BA/*
+!BA/index.html

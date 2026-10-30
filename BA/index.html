@@ -173,6 +173,7 @@
     position: relative;
   }
   .bk-ans { white-space: pre-wrap; }
+  .bk-none { cursor: default; }
   .bk-a.hidden { background: #e9efec; }
   .bk-a.hidden .bk-ans, .bk-a.hidden .bk-grade { visibility: hidden; }
   .bk-grade { display: flex; gap: 4px; justify-content: flex-end; margin: 2px 0 2px; }
@@ -403,7 +404,7 @@
   }
 
   function pool() {
-    return questions.filter((q) => !settings.chapter || (q.chapter || 'その他') === settings.chapter);
+    return questions.filter((q) => q.a && (!settings.chapter || (q.chapter || 'その他') === settings.chapter));
   }
 
   function pickNext() {
@@ -545,7 +546,7 @@
       const s = statusOf(q.id);
       if (f === 'xt') return s === 'x' || s === 't';
       if (f === 'x') return s === 'x';
-      if (f === 'n') return s === 'n';
+      if (f === 'n') return s === 'n' && q.a;
       return true;
     });
   }
@@ -586,14 +587,14 @@
               const s = statusOf(q.id);
               return `<div class="bk-row" data-id="${esc(q.id)}">
                 <div class="bk-q">${markHtml(s)}${esc(q.q)}</div>
-                <div class="bk-a hidden">
+                ${!q.a ? '<div class="bk-a bk-none"></div>' : `<div class="bk-a hidden">
                   <div class="bk-ans">${esc(q.a)}</div>
                   <div class="bk-grade">
                     <button class="x${s === 'x' ? ' on' : ''}" data-g="x">✕</button>
                     <button class="t${s === 't' ? ' on' : ''}" data-g="t">△</button>
                     <button class="o${s === 'o' ? ' on' : ''}" data-g="o">◎</button>
                   </div>
-                </div>
+                </div>`}
               </div>`;
             }).join('')}
             <canvas class="bk-ink"></canvas>
@@ -617,7 +618,7 @@
 
   $('#book-body').addEventListener('click', (e) => {
     const cell = e.target.closest('.bk-a');
-    if (!cell) return;
+    if (!cell || cell.classList.contains('bk-none')) return;
     const gb = e.target.closest('.bk-grade button');
     if (cell.classList.contains('hidden')) { cell.classList.remove('hidden'); return; }
     if (!gb) { cell.classList.add('hidden'); return; }
@@ -634,7 +635,7 @@
   $('#b-filter').onchange = () => { renderBook(); };
   $('#b-showall').onclick = () => {
     allShown = !allShown;
-    document.querySelectorAll('#book-body .bk-a').forEach((c) => c.classList.toggle('hidden', !allShown));
+    document.querySelectorAll('#book-body .bk-a:not(.bk-none)').forEach((c) => c.classList.toggle('hidden', !allShown));
     $('#b-showall').textContent = allShown ? '答えを全部隠す' : '答えを全部見る';
   };
   $('#b-clear').onclick = () => {
@@ -771,7 +772,8 @@
 
   // ---------- 進み具合 ----------
   function renderProgress() {
-    const groups = [['全体', questions], ...chapters().map((c) => [c, questions.filter((q) => (q.chapter || 'その他') === c)])];
+    const qs = questions.filter((q) => q.a);
+    const groups = [['全体', qs], ...chapters().map((c) => [c, qs.filter((q) => (q.chapter || 'その他') === c)])];
     const row = ([name, list]) => {
       const c = { x: 0, t: 0, o: 0, n: 0 };
       list.forEach((q) => c[statusOf(q.id)]++);

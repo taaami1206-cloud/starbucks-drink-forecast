@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="BA暗記">
+<title>ブラックエプロン 一問一答</title>
+<style>
+  :root {
+    --green: #00704a;
+    --green-dark: #1e3932;
+    --green-light: #d4e9e2;
+    --cream: #f2f0eb;
+    --text: #1f1f1f;
+    --muted: #6b6b6b;
+    --x: #c8102e;
+    --t: #cba258;
+    --o: #00704a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    -webkit-user-select: none;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    background: var(--green-dark);
+    color: #fff;
+    padding: calc(env(safe-area-inset-top) + 10px) 16px 0;
+  }
+  header h1 { margin: 0 0 8px; font-size: 18px; font-weight: 700; }
+  nav { display: flex; gap: 4px; }
+  nav button {
+    flex: 1;
+    background: transparent;
+    color: #cfe3dc;
+    border: none;
+    padding: 10px 0;
+    font-size: 15px;
+    border-bottom: 3px solid transparent;
+  }
+  nav button.active { color: #fff; border-bottom-color: #fff; font-weight: 700; }
+  main { flex: 1; overflow: auto; padding: 16px; }
+  .tab { display: none; }
+  .tab.active { display: block; }
+  button { font-family: inherit; cursor: pointer; }
+  .btn {
+    border: none;
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 16px;
+    background: var(--green);
+    color: #fff;
+  }
+  .btn.sub { background: #fff; color: var(--green-dark); border: 1px solid #c9c9c9; }
+  .btn:disabled { opacity: 0.4; }
+  .card { background: #fff; border-radius: 14px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  select, input[type=text], textarea {
+    font-family: inherit;
+    font-size: 16px;
+    padding: 8px 10px;
+    border: 1px solid #c9c9c9;
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  /* 学習 */
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+  .filters label { font-size: 14px; color: var(--muted); }
+  .study { display: grid; gap: 14px; grid-template-columns: 1fr; }
+  @media (orientation: landscape) and (min-width: 900px) {
+    .study { grid-template-columns: 1fr 1fr; }
+  }
+  .meta { font-size: 13px; color: var(--muted); margin-bottom: 8px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; color: #fff; }
+  .badge.x { background: var(--x); }
+  .badge.t { background: var(--t); }
+  .badge.o { background: var(--o); }
+  .badge.n { background: #999; }
+  .question { font-size: 21px; line-height: 1.7; white-space: pre-wrap; -webkit-user-select: text; user-select: text; }
+  .answer {
+    margin-top: 14px;
+    padding: 14px;
+    border-radius: 10px;
+    background: var(--green-light);
+    font-size: 21px;
+    line-height: 1.7;
+    font-weight: 700;
+    color: var(--green-dark);
+    white-space: pre-wrap;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  .answer.hidden { display: none; }
+  .actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  .grade { display: none; gap: 10px; margin-top: 14px; }
+  .grade.show { display: flex; }
+  .grade button { flex: 1; font-size: 26px; padding: 14px 0; border-radius: 12px; border: none; color: #fff; }
+  .grade button small { display: block; font-size: 12px; }
+  .grade .x { background: var(--x); }
+  .grade .t { background: var(--t); }
+  .grade .o { background: var(--o); }
+  .pad-wrap { position: relative; }
+  .pad-tools { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+  .pad-tools .hint { font-size: 12px; color: var(--muted); }
+  canvas#pad {
+    width: 100%;
+    height: max(360px, calc(100vh - 470px));
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    touch-action: none;
+    display: block;
+    background-image: repeating-linear-gradient(transparent, transparent 47px, #e8e8e8 47px, #e8e8e8 48px);
+  }
+  @media (orientation: landscape) and (min-width: 900px) {
+    canvas#pad { height: calc(100vh - 230px); min-height: 360px; }
+  }
+  .empty { text-align: center; color: var(--muted); padding: 40px 10px; line-height: 1.8; }
+
+  /* 進み具合 */
+  .bar { display: flex; height: 14px; border-radius: 7px; overflow: hidden; background: #e5e5e5; }
+  .bar span { display: block; height: 100%; }
+  .prog-row { padding: 12px 0; border-bottom: 1px solid #eee; }
+  .prog-row:last-child { border-bottom: none; }
+  .prog-head { display: flex; justify-content: space-between; font-size: 15px; margin-bottom: 6px; gap: 8px; }
+  .prog-head .nums { color: var(--muted); font-size: 13px; white-space: nowrap; }
+  .legend { display: flex; gap: 14px; font-size: 13px; color: var(--muted); margin: 6px 0 12px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+
+  /* 一覧 */
+  .list-item { padding: 12px 0; border-bottom: 1px solid #eee; }
+  .list-item .q { font-size: 15px; white-space: pre-wrap; }
+  .list-item .a { font-size: 15px; color: var(--green); font-weight: 700; margin-top: 4px; white-space: pre-wrap; }
+  .list-item .row { display: flex; justify-content: space-between; gap: 8px; align-items: center; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .edit-form { display: grid; gap: 8px; margin-top: 8px; }
+  .edit-form textarea { width: 100%; min-height: 70px; }
+
+  /* 設定 */
+  .settings section { margin-bottom: 16px; }
+  .settings h2 { font-size: 16px; margin: 0 0 8px; }
+  .settings p { font-size: 14px; color: var(--muted); line-height: 1.7; margin: 0 0 10px; }
+  .toast {
+    position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 24px);
+    transform: translateX(-50%);
+    background: rgba(30,57,50,0.95); color: #fff; padding: 10px 18px; border-radius: 999px;
+    font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<header>
+  <h1>ブラックエプロン 一問一答</h1>
+  <nav>
+    <button data-tab="study" class="active">学習</button>
+    <button data-tab="progress">進み具合</button>
+    <button data-tab="list">問題一覧</button>
+    <button data-tab="settings">設定</button>
+  </nav>
+</header>
+
+<main>
+  <!-- 学習 -->
+  <div id="tab-study" class="tab active">
+    <div class="filters">
+      <label>章</label>
+      <select id="f-chapter"></select>
+      <label>出題</label>
+      <select id="f-mode">
+        <option value="smart">苦手優先（おすすめ）</option>
+        <option value="x">✕だけ</option>
+        <option value="xt">✕と△だけ</option>
+        <option value="new">まだ解いていない問題</option>
+        <option value="all">全部を順番に</option>
+      </select>
+    </div>
+    <div id="study-body"></div>
+  </div>
+
+  <!-- 進み具合 -->
+  <div id="tab-progress" class="tab">
+    <div class="card" id="progress-body"></div>
+  </div>
+
+  <!-- 問題一覧 -->
+  <div id="tab-list" class="tab">
+    <div class="filters">
+      <label>章</label>
+      <select id="l-chapter"></select>
+      <label>表示</label>
+      <select id="l-status">
+        <option value="">すべて</option>
+        <option value="x">✕</option>
+        <option value="t">△</option>
+        <option value="o">◎</option>
+        <option value="n">未</option>
+      </select>
+      <input type="text" id="l-search" placeholder="キーワードで探す">
+    </div>
+    <div class="card" id="list-body"></div>
+  </div>
+
+  <!-- 設定 -->
+  <div id="tab-settings" class="tab settings">
+    <div class="card">
+      <section>
+        <h2>問題データの取り込み</h2>
+        <p>問題ファイル（.json）を選んでください。同じ問題は上書きされ、◎△✕の記録はそのまま残ります。<br>問題データはこのiPadの中だけに保存され、外には送られません。</p>
+        <input type="file" id="import-file" accept=".json,application/json" hidden>
+        <button class="btn" id="import-btn">問題ファイルを選ぶ</button>
+        <p id="data-info" style="margin-top:10px"></p>
+      </section>
+      <section>
+        <h2>バックアップ</h2>
+        <p>問題と◎△✕の記録を1つのファイルに保存します。Safariの履歴を消すと記録も消えてしまうので、ときどき保存しておくと安心です。バックアップファイルは「問題ファイルを選ぶ」から読み込んで戻せます。</p>
+        <button class="btn sub" id="export-btn">バックアップを保存</button>
+      </section>
+      <section>
+        <h2>リセット</h2>
+        <p>◎△✕の記録だけを消します（問題は残ります）。</p>
+        <button class="btn sub" id="reset-progress">記録をリセット</button>
+      </section>
+      <section>
+        <h2>すべて削除</h2>
+        <p>問題と記録をこのiPadからすべて削除します。</p>
+        <button class="btn sub" id="reset-all" style="color:var(--x)">すべて削除</button>
+      </section>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const QKEY = 'ba.questions.v1';
+  const PKEY = 'ba.progress.v1';
+  const SKEY = 'ba.settings.v1';
+  const DAY = 24 * 60 * 60 * 1000;
+
+  // 一般的なコーヒー知識のサンプル（問題ファイルを取り込むと置き換わる）
+  const SAMPLE = [
+    { id: 'sample-1', chapter: 'サンプル', q: '商業生産されているコーヒーの2大品種は？', a: 'アラビカ種／ロブスタ種（カネフォラ種）' },
+    { id: 'sample-2', chapter: 'サンプル', q: 'コーヒーの実は、その見た目から何と呼ばれる？', a: 'コーヒーチェリー' },
+    { id: 'sample-3', chapter: 'サンプル', q: 'コーヒーの3つの主な生産地域は？', a: 'ラテンアメリカ／アフリカ／アジア太平洋' },
+    { id: 'sample-4', chapter: 'サンプル', q: '果肉を取り除いてから乾燥させる加工法は？', a: '水洗式（ウォッシュト）' },
+    { id: 'sample-5', chapter: 'サンプル', q: 'コーヒーチェリーを果肉ごと乾燥させる加工法は？', a: '乾燥式（ナチュラル）' },
+  ];
+
+  const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch { return d; } };
+  const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+  let questions = load(QKEY, null) || SAMPLE.slice();
+  let progress = load(PKEY, {});
+  let settings = load(SKEY, { chapter: '', mode: 'smart', penOnly: false, lchapter: '' });
+  const saveQ = () => save(QKEY, questions);
+  const saveP = () => save(PKEY, progress);
+  const saveS = () => save(SKEY, settings);
+
+  const $ = (s) => document.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const statusOf = (id) => (progress[id] && progress[id].s) || 'n';
+  const LABEL = { x: '✕', t: '△', o: '◎', n: '未' };
+  const chapters = () => [...new Set(questions.map((q) => q.chapter || 'その他'))];
+
+  function toast(msg) {
+    const t = $('#toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => t.classList.remove('show'), 1800);
+  }
+
+  // ---------- タブ ----------
+  document.querySelectorAll('nav button').forEach((b) => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('nav button').forEach((x) => x.classList.toggle('active', x === b));
+      document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t.id === 'tab-' + b.dataset.tab));
+      if (b.dataset.tab === 'progress') renderProgress();
+      if (b.dataset.tab === 'list') renderList();
+      if (b.dataset.tab === 'settings') renderSettings();
+      if (b.dataset.tab === 'study') { renderStudy(); }
+    });
+  });
+
+  function fillChapterSelect(sel, value) {
+    sel.innerHTML = '<option value="">すべての章</option>' +
+      chapters().map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    sel.value = chapters().includes(value) ? value : '';
+  }
+
+  // ---------- 出題 ----------
+  let current = null;
+  let recent = [];
+  let seqIndex = 0;
+
+  // ◎は連続正解数に応じて間隔を空ける（1日→3日→7日→14日…）、△は翌日、✕はすぐ
+  function dueAt(p) {
+    if (!p) return 0;
+    if (p.s === 'x') return p.last;
+    if (p.s === 't') return p.last + DAY;
+    const gaps = [1, 3, 7, 14, 30];
+    return p.last + gaps[Math.min(p.streak - 1, gaps.length - 1)] * DAY;
+  }
+
+  function pool() {
+    return questions.filter((q) => !settings.chapter || (q.chapter || 'その他') === settings.chapter);
+  }
+
+  function pickNext() {
+    const list = pool();
+    if (!list.length) return null;
+    const mode = settings.mode;
+    if (mode === 'all') {
+      seqIndex = seqIndex % list.length;
+      return list[seqIndex++];
+    }
+    let cands = list;
+    if (mode === 'x') cands = list.filter((q) => statusOf(q.id) === 'x');
+    if (mode === 'xt') cands = list.filter((q) => ['x', 't'].includes(statusOf(q.id)));
+    if (mode === 'new') cands = list.filter((q) => statusOf(q.id) === 'n');
+    if (!cands.length) return null;
+
+    const now = Date.now();
+    const rank = { x: 0, t: 1, n: 2, o: 3 };
+    const scored = cands.map((q, i) => {
+      const p = progress[q.id];
+      const s = statusOf(q.id);
+      const due = dueAt(p);
+      // 期限が来ていない△◎は後回し
+      const waiting = s !== 'n' && s !== 'x' && due > now;
+      return { q, key: [waiting ? 1 : 0, rank[s], s === 'n' ? i : due] };
+    });
+    scored.sort((a, b) => a.key[0] - b.key[0] || a.key[1] - b.key[1] || a.key[2] - b.key[2]);
+    // 直前に出た問題はなるべく続けて出さない
+    const avoid = Math.min(recent.length, Math.max(0, cands.length - 1));
+    const recentSet = new Set(recent.slice(-avoid));
+    const pick = scored.find((x) => !recentSet.has(x.q.id)) || scored[0];
+    return pick.q;
+  }
+
+  function renderStudy() {
+    fillChapterSelect($('#f-chapter'), settings.chapter);
+    $('#f-mode').value = settings.mode;
+    if (!current || !pool().includes(current)) current = pickNext();
+    drawCard();
+  }
+
+  function drawCard() {
+    const body = $('#study-body');
+    if (!questions.length) {
+      body.innerHTML = '<div class="card empty">問題がありません。<br>「設定」から問題ファイルを取り込んでください。</div>';
+      return;
+    }
+    if (!current) {
+      const msg = settings.mode === 'x' ? '✕の問題はありません！'
+        : settings.mode === 'xt' ? '✕と△の問題はありません！'
+        : settings.mode === 'new' ? 'まだ解いていない問題はありません！'
+        : 'この章には問題がありません。';
+      body.innerHTML = `<div class="card empty">${msg}<br>出題の種類や章を変えてみてください。</div>`;
+      return;
+    }
+    const s = statusOf(current.id);
+    const p = progress[current.id];
+    const list = pool();
+    const counts = { x: 0, t: 0, o: 0, n: 0 };
+    list.forEach((q) => counts[statusOf(q.id)]++);
+    body.innerHTML = `
+      <div class="study">
+        <div class="card">
+          <div class="meta">
+            <span class="badge ${s}">${LABEL[s]}</span>
+            <span>${esc(current.chapter || '')}${current.section ? ' ／ ' + esc(current.section) : ''}</span>
+            ${p ? `<span>${p.n}回目</span>` : ''}
+            <span style="margin-left:auto">✕${counts.x} △${counts.t} ◎${counts.o} 未${counts.n}</span>
+          </div>
+          <div class="question">${esc(current.q)}</div>
+          <div class="answer hidden" id="answer">${esc(current.a)}</div>
+          <div class="actions" id="reveal-row">
+            <button class="btn" id="reveal" style="flex:1">答えを見る</button>
+            <button class="btn sub" id="skip">とばす</button>
+          </div>
+          <div class="grade" id="grade">
+            <button class="x" data-g="x">✕<small>わからない</small></button>
+            <button class="t" data-g="t">△<small>迷った</small></button>
+            <button class="o" data-g="o">◎<small>すぐ答えられた</small></button>
+          </div>
+        </div>
+        <div class="pad-wrap">
+          <div class="pad-tools">
+            <button class="btn sub" id="pad-clear">消す</button>
+            <button class="btn sub" id="pad-undo">1つ戻す</button>
+            <label style="font-size:14px"><input type="checkbox" id="pen-only" ${settings.penOnly ? 'checked' : ''}> ペンだけで書く</label>
+            <span class="hint">答えを思い出してから書いてみよう</span>
+          </div>
+          <canvas id="pad"></canvas>
+        </div>
+      </div>`;
+    $('#reveal').onclick = () => {
+      $('#answer').classList.remove('hidden');
+      $('#reveal-row').style.display = 'none';
+      $('#grade').classList.add('show');
+    };
+    $('#skip').onclick = () => next();
+    document.querySelectorAll('#grade button').forEach((b) => (b.onclick = () => grade(b.dataset.g)));
+    $('#pen-only').onchange = (e) => { settings.penOnly = e.target.checked; saveS(); };
+    setupPad();
+  }
+
+  function grade(g) {
+    const p = progress[current.id] || { n: 0, streak: 0 };
+    p.s = g;
+    p.n += 1;
+    p.last = Date.now();
+    p.streak = g === 'o' ? (p.streak || 0) + 1 : 0;
+    progress[current.id] = p;
+    saveP();
+    next();
+  }
+
+  function next() {
+    recent.push(current.id);
+    if (recent.length > 5) recent.shift();
+    current = pickNext();
+    drawCard();
+    $('main').scrollTop = 0;
+  }
+
+  $('#f-chapter').onchange = (e) => { settings.chapter = e.target.value; saveS(); seqIndex = 0; current = pickNext(); drawCard(); };
+  $('#f-mode').onchange = (e) => { settings.mode = e.target.value; saveS(); seqIndex = 0; current = pickNext(); drawCard(); };
+
+  // ---------- 手書き ----------
+  function setupPad() {
+    const canvas = $('#pad');
+    const ctx = canvas.getContext('2d');
+    let strokes = [];
+    let drawing = null;
+
+    function resize() {
+      const r = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = r.width * dpr;
+      canvas.height = r.height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      redraw();
+    }
+    function drawStroke(st) {
+      ctx.strokeStyle = '#1f1f1f';
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      for (let i = 1; i < st.length; i++) {
+        const a = st[i - 1], b = st[i];
+        ctx.lineWidth = 1.2 + b.p * 3.2;
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+      }
+    }
+    function redraw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      strokes.forEach(drawStroke);
+    }
+    const pt = (e) => {
+      const r = canvas.getBoundingClientRect();
+      return { x: e.clientX - r.left, y: e.clientY - r.top, p: e.pointerType === 'pen' ? (e.pressure || 0.5) : 0.5 };
+    };
+    canvas.onpointerdown = (e) => {
+      // Apple Pencilを一度使ったら、手のひらで線が入らないようにペンだけにする
+      if (e.pointerType === 'pen' && !settings.penOnly) {
+        settings.penOnly = true;
+        saveS();
+        const cb = $('#pen-only');
+        if (cb) cb.checked = true;
+      }
+      if (settings.penOnly && e.pointerType !== 'pen') return;
+      canvas.setPointerCapture(e.pointerId);
+      drawing = [pt(e)];
+      strokes.push(drawing);
+    };
+    canvas.onpointermove = (e) => {
+      if (!drawing) return;
+      const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+      evs.forEach((ev) => drawing.push(pt(ev)));
+      drawStroke(drawing.slice(-evs.length - 1));
+    };
+    canvas.onpointerup = canvas.onpointercancel = () => { drawing = null; };
+    $('#pad-clear').onclick = () => { strokes = []; redraw(); };
+    $('#pad-undo').onclick = () => { strokes.pop(); redraw(); };
+    resize();
+    window.onresize = resize;
+  }
+
+  // ---------- 進み具合 ----------
+  function renderProgress() {
+    const groups = [['全体', questions], ...chapters().map((c) => [c, questions.filter((q) => (q.chapter || 'その他') === c)])];
+    const row = ([name, list]) => {
+      const c = { x: 0, t: 0, o: 0, n: 0 };
+      list.forEach((q) => c[statusOf(q.id)]++);
+      const total = list.length || 1;
+      const pct = (k) => (c[k] / total) * 100;
+      return `
+        <div class="prog-row">
+          <div class="prog-head">
+            <span>${name === '全体' ? '<b>全体</b>' : esc(name)}</span>
+            <span class="nums">◎${c.o} △${c.t} ✕${c.x} 未${c.n} ／ ${list.length}問（◎${Math.round(pct('o'))}%）</span>
+          </div>
+          <div class="bar">
+            <span style="width:${pct('o')}%;background:var(--o)"></span>
+            <span style="width:${pct('t')}%;background:var(--t)"></span>
+            <span style="width:${pct('x')}%;background:var(--x)"></span>
+          </div>
+        </div>`;
+    };
+    $('#progress-body').innerHTML = `
+      <div class="legend"><span><i style="background:var(--o)"></i>◎</span><span><i style="background:var(--t)"></i>△</span><span><i style="background:var(--x)"></i>✕</span><span><i style="background:#e5e5e5"></i>未</span></div>
+      ${groups.map(row).join('')}`;
+  }
+
+  // ---------- 一覧・編集 ----------
+  let editing = null;
+  function renderList() {
+    fillChapterSelect($('#l-chapter'), settings.lchapter);
+    const ch = $('#l-chapter').value;
+    const st = $('#l-status').value;
+    const kw = $('#l-search').value.trim();
+    const list = questions.filter((q) =>
+      (!ch || (q.chapter || 'その他') === ch) &&
+      (!st || statusOf(q.id) === st) &&
+      (!kw || (q.q + ' ' + q.a).includes(kw)));
+    if (!list.length) { $('#list-body').innerHTML = '<div class="empty">該当する問題はありません。</div>'; return; }
+    $('#list-body').innerHTML = list.map((q) => {
+      const s = statusOf(q.id);
+      if (editing === q.id) {
+        return `<div class="list-item">
+          <div class="row"><span>${esc(q.chapter || '')}</span></div>
+          <div class="edit-form">
+            <label style="font-size:13px">問題</label><textarea id="e-q">${esc(q.q)}</textarea>
+            <label style="font-size:13px">答え</label><textarea id="e-a">${esc(q.a)}</textarea>
+            <div class="actions" style="margin-top:0">
+              <button class="btn" data-save="${esc(q.id)}">保存</button>
+              <button class="btn sub" data-cancel>やめる</button>
+            </div>
+          </div></div>`;
+      }
+      return `<div class="list-item">
+        <div class="row">
+          <span><span class="badge ${s}">${LABEL[s]}</span> ${esc(q.chapter || '')}${q.section ? ' ／ ' + esc(q.section) : ''}</span>
+          <button class="btn sub" style="padding:4px 12px;font-size:13px" data-edit="${esc(q.id)}">直す</button>
+        </div>
+        <div class="q">${esc(q.q)}</div>
+        <div class="a">${esc(q.a)}</div>
+      </div>`;
+    }).join('');
+  }
+  $('#list-body').addEventListener('click', (e) => {
+    const t = e.target.closest('button');
+    if (!t) return;
+    if (t.dataset.edit) { editing = t.dataset.edit; renderList(); }
+    else if (t.hasAttribute('data-cancel')) { editing = null; renderList(); }
+    else if (t.dataset.save) {
+      const q = questions.find((x) => x.id === t.dataset.save);
+      q.q = $('#e-q').value.trim();
+      q.a = $('#e-a').value.trim();
+      q.edited = true;
+      saveQ();
+      editing = null;
+      renderList();
+      toast('保存しました');
+    }
+  });
+  $('#l-chapter').onchange = (e) => { settings.lchapter = e.target.value; saveS(); renderList(); };
+  $('#l-status').onchange = renderList;
+  $('#l-search').oninput = renderList;
+
+  // ---------- 設定 ----------
+  function renderSettings() {
+    const isSample = questions.length && questions.every((q) => q.id.startsWith('sample-'));
+    $('#data-info').textContent = isSample
+      ? '今はサンプル問題が入っています。'
+      : `今は ${questions.length} 問、${chapters().length} 章が入っています。`;
+  }
+
+  $('#import-btn').onclick = () => $('#import-file').click();
+  $('#import-file').onchange = async (e) => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      const data = JSON.parse(await file.text());
+      const incoming = Array.isArray(data) ? data : data.questions;
+      if (!Array.isArray(incoming)) throw new Error('questions がありません');
+      const valid = incoming.filter((q) => q && q.id && q.q != null && q.a != null);
+      // サンプルしか入っていなければ置き換える
+      if (questions.every((q) => q.id.startsWith('sample-'))) questions = [];
+      const byId = new Map(questions.map((q) => [q.id, q]));
+      let added = 0, updated = 0;
+      valid.forEach((q) => {
+        const item = { id: String(q.id), chapter: q.chapter || '', section: q.section || '', q: String(q.q), a: String(q.a) };
+        const old = byId.get(item.id);
+        // iPadで直した問題は上書きしない
+        if (old && old.edited) return;
+        if (old) { Object.assign(old, item); updated++; }
+        else { questions.push(item); byId.set(item.id, item); added++; }
+      });
+      saveQ();
+      if (data.progress && typeof data.progress === 'object') {
+        progress = { ...progress, ...data.progress };
+        saveP();
+      }
+      current = null;
+      renderSettings();
+      toast(`追加 ${added}問・更新 ${updated}問`);
+    } catch (err) {
+      alert('ファイルを読み込めませんでした：' + err.message);
+    }
+  };
+
+  $('#export-btn').onclick = () => {
+    const blob = new Blob([JSON.stringify({ version: 1, questions, progress }, null, 1)], { type: 'application/json' });
+    const d = new Date();
+    const name = `BA_backup_${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}.json`;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+
+  $('#reset-progress').onclick = () => {
+    if (!confirm('◎△✕の記録をすべて消しますか？')) return;
+    progress = {};
+    saveP();
+    current = null;
+    toast('記録をリセットしました');
+  };
+  $('#reset-all').onclick = () => {
+    if (!confirm('問題と記録をこのiPadからすべて削除しますか？')) return;
+    questions = SAMPLE.slice();
+    progress = {};
+    saveQ();
+    saveP();
+    current = null;
+    renderSettings();
+    toast('削除しました');
+  };
+
+  renderStudy();
+})();
+</script>
+</body>
+</html>

@@ -300,6 +300,9 @@
   let current = null;
   let recent = [];
   let seqIndex = 0;
+  // 「とばす」を押した問題は、この回の学習中は後回しにする
+  const skipped = new Map();
+  let skipSeq = 0;
 
   // ◎は連続正解数に応じて間隔を空ける（1日→3日→7日→14日…）、△は翌日、✕はすぐ
   function dueAt(p) {
@@ -336,9 +339,9 @@
       const due = dueAt(p);
       // 期限が来ていない△◎は後回し
       const waiting = s !== 'n' && s !== 'x' && due > now;
-      return { q, key: [waiting ? 1 : 0, rank[s], s === 'n' ? i : due] };
+      return { q, key: [waiting ? 1 : 0, skipped.get(q.id) || 0, rank[s], s === 'n' ? i : due] };
     });
-    scored.sort((a, b) => a.key[0] - b.key[0] || a.key[1] - b.key[1] || a.key[2] - b.key[2]);
+    scored.sort((a, b) => a.key[0] - b.key[0] || a.key[1] - b.key[1] || a.key[2] - b.key[2] || a.key[3] - b.key[3]);
     // 直前に出た問題はなるべく続けて出さない
     const avoid = Math.min(recent.length, Math.max(0, cands.length - 1));
     const recentSet = new Set(recent.slice(-avoid));
@@ -408,7 +411,7 @@
       $('#reveal-row').style.display = 'none';
       $('#grade').classList.add('show');
     };
-    $('#skip').onclick = () => next();
+    $('#skip').onclick = () => { skipped.set(current.id, ++skipSeq); next(); };
     document.querySelectorAll('#grade button').forEach((b) => (b.onclick = () => grade(b.dataset.g)));
     $('#pen-only').onchange = (e) => { settings.penOnly = e.target.checked; saveS(); };
     setupPad();
@@ -422,6 +425,7 @@
     p.streak = g === 'o' ? (p.streak || 0) + 1 : 0;
     progress[current.id] = p;
     saveP();
+    skipped.delete(current.id);
     next();
   }
 

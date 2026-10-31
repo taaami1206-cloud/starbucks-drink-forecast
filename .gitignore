@@ -1,6 +1,7 @@
 .DS_Store
 
 # ブラックエプロン学習用の資料（社外秘）は絶対に公開しない
-# BA/ はアプリ本体（index.html）以外すべて対象外
+# BA/ はアプリ本体（index.html と sw.js）以外すべて対象外
 BA/*
 !BA/index.html
+!BA/sw.js

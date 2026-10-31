@@ -151,11 +151,11 @@
     font-size: 16px;
     padding: 3px 14px 3px 40px;
   }
-  .bk-row { display: grid; grid-template-columns: 1fr 30%; }
+  .bk-row { display: grid; grid-template-columns: 1fr 22% 24%; min-height: 52px; }
   .bk-q {
     padding: 6px 12px 6px 28px;
     font-size: 15.5px;
-    line-height: 1.75;
+    line-height: 2;
     white-space: pre-wrap;
     position: relative;
   }
@@ -173,6 +173,10 @@
     position: relative;
   }
   .bk-ans { white-space: pre-wrap; }
+  /* 記入欄：答えとは別の、書くための空欄 */
+  .bk-w { border-left: 1.5px dashed #999; background: #fff; }
+  /* 問題文の（　）は広めにして、カッコの中にも書けるようにする */
+  .bk-blank { padding: 0 1.4em; color: #999; font-size: 0.85em; white-space: nowrap; }
   .bk-none { cursor: default; }
   .bk-a.hidden { background: #e9efec; }
   .bk-a.hidden .bk-ans, .bk-a.hidden .bk-grade { visibility: hidden; }
@@ -190,7 +194,7 @@
   .lap-bar span { font-size: 14px; color: var(--muted); }
   @media (max-width: 900px) {
     .page { padding: 10px 8px 6px; }
-    .bk-row { grid-template-columns: 1fr 33%; }
+    .bk-row { grid-template-columns: 1fr 24% 26%; }
     .bk-q { font-size: 14.5px; }
     .bk-a { font-size: 14px; }
   }
@@ -551,6 +555,12 @@
     });
   }
 
+  // （①）（ 1 ）（a）（①（国名））のような空欄の中身を広げる。（2019年時点）のような普通のカッコはそのまま
+  function widenBlanks(html) {
+    return html.replace(/（(\s*(?:[①-⑳❶-❿](?:（[^（）]*）|[^（）]){0,16}|\d{1,2}\s*(?:（[^（）]*）)?|[a-zA-Z])\s*)）/g,
+      (m, inner) => `（<span class="bk-blank">${inner.trim()}</span>）`);
+  }
+
   function renderBook() {
     const chs = chapters();
     if (!chs.includes(settings.bchapter)) settings.bchapter = chs[0] || '';
@@ -586,7 +596,8 @@
             ${g.items.map((q) => {
               const s = statusOf(q.id);
               return `<div class="bk-row" data-id="${esc(q.id)}">
-                <div class="bk-q">${markHtml(s)}${esc(q.q)}</div>
+                <div class="bk-q">${markHtml(s)}${widenBlanks(esc(q.q))}</div>
+                <div class="bk-w"></div>
                 ${!q.a ? '<div class="bk-a bk-none"></div>' : `<div class="bk-a hidden">
                   <div class="bk-ans">${esc(q.a)}</div>
                   <div class="bk-grade">

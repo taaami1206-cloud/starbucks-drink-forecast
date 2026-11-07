@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="季節の豆">
+<title>コーヒーパスポート 季節限定の豆まとめ</title>
+<style>
+  :root {
+    --green: #00704a;
+    --green-dark: #1e3932;
+    --green-light: #d4e9e2;
+    --cream: #f2f0eb;
+    --text: #1f1f1f;
+    --muted: #6b6b6b;
+    --blonde: #d9a441;
+    --medium: #9a6233;
+    --dark: #4a2c1a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    -webkit-text-size-adjust: 100%;
+  }
+  header {
+    background: var(--green-dark);
+    color: #fff;
+    padding: calc(14px + env(safe-area-inset-top)) 20px 14px;
+    position: sticky; top: 0; z-index: 5;
+  }
+  header h1 { margin: 0; font-size: 20px; }
+  header p { margin: 4px 0 0; font-size: 13px; opacity: .8; }
+  .bar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .bar button {
+    font: inherit; font-size: 14px;
+    border: 1px solid rgba(255,255,255,.5); background: transparent; color: #fff;
+    border-radius: 999px; padding: 6px 14px;
+  }
+  .bar button.on { background: #fff; color: var(--green-dark); }
+  main { padding: 16px 16px 40px; max-width: 1400px; margin: 0 auto; }
+  h2 {
+    font-size: 17px; margin: 22px 0 8px; color: var(--green-dark);
+    border-left: 5px solid var(--green); padding-left: 8px;
+  }
+  h2 small { font-weight: normal; color: var(--muted); font-size: 13px; margin-left: 6px; }
+  .wrap { overflow-x: auto; background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  table { border-collapse: collapse; width: 100%; min-width: 1100px; font-size: 14px; }
+  th, td { padding: 10px 10px; border-bottom: 1px solid #e6e3dc; text-align: left; vertical-align: top; }
+  th { background: var(--green-light); color: var(--green-dark); font-size: 13px; white-space: nowrap; position: sticky; top: 0; }
+  tr:last-child td { border-bottom: none; }
+  td.name { font-weight: bold; min-width: 170px; position: sticky; left: 0; background: #fff; }
+  th.name { position: sticky; left: 0; z-index: 2; }
+  td.date { white-space: nowrap; color: var(--muted); }
+  td.notes { min-width: 200px; font-weight: bold; color: var(--green-dark); }
+  td.pair { min-width: 150px; }
+  td.origin { min-width: 130px; }
+  td.proc { min-width: 110px; }
+  .roast { display: inline-block; padding: 2px 10px; border-radius: 999px; color: #fff; font-size: 12px; white-space: nowrap; }
+  .roast.b { background: var(--blonde); }
+  .roast.m { background: var(--medium); }
+  .roast.d { background: var(--dark); }
+  .roast.r { background: #222; }
+  .lv { display: inline-flex; gap: 3px; vertical-align: middle; margin-right: 6px; }
+  .lv i { width: 12px; height: 8px; border-radius: 2px; background: #e2ddd2; display: block; }
+  .lv i.f { background: var(--green); }
+  .lvtxt { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .tag { display: inline-block; font-size: 11px; background: #f6e7c8; color: #7a5410; border-radius: 4px; padding: 1px 6px; margin-left: 4px; font-weight: normal; vertical-align: 1px; }
+  .sub { display: block; font-weight: normal; font-size: 12px; color: var(--muted); margin-top: 3px; }
+  /* 暗記用：かくす */
+  .hidden-cell { cursor: pointer; }
+  body.hide-notes td.notes > .v,
+  body.hide-pair td.pair > .v,
+  body.hide-origin td.origin > .v { visibility: hidden; }
+  body.hide-notes td.notes,
+  body.hide-pair td.pair,
+  body.hide-origin td.origin { background: repeating-linear-gradient(45deg, #f4f1ea, #f4f1ea 6px, #ece8de 6px, #ece8de 12px); }
+  td.peek > .v { visibility: visible !important; }
+  .note { font-size: 13px; color: var(--muted); line-height: 1.7; margin-top: 18px; }
+  .note a { color: var(--green); }
+</style>
+</head>
+<body>
+<header>
+  <h1>コーヒーパスポート｜季節限定の豆まとめ</h1>
+  <p>ブロンド＝黄　ミディアム＝茶　ダーク＝こげ茶。かくしたマスはタップすると答えが見えます。</p>
+  <div class="bar">
+    <button data-hide="notes">風味をかくす</button>
+    <button data-hide="pair">相性をかくす</button>
+    <button data-hide="origin">産地をかくす</button>
+  </div>
+</header>
+<main id="main"></main>
+
+<script>
+  // 酸味 a / コク b：1=低い・軽い 2=中 3=高い・フル
+  const R = { b: 'ブロンド', m: 'ミディアム', d: 'ダーク', r: 'リザーブ' };
+  const groups = [
+    {
+      title: 'FY27', range: '2026年11月〜',
+      items: [
+        { date: '2026年11月', name: 'クリスマス ブレンド', origin: 'マルチリージョン', sub: 'エイジド スマトラ入り', proc: '水洗式／半水洗式', roast: 'd', a: 1, b: 3, notes: 'スパイスの効いたチョコレート、スプルースの新芽', pair: 'ジンジャー、ドライフルーツ、カスタード' },
+        { date: '2026年11月', name: 'クリスマス ブレンド エスプレッソ ロースト', origin: 'マルチリージョン', proc: '水洗式／半水洗式／乾燥式', roast: 'd', a: 1, b: 3, notes: 'シュガープラム、スモークしたバニラ', pair: 'ダークチョコレート、ベーキングスパイス' },
+        { date: '2026年11月', name: 'クリスマス ブロンド ロースト', origin: 'マルチリージョン', proc: '水洗式／半水洗式／乾燥式', roast: 'b', a: 3, b: 1, notes: 'スパイスを効かせたオレンジ、イチジクのコンポート', pair: 'シトラス、ベリークランブル' },
+        { date: '2026年11月', name: 'スターバックス リザーブ® クリスマス 2026', origin: 'インドネシア、コスタリカ', sub: 'エイジド スマトラ入り', proc: '水洗式／半水洗式', roast: 'r', a: 1, b: 3, notes: 'シダーやレザーのような香り、メープル、キャンディードジンジャー、オレンジピール', pair: 'シナモン、オレンジ、ハニー' },
+      ],
+    },
+    {
+      title: 'FY26', range: '2025年11月〜2026年10月',
+      items: [
+        { date: '2025年12月', name: 'シングルオリジン エチオピア', origin: 'エチオピア', proc: '水洗式', roast: 'b', a: 2, b: 1, notes: 'タンジェリン、レモンバーム', pair: 'オレンジ、バニラ、ミント、ジンジャー' },
+        { date: '2025年12月', name: 'ディカフェ ホリデー ブレンド', origin: 'ラテンアメリカ、アジア/太平洋', proc: '水洗式／半水洗式', roast: 'm', a: 2, b: 2, notes: 'メープル、ハーブ', pair: 'チーズ、シナモン、アップル' },
+        { date: '2025年11月頃', name: 'クリスマス ブレンド／エスプレッソ ロースト／ブロンド ロースト', origin: 'マルチリージョン', sub: '風味はFY27の欄と同じ', proc: '（FY27の欄を参照）', roast: '', a: 0, b: 0, notes: '（FY27の欄を参照）', pair: '（FY27の欄を参照）' },
+        { date: '2026年1月', name: 'グアテマラ カシ シエロ', origin: 'グアテマラ', proc: '水洗式', roast: 'm', a: 3, b: 2, notes: 'マイヤーレモン、カカオニブ', pair: 'ナッツ、ソフトチーズ、シトラス' },
+        { date: '2026年2月', name: 'スプリング シーズン ブレンド 2026', origin: 'マルチリージョン', proc: '水洗式／半水洗式／乾燥式', roast: 'm', a: 2, b: 2, notes: 'ハニーブッシュ、ココア', pair: 'さくら、バニラ、チョコレート' },
+        { date: '2026年4月頃', name: 'コペラニ ブレンド 2026', origin: 'マルチリージョン', sub: 'ハワイ島コナ産を10%使用', proc: '水洗式', roast: 'm', a: 2, b: 2, notes: 'チョコレートヌガー、ローストしたマカダミアナッツ', pair: 'キャラメル、バター風味のペストリー、チョコレート、トロピカルフルーツ' },
+        { date: '2026年4月', name: 'アイスコーヒー ブレンド 2026', origin: 'ラテンアメリカ', proc: '水洗式／乾燥式', roast: 'm', a: 2, b: 2, notes: 'モルトミルクチョコレート、ブラウンシュガー', pair: 'キャラメル、ミルクチョコレート、ピーナッツバター' },
+        { date: '2026年6月', name: 'カティカティ ブレンド 2026', origin: 'エチオピア、ケニア', proc: '水洗式／乾燥式', roast: 'b', a: 3, b: 2, notes: 'グレープフルーツ、ハニーサックル、赤いベリー', pair: 'シトラス、チョコレート' },
+        { date: '2026年7月22日', name: 'JAPAN\'S 30TH ANNIVERSARY スマトラ マサ デパン', tag: '日本上陸30周年', origin: 'インドネシア', sub: 'パートナーの声から生まれた豆', proc: '水洗式／乾燥式', roast: 'b', a: 2, b: 2, notes: 'スイカ、煎茶', pair: 'トロピカルフルーツ、ハーブ、バニラ、ベリー' },
+        { date: '2026年9月頃', name: 'オータム ブレンド 2026', origin: 'グアテマラ、インドネシア、エチオピア', proc: '水洗式／半水洗式', roast: 'd', a: 2, b: 3, notes: 'キャンディードピーカン、セージ', pair: 'ハーブ、チーズ' },
+      ],
+    },
+  ];
+
+  const lv = (n, words) => `<span class="lv">${[1,2,3].map((i) => `<i class="${i <= n ? 'f' : ''}"></i>`).join('')}</span><span class="lvtxt">${words[n - 1]}</span>`;
+
+  document.getElementById('main').innerHTML = groups.map((g) => `
+    <h2>${g.title}<small>${g.range}</small></h2>
+    <div class="wrap"><table>
+      <thead><tr>
+        <th class="name">豆の名前</th><th>発売</th><th>産地</th><th>精製方法</th><th>ロースト</th>
+        <th>酸味</th><th>コク</th><th>風味の特徴</th><th>相性のいいフレーバー</th>
+      </tr></thead>
+      <tbody>${g.items.map((x) => `
+        <tr>
+          <td class="name">${x.name}${x.tag ? `<span class="tag">${x.tag}</span>` : ''}</td>
+          <td class="date">${x.date}</td>
+          <td class="origin hidden-cell"><span class="v">${x.origin}${x.sub ? `<span class="sub">${x.sub}</span>` : ''}</span></td>
+          <td class="proc">${x.proc}</td>
+          <td>${x.roast ? `<span class="roast ${x.roast}">${R[x.roast]}</span>` : '—'}</td>
+          <td>${x.a ? lv(x.a, ['低い', '中', '高い']) : '—'}</td>
+          <td>${x.b ? lv(x.b, ['軽い', '中', 'フル']) : '—'}</td>
+          <td class="notes hidden-cell"><span class="v">${x.notes}</span></td>
+          <td class="pair hidden-cell"><span class="v">${x.pair}</span></td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>`).join('') + `
+    <p class="note">
+      ・風味の表現は公式の商品説明に合わせています。「頃」の付いた発売月はレビュー記事の日付からの推定です。<br>
+      ・新作一覧に「ウガンダ マウント エルゴン」が載っているサイトもありましたが、公式の情報が見つからなかったので入れていません。<br>
+      ・参考：<a href="https://ippu-web.com/coffee/review/starbucks/seasonal/seasonal-fy26">季節限定コーヒーまとめ FY26版</a>／
+      <a href="https://stories.starbucks.co.jp/press/2026/pr-2026-0713/">スマトラ マサ デパン 発売のお知らせ</a>／
+      <a href="https://menu.starbucks.co.jp/4524785564466">クリスマス ブレンド</a>／
+      <a href="https://menu.starbucks.co.jp/4524785658417">リザーブ® クリスマス 2026</a>（2026年11月7日時点）
+    </p>`;
+
+  document.querySelectorAll('.bar button').forEach((b) => {
+    b.onclick = () => {
+      b.classList.toggle('on');
+      document.body.classList.toggle('hide-' + b.dataset.hide, b.classList.contains('on'));
+      document.querySelectorAll('.peek').forEach((c) => c.classList.remove('peek'));
+    };
+  });
+  document.addEventListener('click', (e) => {
+    const c = e.target.closest('.hidden-cell');
+    if (c) c.classList.toggle('peek');
+  });
+</script>
+</body>
+</html>

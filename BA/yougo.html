@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="用語ノート">
+<title>BA 用語ノート</title>
+<style>
+  :root {
+    --green: #00704a;
+    --green-dark: #1e3932;
+    --green-light: #d4e9e2;
+    --cream: #f2f0eb;
+    --text: #1f1f1f;
+    --muted: #6b6b6b;
+    --line: #e6e3dc;
+    --gold: #cba258;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    line-height: 1.75;
+    -webkit-text-size-adjust: 100%;
+  }
+  header {
+    background: var(--green-dark); color: #fff;
+    padding: calc(14px + env(safe-area-inset-top)) 20px 14px;
+    position: sticky; top: 0; z-index: 5;
+  }
+  header h1 { margin: 0; font-size: 20px; line-height: 1.4; }
+  header p { margin: 2px 0 0; font-size: 13px; opacity: .8; }
+  .tools { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
+  .tools input {
+    font: inherit; font-size: 15px; border: none; border-radius: 999px;
+    padding: 7px 14px; width: 220px; max-width: 100%;
+  }
+  .tools button {
+    font: inherit; font-size: 14px; border: 1px solid rgba(255,255,255,.5);
+    background: transparent; color: #fff; border-radius: 999px; padding: 5px 13px;
+  }
+  .tools button.on { background: #fff; color: var(--green-dark); }
+  main { max-width: 980px; margin: 0 auto; padding: 16px 16px 60px; }
+  .card {
+    background: #fff; border-radius: 14px; padding: 18px 20px; margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+  }
+  .card h2 { margin: 0; font-size: 21px; color: var(--green-dark); line-height: 1.4; }
+  .card h2 .en { font-size: 14px; color: var(--muted); font-weight: normal; margin-left: 8px; }
+  .meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .cat { display: inline-block; font-size: 11px; background: var(--green-light); color: var(--green-dark); border-radius: 4px; padding: 0 7px; margin-right: 6px; }
+  .short {
+    margin: 12px 0 0; padding: 10px 14px; background: #f6f3ec; border-left: 4px solid var(--green);
+    border-radius: 6px; font-weight: bold;
+  }
+  .card h3 { font-size: 14px; color: var(--green); margin: 16px 0 4px; }
+  .card ul, .card ol { margin: 4px 0; padding-left: 1.4em; }
+  .card li { margin: 2px 0; }
+  .tip { margin-top: 14px; padding: 10px 14px; background: #fdf6e6; border-radius: 8px; font-size: 14px; }
+  .tip b { color: #8a5d0a; }
+  .vs { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 6px; }
+  .vs th, .vs td { border: 1px solid var(--line); padding: 7px 9px; text-align: left; vertical-align: top; }
+  .vs th { background: var(--green-light); color: var(--green-dark); font-size: 13px; }
+  .vs td:first-child { white-space: nowrap; font-weight: bold; color: var(--muted); font-size: 13px; }
+  .photos { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+  .photos figure { margin: 0; width: 200px; }
+  .photos img { width: 200px; height: 150px; object-fit: cover; border-radius: 8px; display: block; background: #eee; }
+  .photos figcaption { font-size: 12px; line-height: 1.5; margin-top: 4px; }
+  .photos .credit { display: block; color: var(--muted); font-size: 10px; margin-top: 2px; }
+  .photos .credit a { color: var(--muted); }
+  .flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; font-size: 14px; }
+  .flow span { background: #f6f3ec; border-radius: 6px; padding: 3px 9px; }
+  .flow span.k { background: var(--green); color: #fff; }
+  .flow i { color: var(--muted); font-style: normal; }
+  /* フレーバーホイール */
+  .wheel-guide { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; margin-top: 10px; }
+  details.fw { border-radius: 10px; border: 1px solid var(--line); overflow: hidden; background: #fff; }
+  details.fw summary {
+    list-style: none; cursor: pointer; padding: 10px 14px; color: #fff; font-weight: bold;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  details.fw summary::-webkit-details-marker { display: none; }
+  details.fw summary small { font-weight: normal; opacity: .85; font-size: 12px; }
+  details.fw summary::after { content: '＋'; font-weight: normal; }
+  details.fw[open] summary::after { content: '－'; }
+  .fw-body { padding: 8px 14px 12px; font-size: 14px; }
+  .fw-body .t2 { font-weight: bold; margin-top: 6px; }
+  .fw-body .t2 small { color: var(--muted); font-weight: normal; }
+  .fw-body .t3 { display: flex; flex-wrap: wrap; gap: 4px; margin: 3px 0 2px; }
+  .fw-body .t3 span { font-size: 12px; background: #f4f1ea; border-radius: 4px; padding: 1px 7px; }
+  .fw-body .t3 span small { color: var(--muted); }
+  .quiz-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .quiz-row button {
+    font: inherit; font-size: 14px; border: 1px solid var(--line); background: #fff;
+    border-radius: 8px; padding: 6px 12px; cursor: pointer;
+  }
+  .quiz-row button.ok { background: var(--green); color: #fff; border-color: var(--green); }
+  .quiz-row button.ng { background: #f7d9dd; border-color: #e8a5ae; }
+  #quiz-q { font-weight: bold; margin-top: 6px; }
+  #quiz-a { font-size: 14px; color: var(--muted); min-height: 1.5em; margin-top: 6px; }
+  .hide-ans .ans { color: transparent; background: repeating-linear-gradient(45deg, #f4f1ea, #f4f1ea 6px, #ece8de 6px, #ece8de 12px); border-radius: 4px; cursor: pointer; }
+  .hide-ans .ans.peek { color: inherit; background: none; }
+  .empty { text-align: center; color: var(--muted); padding: 30px 0; }
+  .foot { font-size: 12px; color: var(--muted); margin-top: 24px; line-height: 1.7; }
+  .foot a { color: var(--green); }
+</style>
+</head>
+<body>
+<header>
+  <h1>BA 用語ノート</h1>
+  <p>わからない用語・覚えにくいところのまとめ。新しい用語はどんどん追加していきます。</p>
+  <div class="tools">
+    <input id="q" type="search" placeholder="用語をさがす">
+    <button id="hide">「一言で」をかくす</button>
+  </div>
+  <div class="tools" id="cats"></div>
+</header>
+<main id="main"></main>
+
+<script>
+  // ───────── 用語データ（新しい用語はここに追加） ─────────
+  // photo: Wikimedia Commons の写真（ライセンスとクレジットを表示）
+  const WM = (path) => `https://upload.wikimedia.org/wikipedia/commons/${path}`;
+  const entries = [
+    {
+      id: 'wetmill', term: 'ウェットミル', en: 'Wet Mill', cat: '生産・精製', added: '2026-11-07',
+      short: '収穫したコーヒーチェリーから果肉をとり、洗って乾かして「パーチメントコーヒー」にする場所。',
+      html: `
+        <h3>ここでやること（水洗式の場合）</h3>
+        <div class="flow"><span>チェリーの受け入れ</span><i>→</i><span>果肉をとる（パルピング）</span><i>→</i><span>発酵・粘液をとる</span><i>→</i><span>水で洗う</span><i>→</i><span>乾燥</span><i>→</i><span class="k">パーチメントコーヒー</span></div>
+        <ul>
+          <li>「ウェット（水）」の名前のとおり、<b>水をたくさん使う工程</b>が中心。</li>
+          <li>農園の近くにあることが多い。チェリーは収穫後すぐに傷み始めるので、<b>収穫したらすぐ</b>運び込む。</li>
+          <li>ここから出ていくのは、薄い殻（パーチメント）に包まれたままの豆。</li>
+        </ul>
+        <h3>用語メモ</h3>
+        <ul>
+          <li><b>パーチメント</b>：生豆を包んでいる薄い殻。羊皮紙（パーチメント）のような見た目からこの名前。</li>
+          <li><b>パルパー（デパルパー）</b>：果肉をはぎとる機械。手回し式はハンドパルパー。</li>
+          <li><b>ミューシレージ</b>：果肉をとったあと豆のまわりに残る、ぬるぬるした粘液。</li>
+        </ul>`,
+      tip: '<b>覚え方：</b>ウェット＝<b>濡れる</b>工程。「果肉をとって洗う」まで。殻（パーチメント）はまだ付いたまま。',
+      photos: [
+        { src: WM('thumb/d/d4/Coffee_Pulping_Machine_with_Washing_Tank_-_Tanzania.jpg/500px-Coffee_Pulping_Machine_with_Washing_Tank_-_Tanzania.jpg'), cap: '果肉をとる機械と洗浄タンク（タンザニア）', credit: 'Harald Ulver / CC BY-SA 4.0', page: 'https://commons.wikimedia.org/wiki/File:Coffee_Pulping_Machine_with_Washing_Tank_-_Tanzania.jpg' },
+        { src: WM('thumb/2/26/Coffee_hulling.jpg/500px-Coffee_hulling.jpg'), cap: '手回し式のパルパー。下のたらいに赤いチェリー', credit: 'Vincent Mugaba / CC BY-SA 4.0', page: 'https://commons.wikimedia.org/wiki/File:Coffee_hulling.jpg' },
+        { src: WM('thumb/0/09/Coffee_Drying_on_concrete_Patio.jpg/500px-Coffee_Drying_on_concrete_Patio.jpg'), cap: 'パティオ（乾燥場）で豆を乾かしているところ', credit: 'Ron / Public domain', page: 'https://commons.wikimedia.org/wiki/File:Coffee_Drying_on_concrete_Patio.jpg' },
+      ],
+      related: ['drymill'],
+    },
+    {
+      id: 'drymill', term: 'ドライミル', en: 'Dry Mill', cat: '生産・精製', added: '2026-11-07',
+      short: 'パーチメント（殻）や乾いた果皮をはがして、大きさ・重さ・色で選別し、輸出できる「生豆」にする場所。',
+      html: `
+        <h3>ここでやること</h3>
+        <div class="flow"><span>パーチメントコーヒー<br>（または乾燥したチェリー）</span><i>→</i><span>殻をはがす（脱殻）</span><i>→</i><span>選別<br>大きさ・重さ・色</span><i>→</i><span>格付け</span><i>→</i><span>麻袋に詰める</span><i>→</i><span class="k">生豆として輸出</span></div>
+        <ul>
+          <li>水はほとんど使わない、<b>乾いた状態の工程</b>。</li>
+          <li><b>どの加工法の豆も、最後はドライミルを通る</b>。水洗式はパーチメントを、乾燥式（ナチュラル）は乾いた果皮ごとはがす。</li>
+          <li>欠点豆（割れ・虫食い・黒い豆など）をここで取り除く。品質を決める大事な工程。</li>
+        </ul>
+        <h3>ウェットミルとのちがい</h3>
+        <table class="vs">
+          <tr><th></th><th>ウェットミル</th><th>ドライミル</th></tr>
+          <tr><td>入ってくるもの</td><td>収穫したての赤いチェリー</td><td>乾いたパーチメントコーヒー／乾燥チェリー</td></tr>
+          <tr><td>主な作業</td><td>果肉をとる・発酵・洗う・乾かす</td><td>殻をはがす・選別・格付け・袋詰め</td></tr>
+          <tr><td>出ていくもの</td><td>パーチメントコーヒー</td><td>生豆（グリーンコーヒー）</td></tr>
+          <tr><td>水</td><td>たくさん使う</td><td>ほとんど使わない</td></tr>
+        </table>
+        <ul style="margin-top:10px">
+          <li>スターバックスの自社農園<b>ハシエンダ アルサシア</b>（コスタリカ）には、ウェットミルとドライミルの両方がある。</li>
+        </ul>`,
+      tip: '<b>覚え方：</b>ドライ＝<b>乾いてから</b>の工程。「殻をむいて、選んで、袋に詰める」。順番は必ず<b>ウェット → ドライ</b>。',
+      photos: [
+        { src: WM('thumb/e/e6/Colombian_Parchment_Coffee.jpg/500px-Colombian_Parchment_Coffee.jpg'), cap: 'パーチメントコーヒー。ドライミルに入る前の状態', credit: 'Felipe Quijano / CC BY-SA 4.0', page: 'https://commons.wikimedia.org/wiki/File:Colombian_Parchment_Coffee.jpg' },
+      ],
+      related: ['wetmill'],
+    },
+    {
+      id: 'cezve', term: 'ジャズベ', en: 'Cezve（ジェズヴェ）', cat: '器具・抽出', added: '2026-11-07',
+      short: 'トルココーヒーを煮出す、長い柄のついた小さな鍋。銅や真鍮でできていることが多い。',
+      html: `
+        <h3>どんな道具？</h3>
+        <ul>
+          <li>口が少しすぼまった、片手鍋のような形。長い柄がついている。</li>
+          <li>トルコ語の「cezve」。日本語では「ジェズヴェ」「ジャズベ」などと書かれる。</li>
+        </ul>
+        <h3>トルココーヒーの淹れ方</h3>
+        <div class="flow"><span>粉のように細かく挽く</span><i>→</i><span>ジャズベに粉・水（・砂糖）</span><i>→</i><span>火にかけて泡が上がったら火から外す</span><i>→</i><span>粉ごとカップへ</span><i>→</i><span>粉が沈んだら上澄みを飲む</span></div>
+        <ul>
+          <li>こさないので、<b>カップの底に粉が残る</b>。この模様で占う「コーヒー占い」がある。</li>
+          <li>オスマン帝国の時代に広まった淹れ方。トルココーヒーの文化はユネスコ無形文化遺産にもなっている。</li>
+        </ul>`,
+      tip: '<b>覚え方：</b>ジャズベ＝<b>鍋</b>（火にかける方）、イブリック＝<b>ポット・水差し</b>（注ぐ方）。どちらもトルココーヒーの道具。',
+      photos: [
+        { src: WM('thumb/1/13/Copper_cezve.jpg/500px-Copper_cezve.jpg'), cap: '銅のジャズベ（ジェズヴェ）', credit: 'Oksana Makarenko / CC BY-SA 4.0', page: 'https://commons.wikimedia.org/wiki/File:Copper_cezve.jpg' },
+        { src: WM('thumb/b/b5/T%C3%BCrk_Kahvesi_-_Bakir_Cezve.jpg/500px-T%C3%BCrk_Kahvesi_-_Bakir_Cezve.jpg'), cap: 'ジャズベからカップに粉ごと注ぐ', credit: 'Eaeeae / CC BY-SA 3.0', page: 'https://commons.wikimedia.org/wiki/File:T%C3%BCrk_Kahvesi_-_Bakir_Cezve.jpg' },
+      ],
+      related: ['ibrik', 'jebena'],
+    },
+    {
+      id: 'ibrik', term: 'イブリック', en: 'Ibrik', cat: '器具・抽出', added: '2026-11-07',
+      short: '細長い注ぎ口と取っ手のついた、水差しのようなポット。トルココーヒーの道具として出てくる。',
+      html: `
+        <h3>どんな道具？</h3>
+        <ul>
+          <li>もともとトルコ語・アラビア語圏で「水差し・ポット」のこと。胴がふくらんでいて、細長い注ぎ口がある。</li>
+          <li>英語圏のコーヒーの本では、<b>ジャズベ（鍋）のことを「イブリック」と呼ぶことも多い</b>。混同しやすいのはこのため。</li>
+        </ul>
+        <h3>ジャズベとのちがい</h3>
+        <table class="vs">
+          <tr><th></th><th>ジャズベ（Cezve）</th><th>イブリック（Ibrik）</th></tr>
+          <tr><td>形</td><td>長い柄の小さな鍋</td><td>注ぎ口と取っ手のある水差し型のポット</td></tr>
+          <tr><td>使い方</td><td>粉と水を入れて火にかけ、煮出す</td><td>注ぐための容器</td></tr>
+          <tr><td>共通点</td><td colspan="2">どちらもトルココーヒー（オスマン帝国・コンスタンチノープル）とセットで覚える</td></tr>
+        </table>`,
+      tip: '<b>覚え方：</b>「<b>イ</b>ブリック」は<b>い</b>れもの（水差し）。「<b>ジャ</b>ズベ」は<b>じゃ</b>っと火にかける鍋。',
+      photos: [
+        { src: WM('c/c8/Ibrik.jpg'), cap: 'イブリック（水差し型のポット）', credit: 'Unknown author / CC BY-SA 3.0', page: 'https://commons.wikimedia.org/wiki/File:Ibrik.jpg' },
+      ],
+      related: ['cezve', 'jebena'],
+    },
+    {
+      id: 'jebena', term: 'ジェベナ（ジャバナ）', en: 'Jebena', cat: '器具・抽出', added: '2026-11-07',
+      short: 'エチオピアのコーヒーセレモニーで使う、黒い素焼きのポット。ジャズベと名前が似ているので注意。',
+      html: `
+        <ul>
+          <li>エチオピア・エリトリアの道具。首が長く、丸い胴をしている。</li>
+          <li>コーヒーセレモニーでは、生豆を煎る → 挽く → ジェベナで煮出す、をその場で行う。</li>
+          <li>季節限定の「シングルオリジン エチオピア」のパッケージにも描かれていた。</li>
+        </ul>`,
+      tip: '<b>まぎらわしい！</b> ジャズベ＝<b>トルコ</b>の鍋（金属）。ジェベナ＝<b>エチオピア</b>のポット（素焼き）。',
+      photos: [
+        { src: WM('f/fe/Jebena_Ethiopian_coffee_pot.jpg'), cap: 'エチオピアのジェベナ', credit: 'Pete unseth / CC BY-SA 3.0', page: 'https://commons.wikimedia.org/wiki/File:Jebena_Ethiopian_coffee_pot.jpg' },
+      ],
+      related: ['cezve', 'ibrik'],
+    },
+    {
+      id: 'flavorwheel', term: 'フレーバーホイール', en: "Coffee Taster's Flavor Wheel", cat: 'テイスティング', added: '2026-11-07',
+      short: 'コーヒーの風味を表す言葉を、円の内側（大きなくくり）から外側（具体的な言葉）へ3段階で並べた表。',
+      html: `
+        <h3>基本</h3>
+        <ul>
+          <li>2016年に<b>SCA（スペシャルティコーヒー協会）</b>と<b>WCR（ワールドコーヒーリサーチ）</b>が作った、今の標準のホイール。</li>
+          <li>WCR の「官能評価用語集（センサリー レキシコン）」がもとになっていて、プロのテイスターや感覚パネリストと統計的に分析して並べている。</li>
+          <li><b>内側 → 外側</b>の3段階：いちばん内側が9つの大きなくくり、外に行くほど具体的な言葉になる。</li>
+          <li><b>近くにある言葉ほど似た風味</b>。間隔もわざと変えてあり、関係の深いものは近く、遠いものは離して置かれている。</li>
+          <li>色にも意味がある。それぞれの風味から連想される色で塗られている（例：柑橘は黄色系、ベリーは赤〜紫系）。</li>
+        </ul>
+        <h3>使い方</h3>
+        <ol>
+          <li>まず<b>内側の9つ</b>から、いちばん近いものを選ぶ（「果物っぽい？ナッツっぽい？」）。</li>
+          <li>次の段で絞りこむ（果物 → 柑橘？ベリー？）。</li>
+          <li>わかれば外側の具体的な言葉まで進む（柑橘 → レモン？グレープフルーツ？）。</li>
+          <li>外側まで行けなくてもOK。内側の言葉だけでも立派な表現になる。</li>
+        </ol>
+
+        <h3>いちばん内側の9つ（タップすると中が見られます）</h3>
+        <div class="wheel-guide" id="wheel"></div>
+
+        <h3>スターバックスの豆で練習</h3>
+        <p style="margin:0;font-size:14px">豆の「風味の特徴」が、ホイールのどのくくりに入るか答えてみよう。</p>
+        <div id="quiz-q"></div>
+        <div class="quiz-row" id="quiz-opts"></div>
+        <div id="quiz-a"></div>
+        <div class="quiz-row"><button id="quiz-next">次の問題</button></div>`,
+      tip: '<b>覚え方（内側の9つ）：</b>「<b>甘・花・果・酸</b>（あまはなかさん）、<b>葉・他・炒・辛・豆</b>（はたいりからまめ）」。甘み・花・果物・サワー/発酵／葉野菜/植物・その他・ロースト・スパイス・ナッツ/ココア。',
+      photos: [],
+      related: [],
+    },
+  ];
+
+  // ───────── フレーバーホイール（SCA/WCR 2016 の項目。日本語は意訳） ─────────
+  const wheel = [
+    { ja: '甘み', en: 'Sweet', color: '#e0703c', t2: [
+      ['ブラウンシュガー', 'Brown Sugar', ['糖蜜|Molasses', 'メープルシロップ|Maple Syrup', 'キャラメル|Caramelized', 'はちみつ|Honey']],
+      ['バニラ', 'Vanilla', []], ['バニリン', 'Vanillin', []], ['全体的な甘さ', 'Overall Sweet', []], ['甘い香り', 'Sweet Aromatics', []],
+    ]},
+    { ja: '花（フローラル）', en: 'Floral', color: '#d65a97', t2: [
+      ['紅茶', 'Black Tea', []],
+      ['フローラル', 'Floral', ['カモミール|Chamomile', 'バラ|Rose', 'ジャスミン|Jasmine']],
+    ]},
+    { ja: '果物（フルーティー）', en: 'Fruity', color: '#d9363e', t2: [
+      ['ベリー', 'Berry', ['ブラックベリー|Blackberry', 'ラズベリー|Raspberry', 'ブルーベリー|Blueberry', 'イチゴ|Strawberry']],
+      ['ドライフルーツ', 'Dried Fruit', ['レーズン|Raisin', 'プルーン|Prune']],
+      ['その他の果物', 'Other Fruit', ['ココナッツ|Coconut', 'チェリー|Cherry', 'ザクロ|Pomegranate', 'パイナップル|Pineapple', 'ブドウ|Grape', 'リンゴ|Apple', 'モモ|Peach', '洋ナシ|Pear']],
+      ['柑橘', 'Citrus Fruit', ['グレープフルーツ|Grapefruit', 'オレンジ|Orange', 'レモン|Lemon', 'ライム|Lime']],
+    ]},
+    { ja: 'サワー（酸味）/発酵', en: 'Sour/Fermented', color: '#d9a21b', t2: [
+      ['サワー（酸っぱさ）', 'Sour', ['酸っぱい香り|Sour Aromatics', '酢酸|Acetic Acid', '酪酸|Butyric Acid', 'イソ吉草酸|Isovaleric Acid', 'クエン酸|Citric Acid', 'リンゴ酸|Malic Acid']],
+      ['アルコール/発酵', 'Alcohol/Fermented', ['ワインのよう|Winey', 'ウイスキー|Whiskey', '発酵|Fermented', '熟しすぎ|Overripe']],
+    ]},
+    { ja: '葉野菜/植物', en: 'Green/Vegetative', color: '#3f9a4a', t2: [
+      ['オリーブオイル', 'Olive Oil', []], ['生っぽさ', 'Raw', []],
+      ['青っぽさ/植物', 'Green/Vegetative', ['未熟|Under-ripe', 'さやえんどう|Peapod', 'フレッシュ|Fresh', '濃い緑|Dark Green', '植物|Vegetative', '干し草|Hay-like', 'ハーブ|Herb-like']],
+      ['豆っぽさ', 'Beany', []],
+    ]},
+    { ja: 'その他', en: 'Other', color: '#3a8ea6', t2: [
+      ['紙っぽさ/カビ臭さ', 'Papery/Musty', ['古くなった|Stale', '段ボール|Cardboard', '紙|Papery', '木|Woody', 'カビ・湿気|Moldy/Damp', 'カビ・ほこり|Musty/Dusty', 'カビ・土|Musty/Earthy', '動物的|Animalic', '肉・だし|Meaty Brothy', 'フェノール|Phenolic']],
+      ['化学的', 'Chemical', ['苦い|Bitter', '塩辛い|Salty', '薬品|Medicinal', '石油|Petroleum', 'スカンク臭|Skunky', 'ゴム|Rubber']],
+    ]},
+    { ja: 'ロースト', en: 'Roasted', color: '#b5582c', t2: [
+      ['パイプたばこ', 'Pipe Tobacco', []], ['たばこ', 'Tobacco', []],
+      ['焦げ', 'Burnt', ['刺激的な焦げ|Acrid', '灰|Ashy', 'スモーキー|Smoky', 'ブラウンロースト|Brown, Roast']],
+      ['穀物', 'Cereal', ['穀物|Grain', 'モルト|Malt']],
+    ]},
+    { ja: 'スパイス', en: 'Spices', color: '#9c2a3c', t2: [
+      ['刺激的', 'Pungent', []], ['コショウ', 'Pepper', []],
+      ['ブラウンスパイス', 'Brown Spice', ['アニス|Anise', 'ナツメグ|Nutmeg', 'シナモン|Cinnamon', 'クローブ|Clove']],
+    ]},
+    { ja: 'ナッツ/ココア', en: 'Nutty/Cocoa', color: '#8f6a48', t2: [
+      ['ナッツ', 'Nutty', ['ピーナッツ|Peanuts', 'ヘーゼルナッツ|Hazelnut', 'アーモンド|Almond']],
+      ['ココア', 'Cocoa', ['チョコレート|Chocolate', 'ダークチョコレート|Dark Chocolate']],
+    ]},
+  ];
+
+  // 練習問題：スターバックスの豆の風味 → 内側の9つのどれ？
+  const quiz = [
+    { bean: 'カティカティ ブレンド', note: 'グレープフルーツ', ans: '果物（フルーティー）', why: '果物 → 柑橘 → グレープフルーツ' },
+    { bean: 'グアテマラ カシ シエロ', note: 'マイヤーレモン', ans: '果物（フルーティー）', why: '果物 → 柑橘 → レモン' },
+    { bean: 'ディカフェ ホリデー ブレンド', note: 'メープル', ans: '甘み', why: '甘み → ブラウンシュガー → メープルシロップ' },
+    { bean: 'スプリング シーズン ブレンド', note: 'ココア', ans: 'ナッツ/ココア', why: 'ナッツ/ココア → ココア' },
+    { bean: 'オータム ブレンド', note: 'セージ', ans: '葉野菜/植物', why: '葉野菜/植物 → 青っぽさ/植物 → ハーブ' },
+    { bean: 'コペラニ ブレンド', note: 'ローストしたマカダミアナッツ', ans: 'ナッツ/ココア', why: 'ナッツ/ココア → ナッツ（マカダミアは載っていないので「ナッツ」まで）' },
+    { bean: 'アイスコーヒー ブレンド', note: 'ブラウンシュガー', ans: '甘み', why: '甘み → ブラウンシュガー' },
+    { bean: 'ウイスキー バレル エイジド コーヒー', note: 'ウイスキーのような香り', ans: 'サワー（酸味）/発酵', why: 'サワー/発酵 → アルコール/発酵 → ウイスキー' },
+    { bean: 'カティカティ ブレンド', note: '赤いベリー', ans: '果物（フルーティー）', why: '果物 → ベリー' },
+    { bean: 'クリスマス ブロンド ロースト', note: 'スパイスを効かせたオレンジ', ans: '果物（フルーティー）', why: '果物 → 柑橘 → オレンジ（＋スパイス → ブラウンスパイス）' },
+    { bean: 'ボリビア フィンカ ラ リンダ（相性）', note: 'ジャスミン', ans: '花（フローラル）', why: '花 → フローラル → ジャスミン' },
+    { bean: '東京 ロースタリー マイクロブレンド', note: '桜のようなフローラル', ans: '花（フローラル）', why: '花 → フローラル（桜は載っていないので「フローラル」まで）' },
+    { bean: 'クリスマス ブレンド', note: 'スパイスの効いたチョコレート', ans: 'ナッツ/ココア', why: 'ナッツ/ココア → ココア → チョコレート（＋スパイス）' },
+  ];
+
+  // ───────── 表示 ─────────
+  const cats = ['すべて', ...new Set(entries.map((e) => e.cat))];
+  let curCat = 'すべて';
+  const byId = Object.fromEntries(entries.map((e) => [e.id, e]));
+
+  function card(e) {
+    return `<article class="card" id="${e.id}">
+      <h2>${e.term}<span class="en">${e.en}</span></h2>
+      <div class="meta"><span class="cat">${e.cat}</span>追加：${e.added}</div>
+      <p class="short"><span class="ans">${e.short}</span></p>
+      ${e.html}
+      ${e.photos.length ? `<div class="photos">${e.photos.map((p) => `
+        <figure><a href="${p.page}" target="_blank" rel="noopener"><img src="${p.src}" alt="${p.cap}" loading="lazy"></a>
+        <figcaption>${p.cap}<span class="credit">写真：<a href="${p.page}" target="_blank" rel="noopener">${p.credit}</a></span></figcaption></figure>`).join('')}</div>` : ''}
+      ${e.tip ? `<div class="tip">${e.tip}</div>` : ''}
+      ${e.related.length ? `<h3>あわせて見る</h3><div class="flow">${e.related.map((r) => `<a href="#${r}" style="color:var(--green)">${byId[r].term}</a>`).join('<i>・</i>')}</div>` : ''}
+    </article>`;
+  }
+
+  function render() {
+    const q = document.getElementById('q').value.trim();
+    const list = entries.filter((e) => (curCat === 'すべて' || e.cat === curCat) &&
+      (!q || (e.term + e.en + e.short + e.html).toLowerCase().includes(q.toLowerCase())));
+    document.getElementById('main').innerHTML = (list.length ? list.map(card).join('') : '<div class="empty">見つかりませんでした</div>') + `
+      <p class="foot">
+        ・説明は一般に公開されているコーヒーの知識をもとに自分用にまとめたものです（冊子の文章は載せていません）。<br>
+        ・フレーバーホイールの項目は SCA・WCR「Coffee Taster's Flavor Wheel」（2016）をもとにしています。日本語は意訳です。本物のホイールは
+        <a href="https://sca.coffee/store-index/the-coffee-tasters-flavor-wheel-poster-english" target="_blank" rel="noopener">SCA のストア</a>、
+        元になった用語集は <a href="https://worldcoffeeresearch.org/resources/sensory-lexicon" target="_blank" rel="noopener">WCR Sensory Lexicon</a> で見られます。<br>
+        ・写真は Wikimedia Commons のもので、各写真の下に作者とライセンスを表示しています。
+      </p>`;
+    if (document.getElementById('wheel')) { renderWheel(); newQuiz(); }
+  }
+
+  function renderWheel() {
+    document.getElementById('wheel').innerHTML = wheel.map((c, i) => `
+      <details class="fw"${location.hash === '#open' && i < 3 ? ' open' : ''}>
+        <summary style="background:${c.color}">${c.ja} <small>${c.en}</small></summary>
+        <div class="fw-body">${c.t2.map(([ja, en, t3]) => `
+          <div class="t2">${ja} <small>${en}</small></div>
+          ${t3.length ? `<div class="t3">${t3.map((x) => { const [j, e] = x.split('|'); return `<span>${j} <small>${e}</small></span>`; }).join('')}</div>` : ''}`).join('')}
+        </div>
+      </details>`).join('');
+  }
+
+  let qi = -1;
+  function newQuiz() {
+    let n; do { n = Math.floor(Math.random() * quiz.length); } while (n === qi && quiz.length > 1); qi = n;
+    const z = quiz[qi];
+    document.getElementById('quiz-q').textContent = `${z.bean}：「${z.note}」はどのくくり？`;
+    document.getElementById('quiz-a').textContent = '';
+    document.getElementById('quiz-opts').innerHTML = wheel.map((c) => `<button data-a="${c.ja}">${c.ja}</button>`).join('');
+    document.querySelectorAll('#quiz-opts button').forEach((b) => b.onclick = () => {
+      const ok = b.dataset.a === z.ans;
+      b.classList.add(ok ? 'ok' : 'ng');
+      if (ok) document.querySelector(`#quiz-opts button[data-a="${z.ans}"]`).classList.add('ok');
+      document.getElementById('quiz-a').textContent = (ok ? '正解！ ' : 'ちがうよ。 ') + (ok ? z.why : '');
+      if (ok) document.querySelectorAll('#quiz-opts button').forEach((x) => x.disabled = true);
+    });
+  }
+  document.addEventListener('click', (e) => {
+    if (e.target.id === 'quiz-next') newQuiz();
+    const a = e.target.closest('.hide-ans .ans');
+    if (a) a.classList.toggle('peek');
+  });
+
+  document.getElementById('cats').innerHTML = cats.map((c) => `<button data-c="${c}" class="${c === curCat ? 'on' : ''}">${c}</button>`).join('');
+  document.getElementById('cats').onclick = (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    curCat = b.dataset.c;
+    document.querySelectorAll('#cats button').forEach((x) => x.classList.toggle('on', x === b));
+    render();
+  };
+  document.getElementById('q').oninput = render;
+  document.getElementById('hide').onclick = (e) => {
+    e.target.classList.toggle('on');
+    document.body.classList.toggle('hide-ans', e.target.classList.contains('on'));
+  };
+  render();
+</script>
+</body>
+</html>

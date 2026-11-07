@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="季節の豆">
-<title>コーヒーパスポート 季節限定の豆まとめ</title>
+<title>コーヒーパスポート 季節限定・リザーブの豆まとめ</title>
 <style>
   :root {
     --green: #00704a;
@@ -81,62 +81,94 @@
   td.peek > .v { visibility: visible !important; }
   .note { font-size: 13px; color: var(--muted); line-height: 1.7; margin-top: 18px; }
   .note a { color: var(--green); }
+  td.pkg { width: 150px; min-width: 150px; }
+  td.pkg a { display: block; width: 130px; height: 150px; overflow: hidden; border-radius: 8px; background: #f7f5f0; }
+  td.pkg img { width: 100%; height: 100%; object-fit: cover; display: block; transform: scale(1.4); }
+  td.pkg .cap { font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 6px; display: block; }
+  td.pkg .noimg { width: 130px; height: 130px; border-radius: 8px; background: #f7f5f0; color: var(--muted); font-size: 12px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 8px; }
+  body.hide-pkg td.pkg > .v { visibility: hidden; }
+  body.hide-pkg td.pkg { background: repeating-linear-gradient(45deg, #f4f1ea, #f4f1ea 6px, #ece8de 6px, #ece8de 12px); }
+  h2.reserve { border-left-color: #222; }
 </style>
 </head>
 <body>
 <header>
-  <h1>コーヒーパスポート｜季節限定の豆まとめ</h1>
+  <h1>コーヒーパスポート｜季節限定・リザーブの豆まとめ</h1>
   <p>ブロンド＝黄　ミディアム＝茶　ダーク＝こげ茶。かくしたマスはタップすると答えが見えます。</p>
   <div class="bar">
     <button data-hide="notes">風味をかくす</button>
     <button data-hide="pair">相性をかくす</button>
     <button data-hide="origin">産地をかくす</button>
+    <button data-hide="pkg">パッケージをかくす</button>
   </div>
 </header>
 <main id="main"></main>
 
 <script>
-  // 酸味 a / コク b：1=低い・軽い 2=中 3=高い・フル
+  // 酸味 a / コク b：1=低い・軽い 2=中 3=高い・フル。img はスターバックス公式サイトの商品画像（JANコード）
   const R = { b: 'ブロンド', m: 'ミディアム', d: 'ダーク', r: 'リザーブ' };
+  const IMG = (jan) => `https://asset.menu.starbucks.co.jp/public/sku_images/${jan}/${jan}_1_m.jpg`;
   const groups = [
     {
       title: 'FY27', range: '2026年11月〜',
       items: [
-        { date: '2026年11月', name: 'クリスマス ブレンド', origin: 'マルチリージョン', sub: 'エイジド スマトラ入り', proc: '水洗式／半水洗式', roast: 'd', a: 1, b: 3, notes: 'スパイスの効いたチョコレート、スプルースの新芽', pair: 'ジンジャー、ドライフルーツ、カスタード' },
-        { date: '2026年11月', name: 'クリスマス ブレンド エスプレッソ ロースト', origin: 'マルチリージョン', proc: '水洗式／半水洗式／乾燥式', roast: 'd', a: 1, b: 3, notes: 'シュガープラム、スモークしたバニラ', pair: 'ダークチョコレート、ベーキングスパイス' },
-        { date: '2026年11月', name: 'クリスマス ブロンド ロースト', origin: 'マルチリージョン', proc: '水洗式／半水洗式／乾燥式', roast: 'b', a: 3, b: 1, notes: 'スパイスを効かせたオレンジ、イチジクのコンポート', pair: 'シトラス、ベリークランブル' },
-        { date: '2026年11月', name: 'スターバックス リザーブ® クリスマス 2026', origin: 'インドネシア、コスタリカ', sub: 'エイジド スマトラ入り', proc: '水洗式／半水洗式', roast: 'r', a: 1, b: 3, notes: 'シダーやレザーのような香り、メープル、キャンディードジンジャー、オレンジピール', pair: 'シナモン、オレンジ、ハニー' },
+        { date: '2026年11月', name: 'クリスマス ブレンド', img: '4524785564466', pkg: '赤地に緑と白のストライプのリボン、金色のツリー', origin: 'マルチリージョン', sub: 'エイジド スマトラ入り', proc: '水洗式／半水洗式', roast: 'd', a: 1, b: 3, notes: 'スパイスの効いたチョコレート、スプルースの新芽', pair: 'ジンジャー、ドライフルーツ、カスタード' },
+        { date: '2026年11月', name: 'クリスマス ブレンド エスプレッソ ロースト', img: '4524785564503', pkg: 'ワインレッド地に緑と白のストライプのリボン、金色のちょう結びのリボン', origin: 'マルチリージョン', proc: '水洗式／半水洗式／乾燥式', roast: 'd', a: 1, b: 3, notes: 'シュガープラム、スモークしたバニラ', pair: 'ダークチョコレート、ベーキングスパイス' },
+        { date: '2026年11月', name: 'クリスマス ブロンド ロースト', img: '4524785564541', pkg: 'クリーム色地に緑のストライプのリボン、金色の鳩', origin: 'マルチリージョン', proc: '水洗式／半水洗式／乾燥式', roast: 'b', a: 3, b: 1, notes: 'スパイスを効かせたオレンジ、イチジクのコンポート', pair: 'シトラス、ベリークランブル' },
+        { date: '2026年11月', name: 'ディカフェ クリスマス ブレンド', img: '4524785649149', pkg: '緑地に赤と白のストライプのリボン、金色のツリー', origin: 'マルチリージョン', sub: 'カフェインレス', proc: '—', roast: 'd', a: 1, b: 3, notes: 'スパイスの効いたチョコレート、スプルースの新芽', pair: 'ジンジャー、ドライフルーツ、カスタード' },
+        { date: '2026年秋〜', name: 'ハシエンダ アルサシア®', tag: '自社農園', img: '4524785641433', pkg: '緑の丘に広がるコーヒー農園、赤い実のついたコーヒーの木と農園の建物', origin: 'コスタリカ', proc: '水洗式', roast: 'm', a: 2, b: 2, notes: 'キャンディードシトラス、ミルクチョコレート', pair: 'はちみつ、アーモンド' },
       ],
     },
     {
       title: 'FY26', range: '2025年11月〜2026年10月',
       items: [
-        { date: '2025年12月', name: 'シングルオリジン エチオピア', origin: 'エチオピア', proc: '水洗式', roast: 'b', a: 2, b: 1, notes: 'タンジェリン、レモンバーム', pair: 'オレンジ、バニラ、ミント、ジンジャー' },
-        { date: '2025年12月', name: 'ディカフェ ホリデー ブレンド', origin: 'ラテンアメリカ、アジア/太平洋', proc: '水洗式／半水洗式', roast: 'm', a: 2, b: 2, notes: 'メープル、ハーブ', pair: 'チーズ、シナモン、アップル' },
-        { date: '2025年11月頃', name: 'クリスマス ブレンド／エスプレッソ ロースト／ブロンド ロースト', origin: 'マルチリージョン', sub: '風味はFY27の欄と同じ', proc: '（FY27の欄を参照）', roast: '', a: 0, b: 0, notes: '（FY27の欄を参照）', pair: '（FY27の欄を参照）' },
-        { date: '2026年1月', name: 'グアテマラ カシ シエロ', origin: 'グアテマラ', proc: '水洗式', roast: 'm', a: 3, b: 2, notes: 'マイヤーレモン、カカオニブ', pair: 'ナッツ、ソフトチーズ、シトラス' },
-        { date: '2026年2月', name: 'スプリング シーズン ブレンド 2026', origin: 'マルチリージョン', proc: '水洗式／半水洗式／乾燥式', roast: 'm', a: 2, b: 2, notes: 'ハニーブッシュ、ココア', pair: 'さくら、バニラ、チョコレート' },
-        { date: '2026年4月頃', name: 'コペラニ ブレンド 2026', origin: 'マルチリージョン', sub: 'ハワイ島コナ産を10%使用', proc: '水洗式', roast: 'm', a: 2, b: 2, notes: 'チョコレートヌガー、ローストしたマカダミアナッツ', pair: 'キャラメル、バター風味のペストリー、チョコレート、トロピカルフルーツ' },
-        { date: '2026年4月', name: 'アイスコーヒー ブレンド 2026', origin: 'ラテンアメリカ', proc: '水洗式／乾燥式', roast: 'm', a: 2, b: 2, notes: 'モルトミルクチョコレート、ブラウンシュガー', pair: 'キャラメル、ミルクチョコレート、ピーナッツバター' },
-        { date: '2026年6月', name: 'カティカティ ブレンド 2026', origin: 'エチオピア、ケニア', proc: '水洗式／乾燥式', roast: 'b', a: 3, b: 2, notes: 'グレープフルーツ、ハニーサックル、赤いベリー', pair: 'シトラス、チョコレート' },
-        { date: '2026年7月22日', name: 'JAPAN\'S 30TH ANNIVERSARY スマトラ マサ デパン', tag: '日本上陸30周年', origin: 'インドネシア', sub: 'パートナーの声から生まれた豆', proc: '水洗式／乾燥式', roast: 'b', a: 2, b: 2, notes: 'スイカ、煎茶', pair: 'トロピカルフルーツ、ハーブ、バニラ、ベリー' },
-        { date: '2026年9月頃', name: 'オータム ブレンド 2026', origin: 'グアテマラ、インドネシア、エチオピア', proc: '水洗式／半水洗式', roast: 'd', a: 2, b: 3, notes: 'キャンディードピーカン、セージ', pair: 'ハーブ、チーズ' },
+        { date: '2025年12月', name: 'シングルオリジン エチオピア', img: '4524785601079', pkg: '黄色地にコーヒーポット（ジャバナ）とカップ、赤いコーヒーチェリーと葉', origin: 'エチオピア', proc: '水洗式', roast: 'b', a: 2, b: 1, notes: 'タンジェリン、レモンバーム', pair: 'オレンジ、バニラ、ミント、ジンジャー' },
+        { date: '2025年12月', name: 'ディカフェ ホリデー ブレンド', img: '4524785592070', pkg: '紺地に水色の大きなリボン、中央に白いラベル（ギフトの包みのよう）', origin: 'ラテンアメリカ、アジア/太平洋', proc: '水洗式／半水洗式', roast: 'm', a: 2, b: 2, notes: 'メープル、ハーブ', pair: 'チーズ、シナモン、アップル' },
+        { date: '2025年11月頃', name: 'クリスマス ブレンド／エスプレッソ ロースト／ブロンド ロースト', origin: 'マルチリージョン', sub: '風味はFY27の欄と同じ', proc: '（FY27の欄を参照）', roast: '', a: 0, b: 0, notes: '（FY27の欄を参照）', pair: '（FY27の欄を参照）', noimgText: '2025年版の画像は見つかりませんでした' },
+        { date: '2026年1月', name: 'グアテマラ カシ シエロ', img: '4524785549746', pkg: 'ピンク〜オレンジの空、緑の山並み、紫の花とコーヒーの葉', origin: 'グアテマラ', proc: '水洗式', roast: 'm', a: 3, b: 2, notes: 'マイヤーレモン、カカオニブ', pair: 'ナッツ、ソフトチーズ、シトラス' },
+        { date: '2026年2月', name: 'スプリング シーズン ブレンド 2026', img: '4524785554160', pkg: 'ピンクと黄緑のやわらかいグラデーションに桜の花', origin: 'マルチリージョン', proc: '水洗式／半水洗式／乾燥式', roast: 'm', a: 2, b: 2, notes: 'ハニーブッシュ、ココア', pair: 'さくら、バニラ、チョコレート' },
+        { date: '2026年4月頃', name: 'コペラニ ブレンド 2026', img: '4524785598010', pkg: '水色と青の大きな波、緑の山（ハワイの海と島）', origin: 'マルチリージョン', sub: 'ハワイ島コナ産を10%使用', proc: '水洗式', roast: 'm', a: 2, b: 2, notes: 'チョコレートヌガー、ローストしたマカダミアナッツ', pair: 'キャラメル、バター風味のペストリー、チョコレート、トロピカルフルーツ' },
+        { date: '2026年4月', name: 'アイスコーヒー ブレンド 2026', img: '4524785598683', pkg: '銀色地に水色と茶色の流れるような模様（氷やミルクが溶けていくイメージ）', origin: 'ラテンアメリカ', proc: '水洗式／乾燥式', roast: 'm', a: 2, b: 2, notes: 'モルトミルクチョコレート、ブラウンシュガー', pair: 'キャラメル、ミルクチョコレート、ピーナッツバター' },
+        { date: '2026年6月', name: 'カティカティ ブレンド 2026', origin: 'エチオピア、ケニア', proc: '水洗式／乾燥式', roast: 'b', a: 3, b: 2, notes: 'グレープフルーツ、ハニーサックル、赤いベリー', pair: 'シトラス、チョコレート', noimgText: '公式の画像が見つかりませんでした' },
+        { date: '2026年7月22日', name: 'JAPAN\'S 30TH ANNIVERSARY スマトラ マサ デパン', tag: '日本上陸30周年', img: '4524785647602', pkg: '白地に緑の縦書きで「SUMATRA MASA DEPAN」、30周年ロゴ（写真はアーティスト nico ito さんのカード付き版）', origin: 'インドネシア', sub: 'パートナーの声から生まれた豆', proc: '水洗式／乾燥式', roast: 'b', a: 2, b: 2, notes: 'スイカ、煎茶', pair: 'トロピカルフルーツ、ハーブ、バニラ、ベリー' },
+        { date: '2026年9月頃', name: 'オータム ブレンド 2026', img: '4524785562783', pkg: '赤・オレンジ・黄色に紅葉した木々が一面に', origin: 'グアテマラ、インドネシア、エチオピア', proc: '水洗式／半水洗式', roast: 'd', a: 2, b: 3, notes: 'キャンディードピーカン、セージ', pair: 'ハーブ、チーズ' },
+      ],
+    },
+    {
+      title: 'スターバックス リザーブ®', range: '2026年11月7日時点で販売中のもの', reserve: true,
+      items: [
+        { date: '2026年11月', name: 'スターバックス リザーブ® クリスマス 2026', img: '4524785658417', pkg: 'ピンク地に赤い大きな花（ポインセチアのような）模様、金色のラベル', origin: 'インドネシア、コスタリカ', sub: 'ブレンド／エイジド スマトラ入り', proc: '水洗式／半水洗式', roast: 'r', a: 2, b: 3, notes: 'シダーやレザーのような香り、メープル、キャンディードジンジャー、オレンジピール', pair: 'シナモン、オレンジ、ハニー' },
+        { date: '販売中', name: 'サンドライド コスタリカ ハシエンダ アルサシア®', tag: '自社農園', img: '4524785658394', pkg: '大きく輝く太陽と緑の畑（天日で乾かすイメージ）', origin: 'コスタリカ', sub: '自社農園が乾燥式に挑戦', proc: '乾燥式', roast: 'r', a: 2, b: 2, notes: 'キウイ、デーツシロップ、ベーキングスパイスの余韻', pair: 'アプリコット、ジンジャー' },
+        { date: '販売中', name: 'コスタリカ ティカ リンダ ハニープロセス', img: '4524785658400', pkg: '赤いコーヒーチェリー、オウム、色鮮やかな南国の花', origin: 'コスタリカ', sub: '女性生産者グループが栽培', proc: '半水洗式（ハニープロセス）', roast: 'r', a: 2, b: 2, notes: 'コンコードグレープ、ラズベリー、シルクのようななめらかさ', pair: 'チョコレート、アーモンド' },
+        { date: '販売中', name: 'サンドライド ケニア エンデベス エステート', img: '4524785657199', pkg: '紫の山々、水色の川と白い雲', origin: 'ケニア', sub: 'ケニアでは珍しい乾燥式', proc: '乾燥式', roast: 'r', a: 3, b: 2, notes: 'マイヤーレモン、ザクロ、マーマレード', pair: 'ブルーベリー、ココナッツ' },
+        { date: '販売中', name: 'タンザニア モンデュール エステート', img: '4524785652262', pkg: '紺地に白い花と木々、乳牛とミツバチ（農園の酪農・養蜂）', origin: 'タンザニア', sub: '酪農や養蜂で働く人を支援する農園', proc: '水洗式', roast: 'r', a: 3, b: 2, notes: 'マンダリンオレンジ、モレロチェリー、バニラ、スイカズラ', pair: 'チョコレート、イチジク' },
+        { date: '販売中', name: 'ボリビア フィンカ ラ リンダ', img: '4524785640139', pkg: '赤・紺・黄色の大きな曲線と水玉模様', origin: 'ボリビア', sub: 'ジャバ種を「モスト」で発酵', proc: '水洗式', roast: 'r', a: 3, b: 2, notes: 'ピーチやネクタリン（ストーンフルーツ）、キャラメルの余韻', pair: 'シトラス、アーモンド、ジャスミン' },
+        { date: '販売中', name: '東京 ロースタリー マイクロブレンド™', img: '4524785523210', pkg: 'ピンクの桜と木の建物の屋根（中目黒の四季）', origin: 'インドネシア、タンザニア、コロンビア', sub: 'ブレンド', proc: '水洗式／半水洗式', roast: 'r', a: 2, b: 2, notes: '桜のようなフローラル、伊予柑、胡麻の後味', pair: 'チョコレート、赤ナツメ' },
+        { date: '販売中', name: 'ウイスキー バレル エイジド コーヒー', img: '4524785383432', pkg: '赤茶とオレンジの抽象的な模様に金の線', origin: 'コロンビア', sub: 'ウイスキー樽で生豆を熟成', proc: '水洗式', roast: 'r', a: 1, b: 2, notes: 'チョコレート、フルーツ、上品な甘さ', pair: 'バニラ、チョコレート' },
+        { date: '販売中', name: 'プリンチ® ブレンド', img: '4524785478190', pkg: '白地に黒の手書きの線と文字、「Spirito di Milano」', origin: '—', sub: 'ブレンド', proc: '水洗式', roast: 'r', a: 1, b: 2, notes: 'キャラメルの甘み、ダークチョコレート', pair: 'コルネッティ、クッキー、パネトーネ' },
+        { date: '販売中', name: 'マイクロブレンド™ No.21', img: '4524785553880', pkg: 'オレンジ・赤・クリーム色の幾何学模様', origin: 'ラテンアメリカ、アフリカ', sub: '最高のエスプレッソを目指したブレンド', proc: '水洗式', roast: 'r', a: 2, b: 2, notes: 'キャンディードシトラス、ダークチョコレート', pair: 'フルーツ類、チョコレート、クリーム' },
+        { date: '販売中', name: 'マイクロブレンド™ No.10', img: '4524785553873', pkg: '紫からピーチ色のグラデーションに金色の放射線', origin: 'ラテンアメリカ、アフリカ', sub: '最高のコールドブリューを目指したブレンド', proc: '水洗式／乾燥式', roast: 'r', a: 1, b: 2, notes: 'チョコレート、キャラメル、コーラ', pair: 'ココア、バニラビーンズ、クリーム' },
+        { date: '販売中', name: 'ディカフェ コスタリカ ハシエンダ アルサシア®', tag: '自社農園', img: '4524785478183', pkg: '青と緑の山の景色に白い雲', origin: 'コスタリカ', sub: 'カフェインレス', proc: '水洗式', roast: 'r', a: 2, b: 1, notes: 'シトラス、ミルクチョコレート、はじけるような酸味', pair: 'シトラス、チョコレート' },
       ],
     },
   ];
 
   const lv = (n, words) => `<span class="lv">${[1,2,3].map((i) => `<i class="${i <= n ? 'f' : ''}"></i>`).join('')}</span><span class="lvtxt">${words[n - 1]}</span>`;
+  const pkgCell = (x) => x.img
+    ? `<a href="${IMG(x.img)}" target="_blank" rel="noopener"><img src="${IMG(x.img)}" alt="${x.name}のパッケージ" loading="lazy"></a><span class="cap">${x.pkg}</span>`
+    : `<div class="noimg">${x.noimgText || '画像なし'}</div>`;
 
   document.getElementById('main').innerHTML = groups.map((g) => `
-    <h2>${g.title}<small>${g.range}</small></h2>
+    <h2${g.reserve ? ' class="reserve"' : ''}>${g.title}<small>${g.range}</small></h2>
     <div class="wrap"><table>
       <thead><tr>
-        <th class="name">豆の名前</th><th>発売</th><th>産地</th><th>精製方法</th><th>ロースト</th>
+        <th class="name">豆の名前</th><th>パッケージ</th><th>発売</th><th>産地</th><th>精製方法</th><th>ロースト</th>
         <th>酸味</th><th>コク</th><th>風味の特徴</th><th>相性のいいフレーバー</th>
       </tr></thead>
       <tbody>${g.items.map((x) => `
         <tr>
           <td class="name">${x.name}${x.tag ? `<span class="tag">${x.tag}</span>` : ''}</td>
+          <td class="pkg hidden-cell"><span class="v">${pkgCell(x)}</span></td>
           <td class="date">${x.date}</td>
           <td class="origin hidden-cell"><span class="v">${x.origin}${x.sub ? `<span class="sub">${x.sub}</span>` : ''}</span></td>
           <td class="proc">${x.proc}</td>
@@ -149,12 +181,12 @@
       </tbody>
     </table></div>`).join('') + `
     <p class="note">
-      ・風味の表現は公式の商品説明に合わせています。「頃」の付いた発売月はレビュー記事の日付からの推定です。<br>
+      ・パッケージ画像と、FY27・リザーブの風味や酸味・コクはスターバックス公式サイトの商品情報です。絵柄の説明は画像を見て書いたものです。<br>
+      ・「頃」の付いた発売月はレビュー記事の日付からの推定です。リザーブは今販売中のものだけで、2026年中に販売が終わったものは入っていません。<br>
       ・新作一覧に「ウガンダ マウント エルゴン」が載っているサイトもありましたが、公式の情報が見つからなかったので入れていません。<br>
       ・参考：<a href="https://ippu-web.com/coffee/review/starbucks/seasonal/seasonal-fy26">季節限定コーヒーまとめ FY26版</a>／
-      <a href="https://stories.starbucks.co.jp/press/2026/pr-2026-0713/">スマトラ マサ デパン 発売のお知らせ</a>／
-      <a href="https://menu.starbucks.co.jp/4524785564466">クリスマス ブレンド</a>／
-      <a href="https://menu.starbucks.co.jp/4524785658417">リザーブ® クリスマス 2026</a>（2026年11月7日時点）
+      <a href="https://product.starbucks.co.jp/beans/seasonal/">公式 SEASONAL COFFEE</a>／
+      <a href="https://product.starbucks.co.jp/beans/reserve/">公式 スターバックス リザーブ®</a>（2026年11月7日時点）
     </p>`;
 
   document.querySelectorAll('.bar button').forEach((b) => {
@@ -164,9 +196,18 @@
       document.querySelectorAll('.peek').forEach((c) => c.classList.remove('peek'));
     };
   });
+  // かくしている列のマスをタップしたら、そのマスだけ見せる（かくしていない時は画像リンクをそのまま開く）
   document.addEventListener('click', (e) => {
     const c = e.target.closest('.hidden-cell');
-    if (c) c.classList.toggle('peek');
+    if (!c) return;
+    const col = [...c.classList].find((k) => ['notes', 'pair', 'origin', 'pkg'].includes(k));
+    if (document.body.classList.contains('hide-' + col) && !c.classList.contains('peek')) {
+      e.preventDefault();
+      c.classList.add('peek');
+    } else if (document.body.classList.contains('hide-' + col)) {
+      if (e.target.closest('a')) return;
+      c.classList.remove('peek');
+    }
   });
 </script>
 </body>

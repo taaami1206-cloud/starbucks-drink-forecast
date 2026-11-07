@@ -148,7 +148,7 @@
         { src: WM('thumb/2/26/Coffee_hulling.jpg/500px-Coffee_hulling.jpg'), cap: '手回し式のパルパー。下のたらいに赤いチェリー', credit: 'Vincent Mugaba / CC BY-SA 4.0', page: 'https://commons.wikimedia.org/wiki/File:Coffee_hulling.jpg' },
         { src: WM('thumb/0/09/Coffee_Drying_on_concrete_Patio.jpg/500px-Coffee_Drying_on_concrete_Patio.jpg'), cap: 'パティオ（乾燥場）で豆を乾かしているところ', credit: 'Ron / Public domain', page: 'https://commons.wikimedia.org/wiki/File:Coffee_Drying_on_concrete_Patio.jpg' },
       ],
-      related: ['drymill'],
+      related: ['drymill', 'process'],
     },
     {
       id: 'drymill', term: 'ドライミル', en: 'Dry Mill', cat: '生産・精製', added: '2026-11-07',
@@ -176,7 +176,71 @@
       photos: [
         { src: WM('thumb/e/e6/Colombian_Parchment_Coffee.jpg/500px-Colombian_Parchment_Coffee.jpg'), cap: 'パーチメントコーヒー。ドライミルに入る前の状態', credit: 'Felipe Quijano / CC BY-SA 4.0', page: 'https://commons.wikimedia.org/wiki/File:Colombian_Parchment_Coffee.jpg' },
       ],
-      related: ['wetmill'],
+      related: ['wetmill', 'process'],
+    },
+    {
+      id: 'process', term: '加工法（水洗式・半水洗式・乾燥式）', en: 'Washed / Semi-washed / Natural', cat: '生産・精製', added: '2026-11-07',
+      short: 'コーヒーチェリーから「種（生豆）」を取り出すやり方。どの皮を、いつ、どうやってはがすかがちがう。',
+      html: `
+        <h3>まずはチェリーの中身を知る</h3>
+        <p style="margin:0 0 6px;font-size:14px">コーヒー豆は、さくらんぼのような実（チェリー）の<b>種</b>。外から順に、何枚も皮に包まれています。加工法は「この皮を、どの順番で、どうやってはがすか」のちがいです。</p>
+        <svg viewBox="0 0 560 250" style="width:100%;max-width:560px;display:block" role="img" aria-label="コーヒーチェリーの断面図">
+          <circle cx="125" cy="125" r="112" fill="#c8102e"/>
+          <circle cx="125" cy="125" r="101" fill="#f2a58e"/>
+          <circle cx="125" cy="125" r="84" fill="#fbe3bf"/>
+          <ellipse cx="94" cy="125" rx="36" ry="66" fill="#f4ead3" stroke="#c9ad7a" stroke-width="3"/>
+          <ellipse cx="156" cy="125" rx="36" ry="66" fill="#f4ead3" stroke="#c9ad7a" stroke-width="3"/>
+          <ellipse cx="94" cy="125" rx="29" ry="58" fill="#9db37f" stroke="#c7cfd2" stroke-width="2.5"/>
+          <ellipse cx="156" cy="125" rx="29" ry="58" fill="#9db37f" stroke="#c7cfd2" stroke-width="2.5"/>
+          <g font-size="15" fill="#1f1f1f" font-family="-apple-system, Hiragino Sans, sans-serif">
+            <line x1="205" y1="55" x2="300" y2="30" stroke="#999"/><text x="306" y="35"><tspan font-weight="bold" fill="#c8102e">① 果皮</tspan>　いちばん外の赤い皮</text>
+            <line x1="205" y1="85" x2="300" y2="70" stroke="#999"/><text x="306" y="75"><tspan font-weight="bold" fill="#d9705a">② 果肉</tspan>　甘い実の部分（パルプ）</text>
+            <line x1="196" y1="110" x2="300" y2="110" stroke="#999"/><text x="306" y="115"><tspan font-weight="bold" fill="#b5893a">③ ミューシレージ</tspan>　ぬるぬるの粘液</text>
+            <line x1="186" y1="150" x2="300" y2="150" stroke="#999"/><text x="306" y="155"><tspan font-weight="bold" fill="#9a7b45">④ パーチメント</tspan>　うすい殻</text>
+            <line x1="165" y1="180" x2="300" y2="190" stroke="#999"/><text x="306" y="195"><tspan font-weight="bold" fill="#7d8a8f">⑤ シルバースキン</tspan>　銀色のうす皮</text>
+            <line x1="150" y1="150" x2="300" y2="230" stroke="#999"/><text x="306" y="235"><tspan font-weight="bold" fill="#5f7a45">⑥ 生豆</tspan>　これがコーヒー豆（種）</text>
+          </g>
+        </svg>
+
+        <h3>3つの加工法を並べると</h3>
+        <table class="vs">
+          <tr><th></th><th>水洗式<br><small>ウォッシュト</small></th><th>半水洗式<br><small>ウェットハル式</small></th><th>乾燥式<br><small>ナチュラル</small></th></tr>
+          <tr><td>ひとことで</td><td>果肉を<b>先にとって、洗ってから</b>干す</td><td>果肉をとって、<b>半乾きのうちに殻をむいて</b>から干す</td><td>実を<b>まるごと</b>干す</td></tr>
+          <tr><td>イメージ</td><td>皮をむいて洗ったものを干す</td><td>生乾きで殻をむき、豆をむき出しで仕上げ干し</td><td>干し柿・ドライフルーツのように実ごと干す</td></tr>
+          <tr><td>水</td><td>たくさん使う</td><td>少し使う</td><td>ほとんど使わない</td></tr>
+          <tr><td>風味の傾向</td><td><b>すっきり・明るい酸味</b>。産地の個性がはっきり出る</td><td><b>ハーブ・大地のような風味</b>、どっしりしたコク、酸味はひかえめ</td><td><b>フルーティー</b>（ベリー・ワインのよう）、甘みと重めのコク</td></tr>
+          <tr><td>よく使われる所</td><td>ラテンアメリカ、東アフリカ（ケニアなど）</td><td>インドネシア（スマトラなど）</td><td>エチオピア、ブラジル、雨の少ない地域</td></tr>
+          <tr><td>スターバックスの例</td><td>グアテマラ カシ シエロ、ハシエンダ アルサシア、タンザニア モンデュール</td><td>スマトラ（クリスマス ブレンドのエイジド スマトラも）</td><td>サンドライド コスタリカ、サンドライド ケニア（リザーブ）</td></tr>
+        </table>
+
+        <h3>皮をはがす順番</h3>
+        <p style="margin:0;font-size:14px"><b>水洗式</b></p>
+        <div class="flow"><span>① 果皮＋② 果肉をパルパーでとる</span><i>→</i><span>③ 粘液を発酵させて水で洗い流す</span><i>→</i><span>④ 殻つきのまま乾燥</span><i>→</i><span class="k">ドライミルで ④ 殻をむく</span></div>
+        <p style="margin:8px 0 0;font-size:14px"><b>半水洗式（ウェットハル式）</b></p>
+        <div class="flow"><span>① 果皮＋② 果肉をとる</span><i>→</i><span>③ 粘液を短時間で洗う</span><i>→</i><span>少しだけ乾かす（半乾き）</span><i>→</i><span>④ 殻を<b>早めに</b>むく</span><i>→</i><span class="k">⑥ 豆がむき出しのまま仕上げ乾燥</span></div>
+        <p style="margin:8px 0 0;font-size:14px"><b>乾燥式（ナチュラル）</b></p>
+        <div class="flow"><span>何もはがさず<b>チェリーのまま</b>乾燥</span><i>→</i><span>カラカラになるまで何週間も干す</span><i>→</i><span class="k">ドライミルで ①〜④ をまとめてはがす</span></div>
+
+        <h3>どうして味がちがうの？</h3>
+        <ul>
+          <li><b>水洗式</b>：甘い果肉を早くとってしまうので、果実の影響が少ない。豆そのものの味（酸味や産地らしさ）がすっきり出る。</li>
+          <li><b>乾燥式</b>：実をつけたまま長く干すので、果肉の甘さや香りが豆にうつる。だからフルーティーでコクが出る。</li>
+          <li><b>半水洗式</b>：雨が多く乾かしにくいインドネシアで、早く仕上げるために生まれた方法。殻を早くむいて豆を直接乾かすので、独特のハーブ・大地のような風味と重いコクになる。豆が青緑っぽい色になるのも特徴。</li>
+        </ul>
+        <h3>おまけ：ハニープロセス</h3>
+        <ul>
+          <li>果皮と果肉だけとって、<b>ぬるぬるの粘液（ミューシレージ）を残したまま</b>干す方法。粘液がはちみつのようにべたつくのでこの名前（はちみつは使わない）。</li>
+          <li>水洗式と乾燥式の中間のような味：甘みがありつつ、すっきり。</li>
+          <li>リザーブの「コスタリカ ティカ リンダ ハニープロセス」は、公式では「半水洗式（ハニープロセス）」と書かれている。</li>
+        </ul>`,
+      tip: '<b>覚え方：</b>水洗式＝<b>洗ってから干す</b>（すっきり）／乾燥式＝<b>実ごと干す</b>＝ドライフルーツ（フルーティー）／半水洗式＝<b>生乾きでむく</b>＝スマトラ（ハーブ・大地・どっしり）。',
+      photos: [
+        { src: WM('thumb/5/51/Coffee_cherry_cross_section.JPG/500px-Coffee_cherry_cross_section.JPG'), cap: 'チェリーを半分に切ったところ。中に種（豆）が2つ', credit: 'Michael.C.Wright / CC BY-SA 4.0', page: 'https://commons.wikimedia.org/wiki/File:Coffee_cherry_cross_section.JPG' },
+        { src: WM('thumb/a/af/Field-expedient-fermentation-vietnam.jpg/500px-Field-expedient-fermentation-vietnam.jpg'), cap: '水洗式：果肉をとった豆を水につけて発酵させているところ', credit: 'Michael.C.Wright / CC BY-SA 4.0', page: 'https://commons.wikimedia.org/wiki/File:Field-expedient-fermentation-vietnam.jpg' },
+        { src: WM('thumb/e/e0/Women_drying_coffee.jpg/500px-Women_drying_coffee.jpg'), cap: '乾燥式：赤いチェリーを実のまま棚で干している', credit: 'PHILIP ASEDRI DRADRIO / CC BY-SA 4.0', page: 'https://commons.wikimedia.org/wiki/File:Women_drying_coffee.jpg' },
+        { src: WM('thumb/7/76/Coffee_defect_kuku_kambing.jpg/500px-Coffee_defect_kuku_kambing.jpg'), cap: '半水洗式：やわらかいうちに殻をむくので、こんなふうに割れた豆（ヤギのひづめ）ができることも', credit: 'Michael.C.Wright / CC BY-SA 4.0', page: 'https://commons.wikimedia.org/wiki/File:Coffee_defect_kuku_kambing.jpg' },
+      ],
+      related: ['wetmill', 'drymill'],
     },
     {
       id: 'cezve', term: 'ジャズベ', en: 'Cezve（ジェズヴェ）', cat: '器具・抽出', added: '2026-11-07',

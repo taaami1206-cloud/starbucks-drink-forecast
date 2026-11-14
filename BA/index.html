@@ -228,23 +228,65 @@
     font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none;
   }
   .toast.show { opacity: 1; }
+  nav button { font-size: 17px; padding: 12px 0; }
+  /* ホーム */
+  .home-top { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .home-top .btn { font-size: 18px; padding: 16px 22px; border-radius: 14px; }
+  .home-sum { font-size: 15px; color: var(--muted); margin: 0 0 12px; }
+  .ch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .ch-card { background: #fff; border-radius: 16px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); display: flex; flex-direction: column; gap: 10px; }
+  .ch-card h3 { margin: 0; font-size: 18px; color: var(--green-dark); line-height: 1.35; }
+  .ch-card .nums { font-size: 13px; color: var(--muted); }
+  .ch-card .bar { height: 10px; border-radius: 5px; background: #e5e5e5; overflow: hidden; display: flex; }
+  .ch-card .bar span { display: block; height: 100%; }
+  .ch-card .row { display: flex; gap: 8px; }
+  .ch-card .row .btn { flex: 1; font-size: 16px; padding: 12px 0; }
+  /* 4択 */
+  .choices { display: grid; gap: 10px; margin-top: 14px; }
+  .choice { text-align: left; font-size: 19px; line-height: 1.5; padding: 14px 16px; border-radius: 12px; border: 2px solid #d6d6d6; background: #fff; color: var(--text); }
+  .choice .no { display: inline-block; width: 28px; height: 28px; border-radius: 50%; background: #eee; text-align: center; line-height: 28px; font-weight: 700; margin-right: 10px; font-size: 15px; }
+  .choice.sel { border-color: var(--green); background: #eef6f2; }
+  .choice.right { border-color: var(--o); background: #d9efe5; }
+  .choice.right .no { background: var(--o); color: #fff; }
+  .choice.wrong { border-color: var(--x); background: #fbe3e6; }
+  .choice.wrong .no { background: var(--x); color: #fff; }
+  .choice:disabled { opacity: 1; }
+  .judge { margin-top: 14px; font-size: 22px; font-weight: 700; }
+  .judge.ok { color: var(--o); } .judge.ng { color: var(--x); }
+  .expl { margin-top: 10px; padding: 12px 14px; border-radius: 10px; background: #fdf6e6; font-size: 16px; line-height: 1.7; white-space: pre-wrap; }
+  .multi-note { font-size: 14px; color: var(--x); margin-top: 8px; font-weight: 700; }
+  .next-row { display: flex; gap: 10px; margin-top: 14px; align-items: center; flex-wrap: wrap; }
+  .next-row .btn { font-size: 18px; padding: 14px 24px; }
+  .next-row .fix { font-size: 13px; color: var(--muted); display: flex; gap: 6px; align-items: center; }
+  .next-row .fix button { border: 1px solid #ccc; background: #fff; border-radius: 8px; padding: 6px 10px; font-size: 15px; }
+  .study.nopad { grid-template-columns: 1fr !important; max-width: 860px; margin: 0 auto; }
+  .pad-toggle { margin-top: 14px; }
 </style>
 </head>
 <body>
 <header>
   <h1>ブラックエプロン 一問一答</h1>
   <nav>
-    <button data-tab="book" class="active">冊子</button>
+    <button data-tab="home" class="active">ホーム</button>
     <button data-tab="study">クイズ</button>
-    <button data-tab="progress">進み具合</button>
-    <button data-tab="list">問題一覧</button>
+    <button data-tab="book">冊子</button>
+    <button data-tab="list">一覧</button>
     <button data-tab="settings">設定</button>
   </nav>
 </header>
 
 <main>
   <!-- 学習 -->
-  <div id="tab-book" class="tab active">
+  <div id="tab-home" class="tab active">
+    <div class="home-top">
+      <button class="btn" id="h-weak">✕と△を復習する</button>
+      <button class="btn sub" id="h-all">ぜんぶの章から出題</button>
+    </div>
+    <p class="home-sum" id="h-sum"></p>
+    <div class="ch-grid" id="h-grid"></div>
+  </div>
+
+  <div id="tab-book" class="tab">
     <div class="filters">
       <label>章</label>
       <select id="b-chapter"></select>
@@ -372,8 +414,13 @@
   }
 
   // ---------- タブ ----------
+  function goTab(name) {
+    const b = document.querySelector(`nav button[data-tab="${name}"]`);
+    b && b.click();
+  }
   document.querySelectorAll('nav button').forEach((b) => {
     b.addEventListener('click', () => {
+      if (b.dataset.tab === 'home') renderHome();
       document.querySelectorAll('nav button').forEach((x) => x.classList.toggle('active', x === b));
       document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t.id === 'tab-' + b.dataset.tab));
       if (b.dataset.tab === 'progress') renderProgress();
@@ -469,8 +516,10 @@
     const list = pool();
     const counts = { x: 0, t: 0, o: 0, n: 0 };
     list.forEach((q) => counts[statusOf(q.id)]++);
+    const ch = parseChoice(current);
+    const padOpen = !!settings.padOpen;
     body.innerHTML = `
-      <div class="study">
+      <div class="study ${padOpen ? '' : 'nopad'}">
         <div class="card">
           <div class="meta">
             <span class="badge ${s}">${LABEL[s]}</span>
@@ -478,9 +527,16 @@
             ${p ? `<span>${p.n}回目</span>` : ''}
             <span style="margin-left:auto">✕${counts.x} △${counts.t} ◎${counts.o} 未${counts.n}</span>
           </div>
+          ${ch ? `
+          <div class="question">${esc(ch.stem)}</div>
+          ${ch.multi ? '<div class="multi-note">あてはまるものを全部えらんでから「答え合わせ」</div>' : ''}
+          <div class="choices">${ch.choices.map((c) => `<button class="choice" data-no="${c.no}"><span class="no">${c.no}</span>${esc(c.text)}</button>`).join('')}</div>
+          ${ch.multi ? '<div class="next-row" id="check-row"><button class="btn" id="check">答え合わせ</button></div>' : ''}
+          <div id="result"></div>
+          <div class="actions" id="reveal-row" style="display:none">` : `
           <div class="question">${esc(current.q)}</div>
           <div class="answer hidden" id="answer">${esc(current.a)}</div>
-          <div class="actions" id="reveal-row">
+          <div class="actions" id="reveal-row">`}
             <button class="btn" id="reveal" style="flex:1">答えを見る</button>
             <button class="btn sub" id="skip">とばす</button>
           </div>
@@ -489,8 +545,9 @@
             <button class="t" data-g="t">△<small>迷った</small></button>
             <button class="o" data-g="o">◎<small>すぐ答えられた</small></button>
           </div>
+          <div class="pad-toggle"><button class="btn sub" id="pad-toggle">${padOpen ? '✍️ 手書きメモを閉じる' : '✍️ 手書きメモを開く'}</button></div>
         </div>
-        <div class="pad-wrap">
+        <div class="pad-wrap" style="${padOpen ? '' : 'display:none'}">
           <div class="pad-tools">
             <button class="btn sub" id="pad-clear">消す</button>
             <button class="btn sub" id="pad-undo">1つ戻す</button>
@@ -500,6 +557,8 @@
           <canvas id="pad"></canvas>
         </div>
       </div>`;
+    $('#pad-toggle').onclick = () => { settings.padOpen = !settings.padOpen; saveS(); drawCard(); };
+    if (ch) { setupChoices(ch); setupPad(); return; }
     $('#reveal').onclick = () => {
       $('#answer').classList.remove('hidden');
       $('#reveal-row').style.display = 'none';
@@ -509,6 +568,42 @@
     document.querySelectorAll('#grade button').forEach((b) => (b.onclick = () => grade(b.dataset.g)));
     $('#pen-only').onchange = (e) => { settings.penOnly = e.target.checked; saveS(); };
     setupPad();
+  }
+
+  function setupChoices(ch) {
+    const btns = [...document.querySelectorAll('.choice')];
+    const picked = new Set();
+    const finish = () => {
+      const ok = ch.correct.length === picked.size && ch.correct.every((n) => picked.has(n));
+      btns.forEach((b) => {
+        const n = +b.dataset.no;
+        b.disabled = true;
+        if (ch.correct.includes(n)) b.classList.add('right');
+        else if (picked.has(n)) b.classList.add('wrong');
+      });
+      const cr = $('#check-row'); if (cr) cr.style.display = 'none';
+      const g = ok ? 'o' : 'x';
+      recordGrade(current.id, g);
+      skipped.delete(current.id);
+      $('#result').innerHTML = `
+        <div class="judge ${ok ? 'ok' : 'ng'}">${ok ? '⭕ 正解！' : '❌ ざんねん… 正解は ' + ch.correct.join('・')}</div>
+        ${ch.expl ? `<div class="expl">💡 ${esc(ch.expl)}</div>` : ''}
+        <div class="next-row">
+          <button class="btn" id="go-next">次の問題へ</button>
+          <span class="fix">記録を変える：<button data-fix="x">✕</button><button data-fix="t">△</button><button data-fix="o">◎</button></span>
+        </div>`;
+      $('#go-next').onclick = () => next();
+      document.querySelectorAll('[data-fix]').forEach((b) => (b.onclick = () => {
+        const p = progress[current.id]; if (p) { p.s = b.dataset.fix; p.streak = b.dataset.fix === 'o' ? Math.max(1, p.streak) : 0; saveP(); }
+        toast('記録を ' + LABEL[b.dataset.fix] + ' にしました');
+      }));
+    };
+    btns.forEach((b) => (b.onclick = () => {
+      const n = +b.dataset.no;
+      if (ch.multi) { picked.has(n) ? picked.delete(n) : picked.add(n); b.classList.toggle('sel'); }
+      else { picked.add(n); finish(); }
+    }));
+    const c = $('#check'); if (c) c.onclick = () => { if (!picked.size) { toast('えらんでから押してね'); return; } finish(); };
   }
 
   function recordGrade(id, g) {
@@ -782,6 +877,52 @@
   }
 
   // ---------- 進み具合 ----------
+  function renderHome() {
+    const qs = questions.filter((q) => q.a);
+    const c0 = { x: 0, t: 0, o: 0, n: 0 };
+    qs.forEach((q) => c0[statusOf(q.id)]++);
+    $('#h-sum').textContent = `全${qs.length}問　◎${c0.o}　△${c0.t}　✕${c0.x}　未${c0.n}`;
+    $('#h-weak').textContent = `✕と△を復習する（${c0.x + c0.t}問）`;
+    $('#h-grid').innerHTML = chapters().map((ch) => {
+      const list = qs.filter((q) => (q.chapter || 'その他') === ch);
+      if (!list.length) return '';
+      const c = { x: 0, t: 0, o: 0, n: 0 };
+      list.forEach((q) => c[statusOf(q.id)]++);
+      const pct = (k) => (c[k] / list.length) * 100;
+      return `<div class="ch-card">
+        <h3>${esc(ch)}</h3>
+        <div class="nums">${list.length}問　◎${c.o} △${c.t} ✕${c.x} 未${c.n}</div>
+        <div class="bar"><span style="width:${pct('o')}%;background:var(--o)"></span><span style="width:${pct('t')}%;background:var(--t)"></span><span style="width:${pct('x')}%;background:var(--x)"></span></div>
+        <div class="row"><button class="btn" data-quiz="${esc(ch)}">クイズ</button><button class="btn sub" data-book="${esc(ch)}">冊子で見る</button></div>
+      </div>`;
+    }).join('') || '<div class="card empty">問題がありません。「設定」から問題ファイルを取り込んでください。</div>';
+    $('#h-grid').querySelectorAll('[data-quiz]').forEach((b) => (b.onclick = () => {
+      settings.chapter = b.dataset.quiz; settings.mode = 'smart'; saveS(); current = null; goTab('study');
+    }));
+    $('#h-grid').querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => {
+      settings.bchapter = b.dataset.book; saveS(); goTab('book');
+    }));
+  }
+  $('#h-weak').onclick = () => { settings.chapter = ''; settings.mode = 'xt'; saveS(); current = null; goTab('study'); };
+  $('#h-all').onclick = () => { settings.chapter = ''; settings.mode = 'smart'; saveS(); current = null; goTab('study'); };
+
+  // 4択問題（「1. ～」の行がある問題）を分解する
+  function parseChoice(q) {
+    const lines = String(q.q).split('\n');
+    const choices = [];
+    const stem = [];
+    lines.forEach((ln) => {
+      const m = ln.match(/^([1-9])\.\s*(.+)$/);
+      if (m) choices.push({ no: +m[1], text: m[2] });
+      else if (!choices.length) stem.push(ln);
+    });
+    if (choices.length < 2) return null;
+    const [ansPart, ...ex] = String(q.a).split('💡');
+    const correct = [...ansPart.matchAll(/^([1-9])\./gm)].map((m) => +m[1]);
+    if (!correct.length) return null;
+    return { stem: stem.join('\n').replace(/^\d+\s+/, ''), choices, correct, expl: ex.join('💡').trim(), multi: correct.length > 1 || /複数選択/.test(q.q) };
+  }
+
   function renderProgress() {
     const qs = questions.filter((q) => q.a);
     const groups = [['全体', qs], ...chapters().map((c) => [c, qs.filter((q) => (q.chapter || 'その他') === c)])];
@@ -936,7 +1077,7 @@
     toast('削除しました');
   };
 
-  renderBook();
+  renderHome();
 
   // 電波がなくても開けるように、アプリ本体をiPadに保存しておく（sw.js）
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {

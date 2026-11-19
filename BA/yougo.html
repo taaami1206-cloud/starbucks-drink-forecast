@@ -103,6 +103,10 @@
   #quiz-a { font-size: 14px; color: var(--muted); min-height: 1.5em; margin-top: 6px; }
   .hide-ans .ans { color: transparent; background: repeating-linear-gradient(45deg, #f4f1ea, #f4f1ea 6px, #ece8de 6px, #ece8de 12px); border-radius: 4px; cursor: pointer; }
   .hide-ans .ans.peek { color: inherit; background: none; }
+  .cups { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 10px 0 4px; }
+  .cupfig { margin: 0; width: 220px; max-width: 100%; color: var(--text); }
+  .cupfig svg { width: 100%; height: auto; display: block; }
+  .cupfig figcaption { font-size: 13px; font-weight: bold; color: var(--green-dark); padding-left: 22px; }
   .empty { text-align: center; color: var(--muted); padding: 30px 0; }
   .foot { font-size: 12px; color: var(--muted); margin-top: 24px; line-height: 1.7; }
   .foot a { color: var(--green); }
@@ -124,6 +128,34 @@
   // ───────── 用語データ（新しい用語はここに追加） ─────────
   // photo: Wikimedia Commons の写真（ライセンスとクレジットを表示）
   const WM = (path) => `https://upload.wikimedia.org/wikipedia/commons/${path}`;
+  // ───────── ドリンクの断面図（下の層から順に [名前, 色, 高さの比率]） ─────────
+  const C = { esp: '#4a2a1a', drip: '#7a4a2c', milk: '#f4ecdc', mix: '#b38b68', ice: '#f6ecc8', cream: '#fffdf6', protein: '#eadfcc' };
+  let cupN = 0;
+  function cup(name, layers, scale = 1, ice = false) {
+    const id = 'cup' + (cupN++);
+    const bot = 140, h = Math.round(120 * scale), top = bot - h;
+    const inset = 8 * scale; // 下ほど細いグラス
+    const glass = `16,${top} 96,${top} ${96 - inset},${bot} ${16 + inset},${bot}`;
+    const total = layers.reduce((s, l) => s + l[2], 0);
+    const fillH = h * 0.86;
+    let y = bot, rects = '', labels = '', lastY = 999;
+    layers.forEach(([label, color, v]) => {
+      const lh = (fillH * v) / total;
+      y -= lh;
+      rects += `<rect x="0" y="${y}" width="120" height="${lh}" fill="${color}"/>`;
+      let cy = y + lh / 2;
+      if (cy > lastY - 15) cy = lastY - 15; // ラベルが重ならないように
+      lastY = cy;
+      labels += `<line x1="92" y1="${cy}" x2="106" y2="${cy}" stroke="currentColor" stroke-width="1" opacity=".5"/><text x="110" y="${cy + 4}" font-size="12" fill="currentColor">${label}</text>`;
+    });
+    const cubes = ice ? [[30, bot - 40], [58, bot - 62], [40, bot - 85]].map(([x, yy]) => `<rect x="${x}" y="${yy}" width="20" height="18" rx="3" fill="#fff" opacity=".45"/>`).join('') : '';
+    return `<figure class="cupfig"><svg viewBox="0 ${top - 6} 260 ${h + 10}" role="img" aria-label="${name}の断面図">
+      <defs><clipPath id="${id}"><polygon points="${glass}"/></clipPath></defs>
+      <g clip-path="url(#${id})">${rects}${cubes}</g>
+      <polygon points="${glass}" fill="none" stroke="#9a9a9a" stroke-width="2"/>
+      ${labels}</svg><figcaption>${name}</figcaption></figure>`;
+  }
+
   const entries = [
     {
       id: 'wetmill', term: 'ウェットミル', en: 'Wet Mill', cat: '生産・精製', added: '2026-11-07',
@@ -333,6 +365,189 @@
       tip: '<b>覚え方（内側の9つ）：</b>「<b>甘・花・果・酸</b>（あまはなかさん）、<b>葉・他・炒・辛・豆</b>（はたいりからまめ）」。甘み・花・果物・サワー/発酵／葉野菜/植物・その他・ロースト・スパイス・ナッツ/ココア。',
       photos: [],
       related: [],
+    },
+    {
+      id: 'redeye', term: 'レッドアイ', en: 'Red Eye', cat: 'ドリンク', added: '2026-11-19',
+      short: 'ドリップコーヒーに、エスプレッソを1ショット足したもの。',
+      html: `
+        <div class="cups">
+          ${cup('レッドアイ', [['ドリップコーヒー', C.drip, 80], ['エスプレッソ 1ショット', C.esp, 16]])}
+          ${cup('ブラックアイ', [['ドリップコーヒー', C.drip, 70], ['エスプレッソ 2ショット', C.esp, 30]])}
+          ${cup('デッドアイ', [['ドリップコーヒー', C.drip, 60], ['エスプレッソ 3ショット', C.esp, 44]])}
+        </div>
+        <ul>
+          <li>ショットの数で名前が変わる：<b>1ショット＝レッドアイ</b>、<b>2ショット＝ブラックアイ</b>、<b>3ショット＝デッドアイ</b>（グリーンアイと呼ぶこともある）。</li>
+          <li>名前の由来は、夜に出発して朝に着く飛行機「<b>レッドアイ便</b>」（寝不足で目が赤くなる）。眠気覚ましの強い一杯、というイメージ。</li>
+          <li>アメリカのスターバックスでは、ドリップコーヒーにショットを追加するカスタマイズとして知られている。</li>
+        </ul>
+        <h3>まちがえやすいもの</h3>
+        <table class="vs">
+          <tr><th></th><th>中身</th></tr>
+          <tr><td>レッドアイ</td><td>ドリップコーヒー ＋ エスプレッソ</td></tr>
+          <tr><td>カフェ アメリカーノ</td><td>エスプレッソ ＋ お湯（ドリップコーヒーは入らない）</td></tr>
+          <tr><td>カクテルの「レッドアイ」</td><td>ビール ＋ トマトジュース（コーヒーとは無関係。日本の居酒屋で見かけるのはこちら）</td></tr>
+        </table>`,
+      tip: '<b>覚え方：</b>寝不足で<b>目が赤い（レッド）</b>→ 黒くなる（ブラック）→ 死んだ目（デッド）。ショットが増えるほど目がヤバくなる。',
+      photos: [],
+      related: ['cortado', 'dirty'],
+    },
+    {
+      id: 'cortado', term: 'コルタード', en: 'Cortado', cat: 'ドリンク', added: '2026-11-19',
+      short: 'エスプレッソに、ほぼ同じ量の温めたミルクを足した小さな一杯。スペイン生まれ。',
+      html: `
+        <div class="cups">
+          ${cup('コルタード', [['スチームミルク', C.milk, 44], ['エスプレッソ', C.esp, 44]], 0.62)}
+        </div>
+        <ul>
+          <li>スペイン語の <b>cortar（コルタール）＝「切る」</b>から。エスプレッソの強さをミルクで「切る（和らげる）」という意味。</li>
+          <li>エスプレッソとミルクは<b>だいたい 1：1</b>。泡はほとんどのせない。小さなグラスで出すことが多い。</li>
+          <li>アメリカのカフェでは、専用の小さなグラスの名前から「<b>ジブラルタル</b>」と呼ばれることもある。</li>
+          <li>アメリカのスターバックスには「コルタード」というメニューがある（リストレットショット＋スチームミルク）。</li>
+        </ul>
+        <h3>エスプレッソ＋ミルクのドリンク比較</h3>
+        <table class="vs">
+          <tr><th>名前</th><th>エスプレッソ</th><th>ミルク・泡</th><th>大きさ</th></tr>
+          <tr><td>エスプレッソ マキアート</td><td>ふつう</td><td>泡を<b>ちょこっと</b>のせるだけ</td><td>いちばん小さい</td></tr>
+          <tr><td>コルタード</td><td>ふつう</td><td>ミルクを<b>同じくらい</b>。泡はほぼなし</td><td>小さい</td></tr>
+          <tr><td>フラットホワイト</td><td>リストレット</td><td>ミルク多め、<b>きめ細かい薄い泡</b></td><td>中くらい</td></tr>
+          <tr><td>カプチーノ</td><td>ふつう</td><td>ミルク＋<b>泡がたっぷり</b></td><td>中くらい</td></tr>
+          <tr><td>カフェ ラテ</td><td>ふつう</td><td>ミルク<b>たっぷり</b>、泡は薄め</td><td>大きい</td></tr>
+        </table>`,
+      tip: '<b>覚え方：</b>コル<b>タ</b>ード＝<b>カット（cut）</b>。エスプレッソをミルクで半分に「切った」一杯。',
+      photos: [
+        { src: WM('thumb/b/b8/Cortado_-_LOAM_2023-08-22.jpg/500px-Cortado_-_LOAM_2023-08-22.jpg'), cap: 'コルタード', credit: 'Andy Li / CC0', page: 'https://commons.wikimedia.org/wiki/File:Cortado_-_LOAM_2023-08-22.jpg' },
+      ],
+      related: ['redeye', 'dirty', 'einspanner'],
+    },
+    {
+      id: 'affogato', term: 'アフォガート', en: 'Affogato', cat: 'ドリンク', added: '2026-11-19',
+      short: 'バニラアイスに、熱いエスプレッソをかけたイタリアのデザート。',
+      html: `
+        <div class="cups">
+          ${cup('アフォガート', [['バニラアイス（ジェラート）', C.ice, 50], ['上からエスプレッソ', C.esp, 22]], 0.8)}
+        </div>
+        <ul>
+          <li>イタリア語で <b>affogato ＝「おぼれた」</b>。アイスがエスプレッソに「おぼれている」様子から。</li>
+          <li>飲み物というより<b>デザート</b>。スプーンで食べる。冷たいアイスと熱いエスプレッソの温度差、甘さと苦さの組み合わせを楽しむ。</li>
+          <li>表記は「アフォ<b>ガート</b>」（「アフォガード」と書かれることもあるが、元は affogato なので「ト」）。</li>
+          <li>ドリンクの上からショットを注ぐことを「アフォガート スタイル」と言うことがある（例：フラペチーノの上にショットをかける）。</li>
+        </ul>`,
+      tip: '<b>覚え方：</b>アフォガート＝アイスが<b>おぼれ</b>てる。「ア<b>フォ</b>ガート」→ エスプレッソの<b>フォール（落とす）</b>と結びつけてもOK。',
+      photos: [
+        { src: WM('thumb/1/19/Affogato.JPG/500px-Affogato.JPG'), cap: 'アフォガート', credit: 'VR38DETT / パブリックドメイン', page: 'https://commons.wikimedia.org/wiki/File:Affogato.JPG' },
+      ],
+      related: ['einspanner', 'dirty'],
+    },
+    {
+      id: 'dirty', term: 'ダーティーコーヒー', en: 'Dirty Coffee', cat: 'ドリンク', added: '2026-11-19',
+      short: '冷たいミルクの上に、熱いエスプレッソを静かに注いだドリンク。混ぜずに飲む。',
+      html: `
+        <div class="cups">
+          ${cup('ダーティー', [['冷たいミルク', C.milk, 64], ['まざりかけ', C.mix, 10], ['熱いエスプレッソ', C.esp, 18]], 0.62)}
+        </div>
+        <ul>
+          <li>エスプレッソがグラスのふちからミルクに流れ落ちて、<b>「汚れた（dirty）」</b>ように見えることからこの名前。</li>
+          <li><b>混ぜずに、すぐ飲む</b>のがポイント。上は熱くて苦い、下は冷たくて甘い、という<b>温度と味の層</b>を楽しむ。</li>
+          <li>グラスやミルクをよく冷やしておき、エスプレッソは濃いめ（リストレットなど）を使うことが多い。</li>
+          <li>中国のカフェで人気になったと言われる（発祥は諸説あり）。</li>
+        </ul>
+        <h3>まちがえやすいもの</h3>
+        <table class="vs">
+          <tr><th></th><th>中身</th></tr>
+          <tr><td>ダーティーコーヒー</td><td>冷たいミルク ＋ 上から熱いエスプレッソ（層を楽しむ）</td></tr>
+          <tr><td>ダーティーチャイ</td><td>チャイ ティー ラテ ＋ エスプレッソショット（スターバックスのカスタマイズで有名）</td></tr>
+          <tr><td>アイス ラテ</td><td>エスプレッソ ＋ 冷たいミルク ＋ 氷（混ぜて飲む）</td></tr>
+        </table>`,
+      tip: '<b>覚え方：</b>白いミルクがエスプレッソで<b>よごれる</b>＝ダーティー。<b>混ぜたら台無し</b>。',
+      photos: [
+        { src: WM('thumb/9/92/Coffee_%22dirty%22_dirty_%E5%92%96%E5%95%A1.jpg/500px-Coffee_%22dirty%22_dirty_%E5%92%96%E5%95%A1.jpg'), cap: 'ダーティーコーヒー', credit: 'Suginami / CC BY-SA 4.0', page: 'https://commons.wikimedia.org/wiki/File:Coffee_%22dirty%22_dirty_%E5%92%96%E5%95%A1.jpg' },
+      ],
+      related: ['cortado', 'redeye', 'proffee'],
+    },
+    {
+      id: 'einspanner', term: 'アインシュペナー', en: 'Einspänner', cat: 'ドリンク', added: '2026-11-19',
+      short: '濃いコーヒーの上に、ホイップクリームをたっぷりのせたウィーン（オーストリア）のコーヒー。',
+      html: `
+        <div class="cups">
+          ${cup('アインシュペナー', [['濃いコーヒー', C.drip, 60], ['ホイップクリーム', C.cream, 38]], 0.7)}
+        </div>
+        <ul>
+          <li>ドイツ語で <b>Einspänner ＝「1頭立ての馬車」</b>。ウィーンの馬車の御者（ぎょしゃ）が飲んでいた、と言われる。</li>
+          <li>クリームが<b>ふたの役割</b>をして、待ち時間にコーヒーが冷めにくく、揺れてもこぼれにくい。</li>
+          <li><b>混ぜずに</b>、冷たいクリームごしに熱いコーヒーを飲むのが本来の飲み方。取っ手つきのグラスで出すことが多い。</li>
+          <li>日本の喫茶店の「<b>ウインナーコーヒー</b>」は、ほぼこれのこと（ウインナー＝「ウィーン風」。ソーセージは入っていない）。</li>
+          <li>最近は韓国のカフェで流行し、甘くて濃いクリームをのせたアイスのアインシュペナーも人気。</li>
+        </ul>`,
+      tip: '<b>覚え方：</b>「アイン（ein）」はドイツ語の<b>1</b>。<b>1頭</b>の馬車の御者のコーヒー → ウィーン → ウインナーコーヒー。表記は「アインシュ<b>ペ</b>ナー」。',
+      photos: [
+        { src: WM('thumb/9/94/Einsp%C3%A4nner_Kaffee.jpg/500px-Einsp%C3%A4nner_Kaffee.jpg'), cap: 'アインシュペナー', credit: 'בר / CC BY-SA 3.0', page: 'https://commons.wikimedia.org/wiki/File:Einsp%C3%A4nner_Kaffee.jpg' },
+      ],
+      related: ['affogato', 'cortado'],
+    },
+    {
+      id: 'proffee', term: 'プロフィー', en: 'Proffee（Protein ＋ Coffee）', cat: 'ドリンク', added: '2026-11-19',
+      short: 'プロテイン（たんぱく質）ドリンクとコーヒーを合わせたもの。SNS発のトレンド。',
+      html: `
+        <div class="cups">
+          ${cup('プロフィー', [['プロテインシェイク', C.protein, 60], ['エスプレッソ／コーヒー', C.esp, 22]], 0.7, true)}
+        </div>
+        <ul>
+          <li><b>Pro</b>tein ＋ Co<b>ffee</b> ＝ Proffee。2021年ごろ、TikTokなどのSNSで広まった。</li>
+          <li>作り方はシンプル：氷を入れたグラスにプロテインシェイク（ミルク味やバニラ味）を入れ、エスプレッソやコーヒーを注ぐ。</li>
+          <li>朝ごはん代わり・運動の前後に、カフェインとたんぱく質を一度にとれる、というのが人気の理由。</li>
+          <li>2025年秋、アメリカのスターバックスでプロテイン入りのコールドフォームやラテが登場し、話題になった。</li>
+        </ul>`,
+      tip: '<b>覚え方：</b><b>プロ</b>テイン ＋ コー<b>ヒー</b> ＝ プロフィー。名前がそのまま中身。※「プロフィー」がこれと違う用語だったら教えてください。',
+      photos: [],
+      related: ['dirty', 'redeye'],
+    },
+    {
+      id: 'phin', term: 'フィン', en: 'Phin（ベトナム式ドリッパー）', cat: '器具・抽出', added: '2026-11-19',
+      short: 'カップの上にのせて使う、ベトナムの金属製の1杯用ドリッパー。',
+      html: `
+        <h3>パーツ</h3>
+        <div class="flow"><span>受け皿（底に小さな穴）</span><i>＋</i><span>筒（粉を入れる）</span><i>＋</i><span>中ぶた（粉を軽く押さえる）</span><i>＋</i><span>ふた</span></div>
+        <h3>いれ方</h3>
+        <div class="flow"><span>カップの底に<b>コンデンスミルク</b></span><i>→</i><span>フィンをのせて粉を入れる</span><i>→</i><span>中ぶたをのせる</span><i>→</i><span>少しお湯で蒸らす</span><i>→</i><span>お湯を注いでふた</span><i>→</i><span class="k">ポタポタ落ちるのを待つ（数分）</span></div>
+        <ul>
+          <li>紙のフィルターは使わず、<b>金属の小さな穴</b>からゆっくり落ちる。こしきれない油分も入るので、<b>どっしり濃い</b>味になる。</li>
+          <li>ベトナムは<b>世界第2位のコーヒー生産国</b>で、多くが<b>ロブスタ種</b>。苦みの強い深煎りを、甘いコンデンスミルクと合わせて飲むのが定番。</li>
+          <li>氷を入れたアイス版は「カフェ・スア・ダー（練乳入りアイスコーヒー）」と呼ばれる。</li>
+          <li>落とし終わったら、外したふたを裏返して<b>フィンを置く台</b>として使える。</li>
+        </ul>`,
+      tip: '<b>覚え方：</b>フィン＝<b>ベトナム</b>。「ふぃん」と<b>ポタポタ</b>落ちる、<b>練乳</b>と<b>ロブスタ</b>。',
+      photos: [
+        { src: WM('thumb/d/dd/Vietnamese_coffee_brewing_with_metal_filter.jpg/500px-Vietnamese_coffee_brewing_with_metal_filter.jpg'), cap: 'カップの上でフィンを使っているところ', credit: 'HungryHuy / CC BY 2.0', page: 'https://commons.wikimedia.org/wiki/File:Vietnamese_coffee_brewing_with_metal_filter.jpg' },
+        { src: WM('9/92/Vietnamese_coffee_gear.jpg'), cap: 'フィンのパーツ', credit: 'INeedCoffee / CC BY-SA 2.0', page: 'https://commons.wikimedia.org/wiki/File:Vietnamese_coffee_gear.jpg' },
+      ],
+      related: ['napoletana', 'cezve'],
+    },
+    {
+      id: 'napoletana', term: 'ナポレターナ', en: 'Napoletana（Cuccumella / クックマ）', cat: '器具・抽出', added: '2026-11-19',
+      short: 'お湯をわかしたら、ポットごと上下を<b>ひっくり返して</b>いれる、ナポリの昔ながらのコーヒーポット。',
+      html: `
+        <h3>いれ方</h3>
+        <div class="flow"><span>下のポットに水</span><i>→</i><span>まん中のバスケットに粉</span><i>→</i><span>注ぎ口つきのポットを<b>逆さに</b>かぶせる</span><i>→</i><span>火にかけてわかす</span><i>→</i><span class="k">ひっくり返す</span><i>→</i><span>お湯が重力で粉を通って落ちる</span></div>
+        <ul>
+          <li>イタリア語で「ナポリの（ポット）」。ナポリでは「<b>クックマ</b>（cuccumella）」とも呼ばれる。</li>
+          <li>しくみは<b>ドリップ（重力で落とす）</b>。圧力はかからないので、エスプレッソにはならない。</li>
+          <li>お湯側のポットには小さな穴があり、そこから湯気が出たら「わいた」合図。</li>
+          <li>19世紀のはじめにフランスで考えられ、ナポリで広まった。のちに<b>モカポット</b>（直火式エスプレッソメーカー）が登場して、家庭ではそちらが主流になった。</li>
+        </ul>
+        <h3>にている器具の比較</h3>
+        <table class="vs">
+          <tr><th>器具</th><th>国</th><th>しくみ</th></tr>
+          <tr><td>ナポレターナ</td><td>イタリア（ナポリ）</td><td>わかしてから<b>ひっくり返す</b> → 重力で落ちる</td></tr>
+          <tr><td>モカポット</td><td>イタリア</td><td>わいた湯気の<b>圧力</b>で、お湯が下から上へ押し上げられる</td></tr>
+          <tr><td>フィン</td><td>ベトナム</td><td>カップにのせて、お湯が金属の穴から<b>ポタポタ</b>落ちる</td></tr>
+          <tr><td>ジャズベ（イブリック）</td><td>トルコ</td><td>細かい粉を水と一緒に<b>煮出す</b>（こさない）</td></tr>
+        </table>`,
+      tip: '<b>覚え方：</b><b>ナポ</b>リの<b>ひっくり返す</b>ポット。「ナポレターナ」の「<b>ター</b>」を<b>ターン（回す）</b>と覚える。',
+      photos: [
+        { src: WM('thumb/d/dd/Neapolitan_flip_coffee_pot.jpg/500px-Neapolitan_flip_coffee_pot.jpg'), cap: 'ナポレターナ（ひっくり返す前と後）', credit: 'Csant / CC BY-SA 3.0', page: 'https://commons.wikimedia.org/wiki/File:Neapolitan_flip_coffee_pot.jpg' },
+        { src: WM('thumb/5/53/Caffettiera_napoletana.jpg/500px-Caffettiera_napoletana.jpg'), cap: 'ナポレターナ', credit: 'Toni Pecoraro / パブリックドメイン', page: 'https://commons.wikimedia.org/wiki/File:Caffettiera_napoletana.jpg' },
+      ],
+      related: ['phin', 'cezve', 'ibrik'],
     },
   ];
 

@@ -19,6 +19,8 @@ keep = np.load(tmp)
 # 切りあとのトゲ・へこみをならす（線の太さ約7pxより細いものだけ消える）
 disk = ndimage.generate_binary_structure(2, 1); disk = ndimage.iterate_structure(disk, 2)
 keep = ndimage.binary_opening(ndimage.binary_closing(keep, disk), disk)
+cp = tmp.replace('.npy', '_carve.npy')   # つぶしたくない白いすき間（あれば）
+if os.path.exists(cp): keep &= ~np.load(cp)
 sil = ndimage.binary_fill_holes(keep | ndimage.binary_opening(np.load(tmp.replace('.npy', '_sil.npy')), disk))
 UP = 3; K = 0.512
 def up(m):

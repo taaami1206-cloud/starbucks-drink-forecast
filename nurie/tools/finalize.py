@@ -5,7 +5,7 @@
 # - 文字をすべて丸ゴシック（M PLUS Rounded 1c 太字）にする
 # - 数字だけの文字（看板の「4」など）は白ぬき＋ふち線にして塗れるようにする
 import re, os, xml.etree.ElementTree as ET
-W = '2.2px'
+W = '3.4px'
 FONT = "'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', sans-serif"
 # Helvetica Bold の文字幅（em）。イラレで左寄せ配置された文字の中心を求めるのに使う
 HELV = dict(zip('0123456789', [.556]*10)) | {'A': .722, 'B': .722, 'C': .722, 'D': .722, 'E': .667, 'F': .611, 'G': .778,

@@ -164,7 +164,7 @@
     <g>
       <rect class="st18" x="25" y="22" width="792" height="483" />
       <g id="_左の景色" data-name="左の景色">
-        <line id="_地面" data-name="地面" class="st3" x1="25" y1="458.5" x2="817" y2="339.8" style="stroke-width:3.40px" />
+        <line id="_地面" data-name="地面" class="st3" x1="25" y1="412" x2="160" y2="398" style="stroke-width:3.40px" />
         <g id="_矢印看板" data-name="矢印看板">
           <path class="st4" d="M65.3,323.5c9.1,10.8,18.3,15.9,27.4,15.3" style="stroke-width:3.40px" />
           <path class="st4" d="M113.7,312.2c-7,10.8-14,19.6-21,26.6" style="stroke-width:3.40px" />
@@ -176,7 +176,7 @@
           <path class="st24" d="M39.5,338.8h96.8l22.6,21-22.6,21H39.5c-4.3,0-6.5-2.2-6.5-6.5v-29c0-4.3,2.2-6.5,6.5-6.5Z" style="stroke-width:3.40px" />
           <text class="st14" transform="translate(91.1 365.4)" text-anchor="middle" style="font-family:'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', sans-serif;font-weight:800;font-size:14.5px"><tspan x="0" y="0">DRIVE THRU</tspan></text>
         </g>
-      </g>
+      <line id="_地面" data-name="地面" class="st3" x1="640" y1="378" x2="817" y2="352" style="stroke-width:3.40px" /></g>
       <g id="_たて版の絵" data-name="たて版の絵">
         <g>
           <g id="_看板">
@@ -293,20 +293,7 @@
               <rect class="st25" x="397.6" y="303" width="30.6" height="7.7" rx="2.2" ry="2.2" style="stroke-width:3.40px" />
               <path class="st25" d="M401.7,321h22.2l-1.4,11h-19.3l-1.4-11h0,0Z" style="stroke-width:3.40px" />
             </g>
-            <g id="_メニュー">
-              <rect class="st34" x="507.6" y="196" width="97.1" height="103.2" rx="5.6" ry="5.6" style="stroke-width:3.40px" />
-              <line class="st8" x1="556.2" y1="196" x2="556.2" y2="299.2" style="stroke-width:3.40px" />
-              <line class="st8" x1="507.6" y1="247.6" x2="604.7" y2="247.6" style="stroke-width:3.40px" />
-              <path class="st34" d="M522,212.1h20l-2.3,24.2h-15.4l-2.3-24.2h0Z" style="stroke-width:3.40px" />
-              <rect class="st34" x="518.9" y="207.9" width="26.2" height="5.5" rx="1.6" ry="1.6" style="stroke-width:3.40px" />
-              <path class="st34" d="M571.2,264.7h20l-2.3,24.2h-15.4l-2.3-24.2h0Z" style="stroke-width:3.40px" />
-              <rect class="st34" x="568.1" y="260.5" width="26.2" height="5.5" rx="1.6" ry="1.6" style="stroke-width:3.40px" />
-              <circle class="st33" cx="580.1" cy="221.7" r="13.4" transform="translate(8.8 465) rotate(-44)" style="stroke-width:3.40px" />
-              <circle class="st34" cx="580.5" cy="222.2" r="4.9" style="stroke-width:3.40px" />
-              <circle class="st33" cx="531.9" cy="271.3" r="13.4" style="stroke-width:3.40px" />
-              <circle class="st34" cx="532.2" cy="271.8" r="4.9" style="stroke-width:3.40px" />
-            </g>
-            <g id="_植え込み">
+            <g id="窓"><rect x="476" y="194" width="122" height="92" rx="4" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" /><rect x="486" y="204" width="102" height="72" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" /><line x1="537" y1="204" x2="537" y2="276" style="fill:none;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" /><line x1="486" y1="240" x2="588" y2="240" style="fill:none;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" /></g><g id="_植え込み">
               <path class="st29" d="M136.1,502.4c-7.3-18.3-5.2-32.1,6.6-41.3-8.1-16.6-4.7-28.5,10-35.8,1.9-15.8,10.6-22.6,26.4-20.4,11.7-6.6,21.3-3.5,28.7,9.3,12.8,7.3,15.8,18.9,8.8,34.6,10.6,11.7,10.6,24,0,36.9,3.4,12.2-.5,18.6-11.6,19.3l-68.8-2.7h0Z" style="stroke-width:3.40px" />
               <path class="st7" d="M161,450.1c3.6-4.4,7.7-4.4,12.2,0M185.7,428.1c3.6-4.4,7.7-4.4,12.2,0M174.7,477.7c3.6-4.4,7.7-4.4,12.2,0" style="stroke-width:3.40px" />
             </g>
@@ -314,7 +301,7 @@
               <path class="st30" d="M204.9,492.4c-7.3-16-5.2-28,6.6-36-8.1-14.4-4.7-24.8,10-31.2,1.9-13.8,10.6-19.7,26.4-17.8,11.7-5.7,21.3-3,28.7,8.1,12.8,6.3,15.8,16.5,8.8,30.2,10.6,10.2,10.6,20.9,0,32.2,3.4,10.6-.5,16.2-11.6,16.8l-68.8-2.4h0Z" style="stroke-width:3.40px" />
               <path class="st5" d="M229.7,446.8c3.6-3.8,7.7-3.8,12.2,0M254.5,427.6c3.6-3.8,7.7-3.8,12.2,0M243.4,470.9c3.6-3.8,7.7-3.8,12.2,0" style="stroke-width:3.40px" />
             </g>
-            <g id="_車と動物">
+            <g id="_車と動物" transform="translate(0 -22)">
               <g>
                 <path class="st35" d="M566.8,419.7c.4-3.6,2.6-8.5,7-15.6,8.2-13.1,12.1-17,12.1-17l17.9,10.1s-3.9,13-8.2,23.5c-1.8,4.1-3.4,7.2-5.6,9-3.4,3-7.8,3.3-14.1.5-6.1-2.8-9.6-5.4-8.9-10.6h-.2Z" style="stroke-width:3.40px" />
                 <path class="st35" d="M650.2,324.1c-.7,9.2,6.7,19.3,19.5,20.8,12.8,1.5,19.7-4.3,20-16.1.2-8.9-4.6-13.2,2.5-20.9,7.1-7.6,12.1-33.8-11.1-36.5-19.3-2.3-25.8,10.6-25.8,10.6l-5,42.2h0l-.2-.2Z" style="stroke-width:3.40px" />
@@ -369,55 +356,15 @@
                 </g>
               </g>
               <g>
-                <polygon class="st35" points="606.5 353.2 606.1 403.4 598 402.7 598 401.7 598.2 370.5 598.3 361.4 477.4 355.6 474.3 355.5 475.9 391.5 469.9 391 467.7 347.7 606.5 353.2" style="stroke-width:3.40px" />
-                <polygon class="st35" points="568 495 568 495.1 554.5 503 397.1 470.7 408.5 466.9 408.6 466.9 408.8 469.1 554.4 498.3 562.1 493.9 568 495" style="stroke-width:3.40px" />
-                <polygon class="st35" points="554.4 498.3 408.7 469.1 408.5 466.9 408.5 466.8 403.4 403.4 403.8 403.5 553.3 420.8 553.3 420.9 553.3 422.5 554.4 498.3" style="stroke-width:3.40px" />
-                <polygon class="st35" points="568.4 524.7 567.8 525.1 565.7 526.5 563.7 527.9 563.2 528.2 555 533.9 554.5 503 568 495.1 568.1 496.8 568.1 499.7 568.1 502.5 568.1 505.3 568.1 508 568.2 510.7 568.2 513.5 568.2 516 568.2 518.4 568.2 520.8 568.4 523.1 568.4 524.7" style="stroke-width:3.40px" />
-                <polygon class="st35" points="609.1 352.9 606.5 353.2 467.7 347.7 471 347.5 608.6 352.9 609.1 352.9" style="stroke-width:3.40px" />
-                <polygon class="st35" points="554.5 503 555 533.9 450.9 509 441.1 506.6 432.8 504.6 399.3 496.6 399.2 494.9 397.1 470.7 554.5 503" style="stroke-width:3.40px" />
-                <polygon class="st35" points="606.1 403.4 553.3 420.9 403.5 403.5 403.8 403.5 469.9 391 475.9 391.5 598 402.7 606.1 403.4" style="stroke-width:3.40px" />
-                <path class="st35" d="M611.5,484c.8,16.8-4.2,40.1-15.9,52.6-2.5,2.6-5.9,5.3-9.6,5.3-1.5.2-12.1-2.7-13.9-3-.6,0-1.8-.6-2.2-.9-3.4-2.1-5.5-6-6.8-9.6h0c1.5-1.1,3.6-2.6,5.2-3.6,0-9.6-.2-19.7-.2-29.5v-.2c.2-1.2.5-2.3.8-3.5v-.2c0-.4.2-.7.3-1.1,0-.4.2-.9.3-1.3,0-.5.3-1,.4-1.5s.3-1.1.5-1.6c0-.4.3-.8.4-1.3v-.2c2.5-7.5,6.1-14.9,11.5-20.6,2.8-2.8,6.8-5.5,11.1-4.9.8.2,6.6,1,7.2,1.2,1.1.3,2.3,1.1,3.2,1.8.3.2.5.5.8.7,0,0,.2.2.3.3.2.2.3.3.4.5,1.1,1.3,2,2.8,2.8,4.5,0,.2.2.5.3.7.3.8.6,1.6.9,2.5,0,.4.2.7.3,1.1h0c1.1,4,1.5,8.2,1.8,12h0v-.3Z" style="stroke-width:3.40px" />
-                <path class="st35" d="M611.5,484h0Z" style="stroke-width:3.40px" />
-                <path class="st35" d="M581.9,508.3c0-8.9,4.3-31.4,15.7-31.1,8.5,3.6,6.8,18.7,5.4,26.2-1.8,7.4-4.2,16.1-11.1,20.3-8.5,3.2-10.2-9.5-10.1-15.4h0Z" style="stroke-width:3.40px" />
-                <path class="st35" d="M675.8,441c0,2.1,0,4.5-.2,6.7-.6,10.1-2.8,21-7.3,29.5-1.4,2.5-3.4,5.8-6.6,6.2-.4,0-9.6-1.6-10.4-1.6-4.6-1.4-5.9-9.5-6.3-13.6h0c1-.7,3.2-2.1,4.1-2.8v-7.2c.4-9.6,2.3-19.5,6.2-28,.9-1.9,2.1-3.9,3.4-5.5.9-1,2.2-2.1,3.5-2.6.3-.2,1-.2,1.3-.2l4.8.5c1.1,0,2,.6,2.8,1.4l.2.2c.2.2.3.3.4.5,3,4,3.8,12.8,3.8,16.4h0Z" style="stroke-width:3.40px" />
-                <path class="st35" d="M659.2,457.1c.5-7,1.4-15.1,6.1-20.8,7-4.8,6.3,13.2,5.8,16.8-1.2,14.8-11.8,28.1-12,3.9h0Z" style="stroke-width:3.40px" />
                 <g>
-                  <path class="st9" d="M606.5,353.2h0l2-.4h.5M554.4,498.3l-1.1-77.4" style="stroke-width:3.40px" />
-                  <path class="st35" d="M672.1,381.3l-5.6,1.8-5.3,1.7-.9.3c-18.1,6-28.4,9.8-44.2,15.1-1.4.5-2.7.9-3.9,1.3-1.2.4-2.4.8-3.5,1.2v-7.4c.2-22.7.2-18.7.4-42.4l-2.5.4v.7s-.4,39.8-.4,39.8v9.6s-2,.7-4.8,1.6c-3.3,1.1-7.7,2.5-11.2,3.7-3.6,1.2-6.3,2.1-6.3,2.1l-16.1,5.3-4.7,1.6-9.6,3.2v3.9s.4,26.7.4,26.7l.7,46.7h0c0,0,7.6-4.2,7.6-4.2l5.8,1.1h.1s0,0,0,0c.2-1.3.5-2.4.8-3.6v-.2c0-.4.2-.7.3-1.1,0-.4.2-.9.3-1.3,0-.5.3-1,.4-1.5.2-.5.3-1.1.5-1.6,0-.4.3-.8.4-1.3v-.2c2.5-7.5,6.1-14.9,11.5-20.6,2.4-2.4,5.7-4.7,9.2-5,.4,0,.8,0,1.2,0,.2,0,.4,0,.6,0,.8.2,6.6,1,7.2,1.2,1.1.3,2.3,1.1,3.2,1.8.3.2.5.5.8.7,0,0,.2.2.3.3.2.2.3.3.4.5.9,1.2,1.9,2.6,2.6,3.9,0,0,0,0,0,0,0,.2,0,.3.2.5,0,.3.2.5.3.7.3.8.6,1.6.9,2.5,0,.4.2.7.3,1.1.7,2.3,1.1,4.5,1.4,6.9l.2,1.4c.3,2.8.4,5.6.4,8.4s0,1.3,0,2c0,0,.1,0,.2-.1,2.7-1.8,24.1-16.1,33.3-22.2.1,0,.2-.2.4-.3.5-.3,1.1-.7,1.7-1.1.8-.5,1.6-1.1,2.1-1.4v-7.2c.4-8.8,2-17.8,5.3-25.8.3-.7.6-1.5.9-2.2.2-.3.4-.7.5-1.1.2-.4.4-.7.6-1.1.2-.4.5-.9.8-1.3,0,0,.2-.3.2-.4s.2-.3.3-.4c.3-.4.6-.9,1-1.3.9-1,2.2-2.1,3.5-2.6.3-.2,1-.2,1.3-.2h0s4.8.5,4.8.5c1.1,0,2,.6,2.8,1.4l.2.2c.2.2.3.3.4.5,0,0,.2.2.2.4v.2c.4.5.7,1,.9,1.6,0,0,0,.2.2.3,0,.2,0,.3.2.5,0,.2,0,.3.2.5,0,.2,0,.4.2.7v.2c0,.3.2.6.3.9,0,.3.2.6.2,1v.4c0,.3,0,.6.2.9v.5c0,.4,0,.8.2,1.2.2,1.4.4,2.8.5,4,0,1.2.1,2.4.1,3.2,0,2.1,0,4.5-.2,6.7.2-.2.7-.4,1.2-.8,2.8-1.8,8.7-5.9,9.8-6.6l2-43.2v-3.2l.6-12.1.3-6c-4.5,1.5-10.1,3.3-16.3,5.4ZM660,392.3l6.5-2.4.5-.2-.3,5.6h-.2c0,0-4,1.6-4,1.6l-1.4.6-2.9,1.2h-.3l-4.7,1.8-9.7,3.8-4.5,1.8v-.9l.2-4v-1.4l7.9-2.8,2.6-1,1.8-.6,1.8-.6,2.1-.8,2.7-1,1.9-.7Z" style="stroke-width:3.40px" />
-                  <path class="st35" d="M568.8,491.4c-.3,1.2-.6,2.5-.8,3.6h0c.2-1.3.5-2.5.8-3.6Z" style="stroke-width:3.40px" />
-                  <polygon class="st35" points="606.1 403.4 553.3 420.9 553.3 420.8 606.1 403.4" style="stroke-width:3.40px" />
-                  <path class="st35" d="M609.3,470.8c-.3-.8-.6-1.8-.9-2.5.3.8.6,1.6.9,2.5Z" style="stroke-width:3.40px" />
-                  <path class="st35" d="M649.3,465.3h0c-.2.2-1.8,1.2-4.1,2.8h0c1-.7,3.2-2.1,4.1-2.8Z" style="stroke-width:3.40px" />
+                  </g>
                 </g>
-                <line class="st11" x1="554.4" y1="494.1" x2="553.3" y2="422.5" style="stroke-width:3.40px" />
-                <polyline class="st11" points="602.5 404.7 553.3 420.9 406.4 403.8" style="stroke-width:3.40px" />
-                <path class="st35" d="M508.4,438.5c1.3-6.8,8.8-11.3,15.3-8.2,8.2,3.8,12.6,14.6,9.3,23.1-2.5,6.8-10.6,9-16.4,5.2-6.5-4.1-9.8-12.6-8.1-20.1h0Z" style="stroke-width:3.40px" />
-                <path class="st35" d="M417.4,425.6c.7-6.1,6.7-10.7,12.4-7.2,6.8,4.1,10,13.5,7.4,21.1-3,8.5-12.4,6.8-16.6.2-2.7-4-4-9.2-3.3-14h.2Z" style="stroke-width:3.40px" />
-                <polygon class="st35" points="497.3 479.4 453.7 471 451 427.5 495.5 433.7 497.3 479.4" style="stroke-width:3.40px" />
               </g>
-              <path class="st35" d="M688.4,375.9c-4.5,1.5-10.1,3.3-16.3,5.4l-5.6,1.8-5.3,1.7c.3-3.3.3-6.8,0-10.8l5.3.4,21.9,1.5Z" style="stroke-width:3.40px" />
-            </g>
-          </g>
+          <g id="車" transform="matrix(0.5 0 0 0.5 50 23.5)"><ellipse cx="1240" cy="836" rx="40" ry="64" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:6.80px" /><ellipse cx="1245" cy="837" rx="16" ry="30" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:6.80px" /><path d="M1040,762 L1095,737 L1225,697 Q1252,692 1252,722 L1252,808 Q1252,824 1236,830 L1040,880 Z" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:6.80px" /><path d="M1200,736 L1238,723 Q1246,721 1246,729 L1246,733 Q1246,738 1240,740 L1205,751 Q1200,752 1200,747 Z" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:6.80px" /><ellipse cx="1107" cy="872" rx="47" ry="66" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:6.80px" /><ellipse cx="1110" cy="880" rx="20" ry="34" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:6.80px" /><ellipse cx="782" cy="900" rx="45" ry="34" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:6.80px" /><path d="M822,730 L830,650 Q831,638 845,638 L1112,642 Q1125,643 1125,655 L1125,735 Z M842,730 L848,662 Q849,655 856,655 L1097,660 Q1104,661 1104,668 L1103,735 Z" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;fill-rule:evenodd;stroke-width:6.80px" /><path d="M705,860 L705,768 Q706,718 762,712 L1095,737 L1040,762 L1040,880 Z" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:6.80px" /><circle cx="760" cy="787" r="29" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:6.80px" /><circle cx="972" cy="797" r="32" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:6.80px" /><path d="M822,778 L913,782 Q917,782 917,786 L914,851 Q914,855 910,855 L823,850 Q819,850 819,846 L818,782 Q818,778 822,778 Z" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:6.80px" /><path d="M702,848 L1046,880 Q1062,882 1061,898 L1060,904 Q1058,920 1042,919 L703,896 Q688,894 688,879 L690,861 Q692,847 702,848 Z" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:6.80px" /></g></g>
         </g>
       </g>
       <g id="_右の景色" data-name="右の景色">
-        <g id="_お花2" data-name="お花2">
-          <line class="st3" x1="730.5" y1="445.7" x2="730.5" y2="465.7" style="stroke-width:3.40px" />
-          <circle class="st20" cx="730.5" cy="425.7" r="7.5" style="stroke-width:3.40px" />
-          <circle class="st20" cx="740" cy="432.6" r="7.5" style="stroke-width:3.40px" />
-          <circle class="st20" cx="736.4" cy="443.8" r="7.5" style="stroke-width:3.40px" />
-          <circle class="st20" cx="724.6" cy="443.8" r="7.5" style="stroke-width:3.40px" />
-          <circle class="st20" cx="721" cy="432.6" r="7.5" style="stroke-width:3.40px" />
-          <circle class="st20" cx="730.5" cy="435.7" r="6" style="stroke-width:3.40px" />
-          <line class="st3" x1="792.5" y1="467.2" x2="792.5" y2="487.2" style="stroke-width:3.40px" />
-          <circle class="st20" cx="792.5" cy="447.2" r="7.5" style="stroke-width:3.40px" />
-          <circle class="st20" cx="802" cy="454.1" r="7.5" style="stroke-width:3.40px" />
-          <circle class="st20" cx="798.4" cy="465.3" r="7.5" style="stroke-width:3.40px" />
-          <circle class="st20" cx="786.6" cy="465.3" r="7.5" style="stroke-width:3.40px" />
-          <circle class="st20" cx="783" cy="454.1" r="7.5" style="stroke-width:3.40px" />
-          <circle class="st20" cx="792.5" cy="457.2" r="6" style="stroke-width:3.40px" />
-        </g>
-        <g id="_植え込み11" data-name="_植え込み1">
+        <g id="お花2"><line x1="742" y1="416" x2="742" y2="446" style="fill:none;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" /><path d="M742,437.0 Q726,426.5 722,438.5 Q732,444.5 742,437.0 Z" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" /><path d="M742,432.5 Q758,422.0 762,434.0 Q752,440.0 742,432.5 Z" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" /><circle cx="742.0" cy="399.0" r="7" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" /><circle cx="750.6" cy="405.2" r="7" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" /><circle cx="747.3" cy="415.3" r="7" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" /><circle cx="736.7" cy="415.3" r="7" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" /><circle cx="733.4" cy="405.2" r="7" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" /><circle cx="742" cy="408" r="5.5" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" /><line x1="792" y1="438" x2="792" y2="466" style="fill:none;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" /><path d="M792,457.6 Q776,447.8 772,459.0 Q782,464.6 792,457.6 Z" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" /><path d="M792,453.4 Q808,443.6 812,454.8 Q802,460.4 792,453.4 Z" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" /><circle cx="792.0" cy="421.0" r="7" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" /><circle cx="800.6" cy="427.2" r="7" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" /><circle cx="797.3" cy="437.3" r="7" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" /><circle cx="786.7" cy="437.3" r="7" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" /><circle cx="783.4" cy="427.2" r="7" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" /><circle cx="792" cy="430" r="5.5" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" /></g><g id="_植え込み11" data-name="_植え込み1">
           <path class="st28" d="M759.6,398.7c-7.4-16.3-5.3-28.6,6.7-36.8-8.3-14.7-4.8-25.3,10.2-31.9,1.9-14.1,10.9-20.2,27-18.1,12-5.9,21.7-3.1,29.3,8.3,13.1,6.5,16.1,16.8,9,30.8,10.9,10.5,10.9,21.4,0,32.9,3.4,10.8-.5,16.5-11.8,17.1l-70.2-2.4h0Z" style="stroke-width:3.40px" />
           <path class="st6" d="M784.9,352c3.7-3.9,7.8-3.9,12.4,0M810.2,332.5c3.7-3.9,7.8-3.9,12.4,0M798.9,376.6c3.7-3.9,7.8-3.9,12.4,0" style="stroke-width:3.40px" />
         </g>

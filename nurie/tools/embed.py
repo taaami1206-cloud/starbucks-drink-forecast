@@ -1,6 +1,6 @@
 # illustrator/ のSVGを index.html に埋め込む
 #   nurie-kantan2.svg      → かんたん版（横） #easy
-#   nurie-futsuu-nurie.svg → ふつう版（たて） #normal
+#   （ふつう版たて nurie-futsuu-nurie.svg は 2026-11-21 にページから外した：使うのは横の2枚だけ）
 #   nurie-futsuu-yoko.svg  → ふつう版（横）   #yoko
 # イラレのSVGはどれも .st0, .st1 … と同じクラス名・同じ clip のidを使うので、
 # 同じページに並べてもぶつからないように、横版には目印（y）をつけて名前を変える。
@@ -30,7 +30,8 @@ def put(html, sheet_id, svg):
 if os.path.exists(os.path.join(root, 'illustrator', 'nurie-kantan2.svg')):
     html = html.replace('<div class="sheet" id="easy">', '<div class="sheet yoko" id="easy">')
     html = put(html, 'easy', load('nurie-kantan2.svg', 'k'))
-html = put(html, 'normal', load('nurie-futsuu-nurie.svg'))
+if 'id="normal"' in html:
+    html = put(html, 'normal', load('nurie-futsuu-nurie.svg'))
 if os.path.exists(os.path.join(root, 'illustrator', 'nurie-futsuu-yoko.svg')):
     if 'id="yoko"' not in html:
         i = html.index('</svg></div>', html.index('id="normal"')) + len('</svg></div>')

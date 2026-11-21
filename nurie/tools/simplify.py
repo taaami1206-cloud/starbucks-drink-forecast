@@ -38,7 +38,7 @@ def blob(cx, cy, w, h):
             f'C{cx-rx*0.95:.1f},{cy+ry*0.6:.1f} {cx-rx:.1f},{cy+ry*0.3:.1f} {cx-rx:.1f},{cy:.1f} Z')
 win = next(e for e in root.iter() if e.get('id') == '_窓とくま')
 target = [e for e in win.iter() if e.tag.endswith('}g')][1]  # 窓の中（クリップされたグループ）
-for cx, cy, w, h in [(273, 444, 13, 10), (289, 450, 10, 8), (280, 487, 13, 9)]:
+for cx, cy, w, h in [(286, 442, 16, 11), (287, 481, 15, 10)]:
     ET.SubElement(target, f'{{{NS}}}path', {'d': blob(cx, cy, w, h), 'style': 'fill:#fff;stroke:#111;stroke-linejoin:round'})
 if s != 1.0:
     frame = next(e for e in root.iter() if e.get('id') == '_枠')

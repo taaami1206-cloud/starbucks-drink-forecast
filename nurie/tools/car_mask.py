@@ -50,19 +50,31 @@ sizes=ndimage.sum(b,lab,range(1,n+1)); big=int(np.argmax(sizes))+1
 sil=ndimage.binary_fill_holes(lab==big)
 keep=np.isin(lab,[i for i in range(1,n+1) if (sil&(lab==i)).sum()==(lab==i).sum()])
 np.save(sys.argv[2].replace('.npy','_sil.npy'),sil)
-# 耳の内がわの線を足す（ライオンの左耳・ゾウの左耳）：右耳と同じように
-from PIL import ImageDraw
-_im=Image.fromarray(keep.astype('uint8')*255); _d=ImageDraw.Draw(_im)
-def _bez(a,c,e): return [((1-t)**2*a[0]+2*(1-t)*t*c[0]+t*t*e[0],(1-t)**2*a[1]+2*(1-t)*t*c[1]+t*t*e[1]) for t in [i/24 for i in range(25)]]
+# 左耳（ライオン・ゾウ）を大きくして、右耳と同じ内がわの線を足す
 import math
-_c=(239.5,87.0); _u=(0.755,-0.656); _n=(-0.656,-0.755)   # ライオン左耳：頭の線の上に立つ小さな半円（右耳と同じ）
-_d.line([(_c[0]+8*(math.cos(t)*_u[0]+math.sin(t)*_n[0]),_c[1]+8*(math.cos(t)*_u[1]+math.sin(t)*_n[1])) for t in [math.pi*i/24 for i in range(25)]],fill=255,width=6,joint='curve')
-_d.arc((430,78,474,122),190,300,fill=255,width=6)   # ゾウ左耳：外がわに沿った線（右耳と同じく下は開いたまま）
-keep=np.array(_im)>0
+_lab,_n=ndimage.label(~keep)
+F_l=_lab==_lab[120,300]; F_e=_lab==_lab[100,540]; M=_lab==_lab[100,400]   # ライオンの顔・ゾウの顔・たてがみの中
+near=lambda r,k: ndimage.binary_dilation(r,iterations=k)
+yy,xx=np.mgrid[0:H,0:W]
+# ライオン左耳：頭の線の上の半円（中心_c、頭の線の向き_u、外向き_n）
+_c=(239.5,87.0); _u=(0.755,-0.656); _n=(-0.656,-0.755)
+keep[(np.hypot(xx-_c[0],yy-_c[1])<=21)&~near(F_l,5)]=False          # 前の小さな耳を消す
+# ゾウ左耳：前の外がわの線を消す
+_oc=(452,100); _rr=np.hypot(xx-_oc[0],yy-_oc[1])
+keep[(_rr>=30)&(_rr<=40)&(yy<100)&~near(F_e,5)&~near(M,5)]=False
+_layer=Image.new('L',(W,H),0); _d=ImageDraw.Draw(_layer)
+def _semi(R,w): _d.line([(_c[0]+R*(math.cos(t)*_u[0]+math.sin(t)*_n[0]),_c[1]+R*(math.cos(t)*_u[1]+math.sin(t)*_n[1])) for t in [math.pi*i/32 for i in range(33)]],fill=255,width=w,joint='curve')
+_semi(22,7); _semi(10,6)                                          # ライオン左耳：外がわと内がわ
+keep|=(np.array(_layer)>0)&~F_l                                   # ライオンの耳はたてがみの上に描く（顔の中だけ隠す）
+_layer=Image.new('L',(W,H),0); _d=ImageDraw.Draw(_layer)
+_d.arc((_oc[0]-41,_oc[1]-41,_oc[0]+41,_oc[1]+41),150,330,fill=255,width=7)   # ゾウ左耳：外がわ（顔とたてがみのうしろは隠れる）
+_d.arc((_oc[0]-28,_oc[1]-28,_oc[0]+28,_oc[1]+28),222,300,fill=255,width=6)   # ゾウ左耳：内がわ（下は開いたまま）
+_L=np.array(_layer)>0
+keep|=_L&~F_l&~F_e&~M
 # 小さな耳の中の白いすき間は、あとで線をならしてもつぶれないよう覚えておく
 _h,_nh=ndimage.label(~keep); carve=np.zeros_like(keep)
 for _i,_sl in enumerate(ndimage.find_objects(_h),1):
-    if _sl[1].start>=215 and _sl[1].stop<=262 and _sl[0].start>=60 and _sl[0].stop<=105: carve|=_h==_i
+    if (_sl[1].start>=215 and _sl[1].stop<=262 and _sl[0].start>=60 and _sl[0].stop<=105) or (_sl[1].start>=418 and _sl[1].stop<=478 and _sl[0].start>=55 and _sl[0].stop<=175): carve|=_h==_i
 np.save(sys.argv[2].replace('.npy','_carve.npy'),carve)
 np.save(sys.argv[2],keep)
 Image.fromarray(np.where(keep,0,255).astype('uint8')).save(sys.argv[2].replace('.npy','.png'))

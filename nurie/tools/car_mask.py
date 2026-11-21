@@ -50,21 +50,5 @@ sizes=ndimage.sum(b,lab,range(1,n+1)); big=int(np.argmax(sizes))+1
 sil=ndimage.binary_fill_holes(lab==big)
 keep=np.isin(lab,[i for i in range(1,n+1) if (sil&(lab==i)).sum()==(lab==i).sum()])
 np.save(sys.argv[2].replace('.npy','_sil.npy'),sil)
-# ハンドルを形に沿って黒くぬる：外側の丸い線（中心290,282・横40・縦46）の内がわにある白いすき間だけうめる（手の中は白のまま）
-holes,nh=ndimage.label(~keep)
-yy,xx=np.mgrid[0:H,0:W]; inside=((xx-290)/40.)**2+((yy-282)/46.)**2<=1
-hands={holes[257,232],holes[260,348]}
-for i in range(1,nh+1):
-    if i in hands: continue
-    m=holes==i; n=m.sum()
-    if n<3000 and (m&inside).sum()>=0.9*n: keep[m]=True
-# ハンドルの上と手のあいだの白いすき間は、あとで線をならしてもつぶれないよう少し広げて覚えておく
-carve=np.zeros_like(keep)
-for i in range(1,nh+1):
-    sl=ndimage.find_objects(holes==i)[0]
-    if i not in hands and sl[1].start>=240 and sl[1].stop<=345 and sl[0].start>=225 and sl[0].stop<=262 and not keep[holes==i].any():
-        carve|=holes==i
-carve=ndimage.binary_dilation(carve,iterations=1)
-np.save(sys.argv[2].replace('.npy','_carve.npy'),carve)
 np.save(sys.argv[2],keep)
 Image.fromarray(np.where(keep,0,255).astype('uint8')).save(sys.argv[2].replace('.npy','.png'))

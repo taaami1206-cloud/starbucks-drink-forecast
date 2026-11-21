@@ -39,6 +39,12 @@ for side in (0,W-1):
                 if d-t>12: break
                 b[t:d+1,x]=False; x+=step
 b[0:27,278:342]=False; b[192:214,651:]=False
+# たてがみの上：メニュー板の角を消して平らになった山2つを、丸い山に描き直す
+from PIL import ImageDraw
+b[0:36,268:351]=False
+_im=Image.fromarray(b.astype('uint8')*255); _d=ImageDraw.Draw(_im)
+_d.arc((266,23,305,60),180,360,fill=255,width=7); _d.arc((304,24,350,61),180,360,fill=255,width=7)
+b=np.array(_im)>0
 lab,n=ndimage.label(b,structure=np.ones((3,3)))
 sizes=ndimage.sum(b,lab,range(1,n+1)); big=int(np.argmax(sizes))+1
 sil=ndimage.binary_fill_holes(lab==big)

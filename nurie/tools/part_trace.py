@@ -15,7 +15,11 @@ PARTS = {  # マスク, 切り出し左上, 置き場所（参考画像の点 �
 mask, (X0, Y0), ((rx, ry), (px, py)), gids = PARTS[sys.argv[2]]
 tmp = os.path.join(os.environ.get('TMPDIR', '/tmp'), sys.argv[2] + 'mask.npy')
 subprocess.run([sys.executable, os.path.join(here, mask), sys.argv[1], tmp], check=True)
-keep = np.load(tmp); sil = ndimage.binary_fill_holes(keep | np.load(tmp.replace('.npy', '_sil.npy')))
+keep = np.load(tmp)
+# 切りあとのトゲ・へこみをならす（線の太さ約7pxより細いものだけ消える）
+disk = ndimage.generate_binary_structure(2, 1); disk = ndimage.iterate_structure(disk, 2)
+keep = ndimage.binary_opening(ndimage.binary_closing(keep, disk), disk)
+sil = ndimage.binary_fill_holes(keep | ndimage.binary_opening(np.load(tmp.replace('.npy', '_sil.npy')), disk))
 UP = 3; K = 0.512
 def up(m):
     im = Image.fromarray(np.where(m, 0, 255).astype('uint8')).filter(__import__('PIL.ImageFilter', fromlist=['x']).GaussianBlur(0.6))
@@ -40,6 +44,7 @@ def span(s, gid):
         depth += 1 if m.group().startswith('<g') else -1
         if depth == 0: return i, i + m.end()
 for k, gid in reversed(list(enumerate(gids))):
+    if k and f'<g id="{gid}"' not in s: continue
     i, j = span(s, gid)
     s = s[:i] + (grp if k == 0 else '') + s[j:]
 open(svgp, 'w', encoding='utf-8').write(s)

@@ -39,6 +39,13 @@ for side in (0,W-1):
                 if d-t>12: break
                 b[t:d+1,x]=False; x+=step
 b[0:163,0:19]=False; b[155:171,0:18]=False; b[0:37,0:100]=False; b[12:35,98:104]=False  # MANUAL
+# 左の植え込みの左上：ポールを消したあとの段差を、なめらかなくぼみに描き直す
+from PIL import ImageDraw
+b[28:57,86:104]=False
+_im=Image.fromarray(b.astype('uint8')*255); _d=ImageDraw.Draw(_im)
+_pts=[((1-t)**2*84+2*(1-t)*t*97+t*t*105,(1-t)**2*51+2*(1-t)*t*49+t*t*29) for t in [i/20 for i in range(21)]]
+_d.line(_pts,fill=255,width=7,joint='curve')
+b=np.array(_im)>0
 lab,n=ndimage.label(b,structure=np.ones((3,3)))
 sizes=ndimage.sum(b,lab,range(1,n+1)); big=int(np.argmax(sizes))+1
 sil=ndimage.binary_fill_holes(lab==big)

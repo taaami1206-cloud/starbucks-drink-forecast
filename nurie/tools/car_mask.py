@@ -50,5 +50,17 @@ sizes=ndimage.sum(b,lab,range(1,n+1)); big=int(np.argmax(sizes))+1
 sil=ndimage.binary_fill_holes(lab==big)
 keep=np.isin(lab,[i for i in range(1,n+1) if (sil&(lab==i)).sum()==(lab==i).sum()])
 np.save(sys.argv[2].replace('.npy','_sil.npy'),sil)
+# ハンドルを黒くぬる（ハンドルの中の白いすき間をうめる）
+holes,nh=ndimage.label(~keep)
+for i,sl in enumerate(ndimage.find_objects(holes),1):
+    if sl[1].start>=255 and sl[1].stop<=328 and sl[0].start>=236 and sl[0].stop<=287: keep[holes==i]=True
+# ライオンの体：頭の下から両手まで肩の線を描き、そのあいだのフロントガラスの上の線を消す
+from PIL import ImageDraw
+keep[224:241,224:360]=False
+_im=Image.fromarray(keep.astype('uint8')*255); _d=ImageDraw.Draw(_im)
+_d.pieslice((257,238,323,292),180,360,fill=255)  # ハンドルの上の丸み
+for a,c,e in [((240,219),(222,226),(214,244)),((350,219),(368,226),(373,246))]:
+    _d.line([((1-t)**2*a[0]+2*(1-t)*t*c[0]+t*t*e[0],(1-t)**2*a[1]+2*(1-t)*t*c[1]+t*t*e[1]) for t in [i/20 for i in range(21)]],fill=255,width=7,joint='curve')
+keep=np.array(_im)>0
 np.save(sys.argv[2],keep)
 Image.fromarray(np.where(keep,0,255).astype('uint8')).save(sys.argv[2].replace('.npy','.png'))

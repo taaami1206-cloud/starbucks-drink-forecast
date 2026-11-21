@@ -29,7 +29,7 @@ def put(html, sheet_id, svg):
 # かんたん版（A4横・くまとうさぎ）
 if os.path.exists(os.path.join(root, 'illustrator', 'nurie-kantan2.svg')):
     html = html.replace('<div class="sheet" id="easy">', '<div class="sheet yoko" id="easy">')
-    html = put(html, 'easy', load('nurie-kantan2.svg'))
+    html = put(html, 'easy', load('nurie-kantan2.svg', 'k'))
 html = put(html, 'normal', load('nurie-futsuu-nurie.svg'))
 if os.path.exists(os.path.join(root, 'illustrator', 'nurie-futsuu-yoko.svg')):
     if 'id="yoko"' not in html:

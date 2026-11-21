@@ -55,9 +55,9 @@
     <path class="st0" d="M409.5,140.9c-.4-.2-1.6-1.2-2.6-2.2-4.8-4.6-8.8-7.6-14.2-10.6-2.9-1.6-7.4-3.8-9.1-4.3-3.9-1.3-3.7-4.5.6-10.8,3.6-5.3,11.3-8.8,17.7-7.9,2.8.3,4.2.7,6.5,1.7,5.3,2.2,9.9,7.1,11.5,12.1,1.1,3.3,1.3,7.9.6,10.6-1.1,4-2.5,6.3-5.8,9.8-2,2.1-3.4,2.6-5.1,1.8ZM412.2,132.9c1.3-1.7,2-3.3,2.4-5.4,1-4.3-.7-9.3-4.4-12.8-4.9-4.7-13.1-5.2-18.5-1.1-2.6,2-5,5.6-3.7,5.6s1.7.7,3.5,1.5c6.7,3.2,13,7.4,17.4,11.6,1,1,2,1.8,2.1,1.8.2,0,.7-.5,1.2-1.2Z" />
   </g>
   <g id="_名前と年齢" data-name="名前と年齢">
-    <rect id="_名前欄" data-name="名前欄" class="st3" x="98" y="507" width="460" height="60" rx="16" ry="16" style="stroke-width:3.40px" />
-    <rect id="_年齢欄" data-name="年齢欄" class="st3" x="573" y="507" width="172" height="60" rx="16" ry="16" style="stroke-width:3.40px" />
-    <text class="st1" transform="translate(120 545.5)" style="font-family:'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', sans-serif;font-weight:800;font-size:24.0px"><tspan x="0" y="0">なまえ</tspan></text>
-    <text class="st1" transform="translate(725 545.5)" text-anchor="end" style="font-family:'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', sans-serif;font-weight:800;font-size:24.0px"><tspan x="0" y="0">さい</tspan></text>
+    <rect id="_名前欄" data-name="名前欄" class="st3" x="98" y="513" width="460" height="60" rx="16" ry="16" style="stroke-width:3.40px" />
+    <rect id="_年齢欄" data-name="年齢欄" class="st3" x="573" y="513" width="172" height="60" rx="16" ry="16" style="stroke-width:3.40px" />
+    <text class="st1" transform="translate(120 551.5)" style="font-family:'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', sans-serif;font-weight:800;font-size:24.0px"><tspan x="0" y="0">なまえ</tspan></text>
+    <text class="st1" transform="translate(725 551.5)" text-anchor="end" style="font-family:'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', sans-serif;font-weight:800;font-size:24.0px"><tspan x="0" y="0">さい</tspan></text>
   </g>
 </svg>

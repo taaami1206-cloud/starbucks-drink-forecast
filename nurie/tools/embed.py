@@ -1,4 +1,5 @@
 # illustrator/ のSVGを index.html に埋め込む
+#   nurie-kantan2.svg      → かんたん版（横） #easy
 #   nurie-futsuu-nurie.svg → ふつう版（たて） #normal
 #   nurie-futsuu-yoko.svg  → ふつう版（横）   #yoko
 # イラレのSVGはどれも .st0, .st1 … と同じクラス名・同じ clip のidを使うので、
@@ -20,11 +21,15 @@ def load(name, prefix=''):
     return svg
 
 def put(html, sheet_id, svg):
-    tag = f'<div class="sheet" id="{sheet_id}">' if sheet_id != 'yoko' else '<div class="sheet yoko" id="yoko">'
-    start = html.index(tag) + len(tag)
+    m = re.search(rf'<div class="sheet[^"]*" id="{sheet_id}">', html)
+    start = m.end()
     end = html.index('</svg></div>', start) + len('</svg>')
     return html[:start] + svg + html[end:]
 
+# かんたん版（A4横・くまとうさぎ）
+if os.path.exists(os.path.join(root, 'illustrator', 'nurie-kantan2.svg')):
+    html = html.replace('<div class="sheet" id="easy">', '<div class="sheet yoko" id="easy">')
+    html = put(html, 'easy', load('nurie-kantan2.svg'))
 html = put(html, 'normal', load('nurie-futsuu-nurie.svg'))
 if os.path.exists(os.path.join(root, 'illustrator', 'nurie-futsuu-yoko.svg')):
     if 'id="yoko"' not in html:

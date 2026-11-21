@@ -47,7 +47,13 @@ for el in list(root.iter()):
     tag = el.tag.split('}')[-1]
     if tag in SHAPES and not parent.get(el, root).tag.endswith('clipPath'):
         if eff(el).get('stroke', 'none') != 'none':
-            set_style(el, stroke_width=W); n += 1
+            # 拡大・縮小されたグループの中でも、見た目の線の太さが W になるように割り戻す
+            k = 1.0; a = el
+            while a in parent:
+                a = parent[a]
+                m = re.match(r'matrix\(([-\d.]+)', a.get('transform', '')) or re.match(r'scale\(([-\d.]+)', a.get('transform', ''))
+                if m: k *= float(m.group(1))
+            set_style(el, stroke_width=f'{float(W[:-2])/k:.2f}px'); n += 1
     if tag != 'text':
         continue
     p = eff(el); txt = ''.join(el.itertext()).strip()

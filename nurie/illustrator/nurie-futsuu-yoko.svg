@@ -164,8 +164,8 @@
     <g>
       <rect class="st18" x="25" y="22" width="792" height="483" />
       <g id="_左の景色" data-name="左の景色">
-        <line id="_地面" data-name="地面" class="st3" x1="25" y1="453.3" x2="165.6" y2="453.3" style="stroke-width:3.40px" />
-        <line id="_地面" data-name="地面" class="st3" x1="666.5" y1="417.5" x2="817" y2="417.5" style="stroke-width:3.40px" /><g id="_矢印看板" data-name="矢印看板">
+        <line id="_地面" data-name="地面" class="st3" x1="25" y1="458.5" x2="817" y2="339.8" style="stroke-width:3.40px" />
+        <g id="_矢印看板" data-name="矢印看板">
           <path class="st4" d="M65.3,323.5c9.1,10.8,18.3,15.9,27.4,15.3" style="stroke-width:3.40px" />
           <path class="st4" d="M113.7,312.2c-7,10.8-14,19.6-21,26.6" style="stroke-width:3.40px" />
           <ellipse class="st24" cx="65.3" cy="295.2" rx="17.7" ry="21.8" style="stroke-width:3.40px" />
@@ -180,7 +180,7 @@
       <g id="_たて版の絵" data-name="たて版の絵">
         <g>
           <g id="_看板">
-            <rect class="st22" x="729.7" y="150.6" width="13.3" height="271" style="stroke-width:3.40px" />
+            <rect class="st22" x="729.7" y="150.6" width="13.3" height="210.4" style="stroke-width:3.40px" />
             <path class="st19" d="M675.4,71.1h119.9l-11.1,76.6c-.7,3-3,4.5-6.7,4.5h-84.4c-3.7,0-6-1.5-6.7-4.5l-11.1-76.6h0Z" style="stroke-width:3.40px" />
             <rect class="st19" x="668.8" y="53.3" width="133.3" height="18.9" rx="6.7" ry="6.7" style="stroke-width:3.40px" />
             <g class="st17">
@@ -205,7 +205,8 @@
             <g id="_建物">
               <polygon class="st29" points="152.4 184.1 242.2 142.2 676.9 142.2 645.5 121.2 266.1 121.2 176.3 163.1 152.4 184.1" style="stroke-width:3.40px" />
               <polygon class="st29" points="165.6 203.2 242.2 166.1 242.2 417.5 165.6 453.3 165.6 203.2" style="stroke-width:3.40px" />
-              <rect class="st36" style="stroke-width:3.40px" x="242.2" y="166.2" width="424.3" height="251.3" /><polygon class="st32" points="152.4 184.1 244 142.2 676.9 142.2 676.9 166.1 244 166.1 152.4 208 152.4 184.1" style="stroke-width:3.40px" />
+              <path class="st36" d="M666.5,166.2v208.2l-5.3-.4c.3,4,.3,7.6,0,10.8l5.3-1.7v34.4l-23.6,1.5-47.9,3.1-27.4,1.8-4.2.3-10.1.7h0l-12.6.8-20.1,1.3-20.3,1.3-29.9,1.9-19.3,1.3-13.3.9-20.2,1.3-11.9.8-118.9,7.8-44.8,2.9V166.2h424.3Z" style="stroke-width:3.40px" />
+              <polygon class="st32" points="152.4 184.1 244 142.2 676.9 142.2 676.9 166.1 244 166.1 152.4 208 152.4 184.1" style="stroke-width:3.40px" />
               <line class="st7" x1="242.2" y1="142.2" x2="242.2" y2="166.1" style="stroke-width:3.40px" />
               <path class="st29" d="M258.7,166.1h20.4l-10.1,19.2-10.1-19.2h0Z" style="stroke-width:3.40px" />
               <path class="st29" d="M285.6,166.1h20.4l-10.1,19.2-10.1-19.2h0Z" style="stroke-width:3.40px" />
@@ -401,13 +402,13 @@
       </g>
       <g id="_右の景色" data-name="右の景色">
         <g id="_お花2" data-name="お花2">
-          <line class="st3" x1="730.5" y1="445.7" x2="730.5" y2="465.7" style="stroke-width:3.40px" transform="translate(0 16)" />
-          <circle class="st20" cx="730.5" cy="425.7" r="7.5" style="stroke-width:3.40px" transform="translate(0 16)" />
-          <circle class="st20" cx="740" cy="432.6" r="7.5" style="stroke-width:3.40px" transform="translate(0 16)" />
-          <circle class="st20" cx="736.4" cy="443.8" r="7.5" style="stroke-width:3.40px" transform="translate(0 16)" />
-          <circle class="st20" cx="724.6" cy="443.8" r="7.5" style="stroke-width:3.40px" transform="translate(0 16)" />
-          <circle class="st20" cx="721" cy="432.6" r="7.5" style="stroke-width:3.40px" transform="translate(0 16)" />
-          <circle class="st20" cx="730.5" cy="435.7" r="6" style="stroke-width:3.40px" transform="translate(0 16)" />
+          <line class="st3" x1="730.5" y1="445.7" x2="730.5" y2="465.7" style="stroke-width:3.40px" />
+          <circle class="st20" cx="730.5" cy="425.7" r="7.5" style="stroke-width:3.40px" />
+          <circle class="st20" cx="740" cy="432.6" r="7.5" style="stroke-width:3.40px" />
+          <circle class="st20" cx="736.4" cy="443.8" r="7.5" style="stroke-width:3.40px" />
+          <circle class="st20" cx="724.6" cy="443.8" r="7.5" style="stroke-width:3.40px" />
+          <circle class="st20" cx="721" cy="432.6" r="7.5" style="stroke-width:3.40px" />
+          <circle class="st20" cx="730.5" cy="435.7" r="6" style="stroke-width:3.40px" />
           <line class="st3" x1="792.5" y1="467.2" x2="792.5" y2="487.2" style="stroke-width:3.40px" />
           <circle class="st20" cx="792.5" cy="447.2" r="7.5" style="stroke-width:3.40px" />
           <circle class="st20" cx="802" cy="454.1" r="7.5" style="stroke-width:3.40px" />
@@ -416,7 +417,7 @@
           <circle class="st20" cx="783" cy="454.1" r="7.5" style="stroke-width:3.40px" />
           <circle class="st20" cx="792.5" cy="457.2" r="6" style="stroke-width:3.40px" />
         </g>
-        <g id="_植え込み11" data-name="_植え込み1" transform="translate(0 30)">
+        <g id="_植え込み11" data-name="_植え込み1">
           <path class="st28" d="M759.6,398.7c-7.4-16.3-5.3-28.6,6.7-36.8-8.3-14.7-4.8-25.3,10.2-31.9,1.9-14.1,10.9-20.2,27-18.1,12-5.9,21.7-3.1,29.3,8.3,13.1,6.5,16.1,16.8,9,30.8,10.9,10.5,10.9,21.4,0,32.9,3.4,10.8-.5,16.5-11.8,17.1l-70.2-2.4h0Z" style="stroke-width:3.40px" />
           <path class="st6" d="M784.9,352c3.7-3.9,7.8-3.9,12.4,0M810.2,332.5c3.7-3.9,7.8-3.9,12.4,0M798.9,376.6c3.7-3.9,7.8-3.9,12.4,0" style="stroke-width:3.40px" />
         </g>

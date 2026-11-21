@@ -94,6 +94,14 @@
       <g id="_左の景色">
         <line id="_地面" class="st2" x1="25" y1="458.5" x2="817" y2="339.8" style="stroke-width:3.40px" />
         <g id="_矢印看板">
+          <g id="風船（うしろ）">
+            <path d="M89.5,285 C87,305 95,320 92.8,338.8" style="fill:none;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" />
+            <path d="M140,277 C130,300 105,315 92.8,338.8" style="fill:none;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" />
+            <ellipse cx="89.5" cy="258" rx="16" ry="20" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" />
+            <path d="M84.5,285h10l-5,-7z" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" />
+            <ellipse cx="140" cy="250" rx="16" ry="20" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" />
+            <path d="M135,277h10l-5,-7z" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" />
+          </g>
           <path class="st2" d="M65.3,323.5c9.1,10.8,18.3,15.9,27.4,15.3" style="stroke-width:3.40px" />
           <path class="st2" d="M113.7,312.2c-7,10.8-14,19.6-21,26.6" style="stroke-width:3.40px" />
           <ellipse class="st12" cx="65.3" cy="295.2" rx="17.7" ry="21.8" style="stroke-width:3.40px" />
@@ -136,6 +144,13 @@
                   </g>
                 </g>
               </g>
+            </g>
+          <g id="リボン">
+              <path d="M731,65 L697,77 L703,80 L699,86 L737,70 Z" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" />
+              <path d="M739.8,65 L773.8,77 L767.8,80 L771.8,86 L733.8,70 Z" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" />
+              <path d="M728,60 C712,40 690,42 694,56 C697,68 716,70 728,64 Z" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" />
+              <path d="M742.8,60 C758.8,40 780.8,42 776.8,56 C773.8,68 754.8,70 742.8,64 Z" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" />
+              <rect x="727.9" y="55" width="15" height="14" rx="4" ry="4" style="fill:#fff;stroke:#111;stroke-linejoin:round;stroke-linecap:round;stroke-width:3.40px" />
             </g>
           </g>
           <g id="_空">

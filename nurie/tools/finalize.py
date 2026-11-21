@@ -1,4 +1,4 @@
-# 使い方: python3 nurie/tools/finalize.py  （illustrator/nurie-futsuu-nurie.svg をその場で整える）
+# 使い方: python3 nurie/tools/finalize.py [ファイル]  （省略時は illustrator/nurie-futsuu-nurie.svg をその場で整える）
 # イラレで直したあとに流す。何回流しても同じ結果になる。
 # - 線の太さを全部 W にそろえる
 # - 見えない白い文字・空の文字を消す
@@ -13,7 +13,8 @@ HELV = dict(zip('0123456789', [.556]*10)) | {'A': .722, 'B': .722, 'C': .722, 'D
         'R': .722, 'S': .667, 'T': .611, 'U': .722, 'V': .667, 'W': .944, 'X': .667, 'Y': .667, 'Z': .611, ' ': .278}
 
 here = os.path.dirname(os.path.abspath(__file__))
-path = os.path.join(os.path.dirname(here), 'illustrator', 'nurie-futsuu-nurie.svg')
+import sys
+path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(here), 'illustrator', 'nurie-futsuu-nurie.svg')
 NS = 'http://www.w3.org/2000/svg'
 ET.register_namespace('', NS); ET.register_namespace('xlink', 'http://www.w3.org/1999/xlink')
 tree = ET.parse(path); root = tree.getroot()

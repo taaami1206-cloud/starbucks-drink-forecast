@@ -38,7 +38,7 @@ for side in (0,W-1):
                 t,d=vrun(b,cy,x)
                 if d-t>12: break
                 b[t:d+1,x]=False; x+=step
-b[0:27,278:342]=False; b[180:250,655:]=False
+b[0:27,278:342]=False; b[192:214,651:]=False
 lab,n=ndimage.label(b,structure=np.ones((3,3)))
 sizes=ndimage.sum(b,lab,range(1,n+1)); big=int(np.argmax(sizes))+1
 sil=ndimage.binary_fill_holes(lab==big)

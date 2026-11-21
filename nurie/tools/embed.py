@@ -1,12 +1,35 @@
-# illustrator/nurie-futsuu-nurie.svg を index.html の「ふつう版」に埋め込む
+# illustrator/ のSVGを index.html に埋め込む
+#   nurie-futsuu-nurie.svg → ふつう版（たて） #normal
+#   nurie-futsuu-yoko.svg  → ふつう版（横）   #yoko
+# イラレのSVGはどれも .st0, .st1 … と同じクラス名・同じ clip のidを使うので、
+# 同じページに並べてもぶつからないように、横版には目印（y）をつけて名前を変える。
 import re, os
 here = os.path.dirname(os.path.abspath(__file__))
 root = os.path.dirname(here)
-svg = open(os.path.join(root, 'illustrator', 'nurie-futsuu-nurie.svg')).read()
-svg = svg[svg.index('<svg'):]
-svg = re.sub(r'<!--.*?-->', '', svg, flags=re.S).replace('<svg ', '<svg class="art" ', 1).strip()
 p = os.path.join(root, 'index.html'); html = open(p).read()
-start = html.index('<div class="sheet" id="normal">') + len('<div class="sheet" id="normal">')
-end = html.index('</svg></div>', start) + len('</svg>')
-open(p, 'w').write(html[:start] + svg + html[end:])
-print('embedded', len(svg))
+
+def load(name, prefix=''):
+    svg = open(os.path.join(root, 'illustrator', name)).read()
+    svg = svg[svg.index('<svg'):]
+    svg = re.sub(r'<!--.*?-->', '', svg, flags=re.S).replace('<svg ', '<svg class="art" ', 1).strip()
+    if prefix:
+        svg = re.sub(r'\.st(\d+)\b', rf'.{prefix}st\1', svg)
+        svg = re.sub(r'class="([^"]*)"', lambda m: 'class="' + re.sub(r'\bst(\d+)\b', rf'{prefix}st\1', m.group(1)) + '"', svg)
+        svg = re.sub(r'id="(clippath[^"]*)"', rf'id="{prefix}-\1"', svg)
+        svg = re.sub(r'url\(#(clippath[^)]*)\)', rf'url(#{prefix}-\1)', svg)
+    return svg
+
+def put(html, sheet_id, svg):
+    tag = f'<div class="sheet" id="{sheet_id}">' if sheet_id != 'yoko' else '<div class="sheet yoko" id="yoko">'
+    start = html.index(tag) + len(tag)
+    end = html.index('</svg></div>', start) + len('</svg>')
+    return html[:start] + svg + html[end:]
+
+html = put(html, 'normal', load('nurie-futsuu-nurie.svg'))
+if os.path.exists(os.path.join(root, 'illustrator', 'nurie-futsuu-yoko.svg')):
+    if 'id="yoko"' not in html:
+        i = html.index('</svg></div>', html.index('id="normal"')) + len('</svg></div>')
+        html = html[:i] + '\n<p class="label">ふつう版・横向き（幼稚園〜小学生むけ）</p>\n<div class="sheet yoko" id="yoko"><svg></svg></div>' + html[i:]
+    html = put(html, 'yoko', load('nurie-futsuu-yoko.svg', 'y'))
+open(p, 'w').write(html)
+print('embedded')

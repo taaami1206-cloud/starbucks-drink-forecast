@@ -67,14 +67,14 @@ def _semi(R,w): _d.line([(_c[0]+R*(math.cos(t)*_u[0]+math.sin(t)*_n[0]),_c[1]+R*
 _semi(22,7); _semi(10,6)                                          # ライオン左耳：外がわと内がわ
 keep|=(np.array(_layer)>0)&~F_l                                   # ライオンの耳はたてがみの上に描く（顔の中だけ隠す）
 _layer=Image.new('L',(W,H),0); _d=ImageDraw.Draw(_layer)
-_d.arc((_oc[0]-41,_oc[1]-41,_oc[0]+41,_oc[1]+41),150,330,fill=255,width=7)   # ゾウ左耳：外がわ（顔とたてがみのうしろは隠れる）
+_d.arc((_oc[0]-46,_oc[1]-46,_oc[0]+46,_oc[1]+46),150,330,fill=255,width=7)   # ゾウ左耳：外がわ（顔とたてがみのうしろは隠れる）
 _d.arc((_oc[0]-28,_oc[1]-28,_oc[0]+28,_oc[1]+28),222,300,fill=255,width=6)   # ゾウ左耳：内がわ（下は開いたまま）
 _L=np.array(_layer)>0
 keep|=_L&~F_l&~F_e&~M
 # 小さな耳の中の白いすき間は、あとで線をならしてもつぶれないよう覚えておく
 _h,_nh=ndimage.label(~keep); carve=np.zeros_like(keep)
 for _i,_sl in enumerate(ndimage.find_objects(_h),1):
-    if (_sl[1].start>=215 and _sl[1].stop<=262 and _sl[0].start>=60 and _sl[0].stop<=105) or (_sl[1].start>=418 and _sl[1].stop<=478 and _sl[0].start>=55 and _sl[0].stop<=175): carve|=_h==_i
+    if (_sl[1].start>=215 and _sl[1].stop<=262 and _sl[0].start>=60 and _sl[0].stop<=105) or (_sl[1].start>=418 and _sl[1].stop<=482 and _sl[0].start>=46 and _sl[0].stop<=175): carve|=_h==_i
 np.save(sys.argv[2].replace('.npy','_carve.npy'),carve)
 np.save(sys.argv[2],keep)
 Image.fromarray(np.where(keep,0,255).astype('uint8')).save(sys.argv[2].replace('.npy','.png'))

@@ -68,7 +68,7 @@ _semi(22,7); _semi(10,6)                                          # ライオン
 keep|=ndimage.binary_closing(np.array(_layer)>0,iterations=2)&~F_l                                   # ライオンの耳はたてがみの上に描く（顔の中だけ隠す）
 _layer=Image.new('L',(W,H),0); _d=ImageDraw.Draw(_layer)
 _d.arc((_oc[0]-46,_oc[1]-46,_oc[0]+46,_oc[1]+46),150,330,fill=255,width=7)   # ゾウ左耳：外がわ（顔とたてがみのうしろは隠れる）
-_d.arc((_oc[0]-28,_oc[1]-28,_oc[0]+28,_oc[1]+28),222,325,fill=255,width=7)   # ゾウ左耳：内がわ（下は開いたまま）
+_d.arc((_oc[0]-28,_oc[1]-28,_oc[0]+28,_oc[1]+28),208,325,fill=255,width=7)   # ゾウ左耳：内がわ（下は開いたまま）
 _L=ndimage.binary_closing(np.array(_layer)>0,iterations=2)   # 描いた線の中の白い点をうめる
 keep|=_L&~F_l&~F_e&~M
 # 小さな耳の中の白いすき間は、あとで線をならしてもつぶれないよう覚えておく

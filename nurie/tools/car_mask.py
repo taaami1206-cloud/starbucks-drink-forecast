@@ -61,15 +61,15 @@ _c=(239.5,87.0); _u=(0.755,-0.656); _n=(-0.656,-0.755)
 keep[(np.hypot(xx-_c[0],yy-_c[1])<=21)&~near(F_l,5)]=False          # 前の小さな耳を消す
 # ゾウ左耳：前の外がわの線を消す
 _oc=(452,100); _rr=np.hypot(xx-_oc[0],yy-_oc[1])
-keep[(_rr>=30)&(_rr<=40)&(yy<100)&~near(F_e,5)&~near(M,5)]=False
+keep[(_rr>=25)&(_rr<=41)&(yy<100)&~near(F_e,5)&~near(M,5)]=False
 _layer=Image.new('L',(W,H),0); _d=ImageDraw.Draw(_layer)
 def _semi(R,w): _d.line([(_c[0]+R*(math.cos(t)*_u[0]+math.sin(t)*_n[0]),_c[1]+R*(math.cos(t)*_u[1]+math.sin(t)*_n[1])) for t in [math.pi*i/32 for i in range(33)]],fill=255,width=w,joint='curve')
 _semi(22,7); _semi(10,6)                                          # ライオン左耳：外がわと内がわ
-keep|=(np.array(_layer)>0)&~F_l                                   # ライオンの耳はたてがみの上に描く（顔の中だけ隠す）
+keep|=ndimage.binary_closing(np.array(_layer)>0,iterations=2)&~F_l                                   # ライオンの耳はたてがみの上に描く（顔の中だけ隠す）
 _layer=Image.new('L',(W,H),0); _d=ImageDraw.Draw(_layer)
 _d.arc((_oc[0]-46,_oc[1]-46,_oc[0]+46,_oc[1]+46),150,330,fill=255,width=7)   # ゾウ左耳：外がわ（顔とたてがみのうしろは隠れる）
-_d.arc((_oc[0]-28,_oc[1]-28,_oc[0]+28,_oc[1]+28),222,300,fill=255,width=6)   # ゾウ左耳：内がわ（下は開いたまま）
-_L=np.array(_layer)>0
+_d.arc((_oc[0]-28,_oc[1]-28,_oc[0]+28,_oc[1]+28),222,325,fill=255,width=7)   # ゾウ左耳：内がわ（下は開いたまま）
+_L=ndimage.binary_closing(np.array(_layer)>0,iterations=2)   # 描いた線の中の白い点をうめる
 keep|=_L&~F_l&~F_e&~M
 # 小さな耳の中の白いすき間は、あとで線をならしてもつぶれないよう覚えておく
 _h,_nh=ndimage.label(~keep); carve=np.zeros_like(keep)
